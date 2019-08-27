@@ -8,7 +8,7 @@ podTemplate(containers: [
 
   node(POD_LABEL) {
     stage('Build a Maven project') {
-      git branch: "${params.BRANCH}", url: 'https://github.com/gchq/Palisade-clients.git'
+      git branch: "PAL-135-client-contents", url: 'https://github.com/gchq/Palisade-clients.git'
 //      git 'https://github.com/gchq/Palisade-clients.git'
       container('maven') {
           sh 'ls && pwd'
