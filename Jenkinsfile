@@ -10,7 +10,7 @@ podTemplate(containers: [
     stage('Build a Maven project') {
       git 'https://github.com/gchq/Palisade-clients.git'
       container('maven') {
-          sh "ls'
+          sh 'ls'
           sh 'cd Palisade-clients && mvn install'
       }
     }
