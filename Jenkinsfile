@@ -12,7 +12,7 @@ podTemplate(containers: [
 //      git 'https://github.com/gchq/Palisade-clients.git'
       container('maven') {
           sh 'ls && pwd'
-          sh 'cd Palisade-clients && mvn install'
+          sh 'mvn install'
       }
     }
   }
