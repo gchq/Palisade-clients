@@ -8,7 +8,7 @@ podTemplate(containers: [
 
   node(POD_LABEL) {
     stage('Build a Maven project') {
-      git 'https://github.com//gchq/Palisade-clients.git'
+//      git 'https://github.com//gchq/Palisade-clients.git'
       container('maven') {
           sh 'mvn -install'
       }
