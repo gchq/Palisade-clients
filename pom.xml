@@ -21,7 +21,7 @@
 
     <groupId>uk.gov.gchq.palisade</groupId>
     <artifactId>client-impl</artifactId>
-    <version>1.1.0-${revision}</version>
+    <version>0.4.0-${revision}</version>
     <name>client-common</name>
     <description>Client code for Spring boot</description>
     <packaging>pom</packaging>
