@@ -10,6 +10,7 @@ podTemplate(containers: [
     stage('Build a Maven project') {
       git branch: "PAL-135-client-contents", url: 'https://github.com/gchq/Palisade-clients.git'
 //      git 'https://github.com/gchq/Palisade-clients.git'
+        container('maven') {
         sh 'ls && pwd'
         configFileProvider(
         [configFile(fileId: '450d38e2-db65-4601-8be0-8621455e93b5', variable: 'MAVEN_SETTINGS')]) {
@@ -20,4 +21,5 @@ podTemplate(containers: [
         }
     }
   }
+}
 }
