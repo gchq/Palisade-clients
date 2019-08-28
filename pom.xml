@@ -70,6 +70,4 @@
             <url>${snapshot.url}</url>
         </snapshotRepository>
     </distributionManagement>
-
-
 </project>
