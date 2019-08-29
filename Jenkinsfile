@@ -25,12 +25,12 @@ podTemplate(containers: [
             sh "echo ${env.GIT_BRANCH}"
             sh "echo ${env.GIT_AUTHOR_NAME}"
             sh "echo ${env.GIT_LOCAL_BRANCH}"
-            sh "echo env.BRANCH_NAME"
+            sh "echo ${env.BRANCH_NAME}"
 //            sh "echo GIT_BRANCH_LOCAL=\\\"${env.GIT_BRANCH}\\\" | sed -e 's|origin/||g' | tee version.properties"
         }
 
         stage('Build a Maven project') {
-            git branch: "${env.GIT_BRANCH_LOCAL}", url: 'https://github.com/gchq/Palisade-clients.git'
+            git branch: "${env.BRANCH_NAME}", url: 'https://github.com/gchq/Palisade-clients.git'
 
 //            git 'https://github.com/gchq/Palisade-clients.git'
             container('maven') {
