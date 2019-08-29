@@ -20,8 +20,12 @@ podTemplate(containers: [
 ]) {
 
     node(POD_LABEL) {
+        stage('Bootstrap') {
+            sh "echo GIT_BRANCH_LOCAL=\\\"$GIT_BRANCH\\\" | sed -e 's|origin/||g' | tee version.properties"
+        }
+
         stage('Build a Maven project') {
-            git branch: "PAL-135-client-contents", url: 'https://github.com/gchq/Palisade-clients.git'
+            git branch: "${GIT_BRANCH_LOCAL}", url: 'https://github.com/gchq/Palisade-clients.git'
 //      git 'https://github.com/gchq/Palisade-clients.git'
             container('maven') {
                 sh 'ls && pwd'
