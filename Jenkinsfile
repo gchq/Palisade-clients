@@ -21,9 +21,11 @@ podTemplate(containers: [
 
     node(POD_LABEL) {
         stage('Bootstrap') {
+            sh 'printenv'
             sh "echo ${env.GIT_BRANCH}"
             sh "echo ${env.GIT_AUTHOR_NAME}"
             sh "echo ${env.GIT_LOCAL_BRANCH}"
+            sh "echo env.BRANCH_NAME"
 //            sh "echo GIT_BRANCH_LOCAL=\\\"${env.GIT_BRANCH}\\\" | sed -e 's|origin/||g' | tee version.properties"
         }
 
