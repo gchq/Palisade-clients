@@ -21,15 +21,16 @@ podTemplate(containers: [
 
     node(POD_LABEL) {
         stage('Bootstrap') {
-            sh "echo $GIT_BRANCH"
-            sh "echo ${GIT_BRANCH}"
-            sh "echo ${GIT_AUTHOR_NAME}"
-            sh "echo GIT_BRANCH_LOCAL=\\\"$GIT_BRANCH\\\" | sed -e 's|origin/||g' | tee version.properties"
+//            sh "echo $GIT_BRANCH"
+//            sh "echo ${GIT_BRANCH}"
+//            sh "echo ${GIT_AUTHOR_NAME}"
+//            sh "echo GIT_BRANCH_LOCAL=\\\"$GIT_BRANCH\\\" | sed -e 's|origin/||g' | tee version.properties"
         }
 
         stage('Build a Maven project') {
-            git branch: "${GIT_BRANCH_LOCAL}", url: 'https://github.com/gchq/Palisade-clients.git'
-//      git 'https://github.com/gchq/Palisade-clients.git'
+//            git branch: "${GIT_BRANCH_LOCAL}", url: 'https://github.com/gchq/Palisade-clients.git'
+
+            git 'https://github.com/gchq/Palisade-clients.git'
             container('maven') {
                 sh 'ls && pwd'
                 configFileProvider(
