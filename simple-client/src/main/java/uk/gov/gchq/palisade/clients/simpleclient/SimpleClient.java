@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.gchq.palisade.client;
+package uk.gov.gchq.palisade.clients.simpleclient;
+
 
 import uk.gov.gchq.palisade.RequestId;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;

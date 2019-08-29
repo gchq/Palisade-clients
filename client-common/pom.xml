@@ -19,13 +19,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>uk.gov.gchq.palisade</groupId>
-        <artifactId>client-impl</artifactId>
+        <artifactId>clients</artifactId>
         <version>0.4.0-${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <!--  *********** Aritfact ID ***********    -->
-    <artifactId>client-common</artifactId>
+    <artifactId>clients-common</artifactId>
     <!--  *********** Aritfact ID ***********    -->
 
     <!--<dependencies>-->

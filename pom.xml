@@ -20,9 +20,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>uk.gov.gchq.palisade</groupId>
-    <artifactId>client-impl</artifactId>
+    <artifactId>clients</artifactId>
     <version>0.4.0-${revision}</version>
-    <name>client-common</name>
+    <name>clients</name>
     <description>Client code for Spring boot</description>
     <packaging>pom</packaging>
 
@@ -30,7 +30,6 @@
         <java.version>11</java.version>
         <!-- Sane default when no revision property is passed in from the command line -->
         <revision>SNAPSHOT</revision>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>11</maven.compiler.source>

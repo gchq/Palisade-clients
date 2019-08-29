@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.mapreduce;
+package uk.gov.gchq.palisade.clients.mapreduce;
 
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -36,7 +36,7 @@ import java.util.concurrent.CompletionException;
  * The main {@link RecordReader} class for Palisade MapReduce clients. This class implements the logic for connecting to
  * a data service and retrieving the results from the returned stream. It will contact the necessary data service for
  * each resource in turn from the {@link PalisadeInputSplit} provided to it. Clients can retrieve the current resource
- * being processed by calling {@link PalisadeRecordReader#getCurrentKey()}. Therefore, in the client MapReduce code, the
+ * being processed by calling {@link PalisadeRecordReader#getCurrentKey()}. Therefore, in the clients MapReduce code, the
  * key will become the current resource being processed and the value will become the current item from that resource.
  *
  * @param <V> the value type which will be de-serialised from the resources this input split is processing

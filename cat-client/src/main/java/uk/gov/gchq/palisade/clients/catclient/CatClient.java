@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.gchq.palisade.client;
+package uk.gov.gchq.palisade.clients.catclient;
 
 //TODO REQUIRES REFACTORING TO DEPEND ON COMMON ELEMENTS
 //TODO THE CLIENT SHOULD NOT DEPEND ON THE SERVICES SUCH AS PALISADE AND DATA SERVICE

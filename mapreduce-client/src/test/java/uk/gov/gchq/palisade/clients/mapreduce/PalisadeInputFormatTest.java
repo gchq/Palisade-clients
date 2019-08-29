@@ -1,4 +1,4 @@
-package uk.gov.gchq.palisade.mapreduce;
+package uk.gov.gchq.palisade.clients.mapreduce;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -171,7 +171,7 @@ public class PalisadeInputFormatTest {
 //        Configuration c = new Configuration();
 //        JobContext mockJob = Mockito.mock(JobContext.class);
 //        when(mockJob.getConfiguration()).thenReturn(c);
-//        //configure the input format as the client would
+//        //configure the input format as the clients would
 //        PalisadeInputFormat.setMaxMapTasksHint(mockJob, maxMapHint);
 //        PalisadeInputFormat.setPalisadeService(mockJob, palisadeService);
 //        for (RegisterDataRequest req : reqs.keySet()) {

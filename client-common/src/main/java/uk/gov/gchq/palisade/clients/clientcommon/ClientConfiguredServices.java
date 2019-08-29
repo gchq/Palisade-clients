@@ -21,7 +21,7 @@ BE REQUIRED.
  */
 
 
-package uk.gov.gchq.palisade.client;
+package uk.gov.gchq.palisade.clients.clientcommon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,11 +79,11 @@ public class ClientConfiguredServices {
 //    }
 
     /**
-     * Repeatedly attempt to get the client configuration from the configuration service. This method will try multiple times
-     * with a delay to contact the configuration service to get the client configuration, up to the specified time out.
+     * Repeatedly attempt to get the clients configuration from the configuration service. This method will try multiple times
+     * with a delay to contact the configuration service to get the clients configuration, up to the specified time out.
      *
      * @param timeout the time to wait before declaring failure
-     * @return the client configuration
+     * @return the clients configuration
      */
 //    private ServiceState fetchClientState(final Duration timeout) {
 //        ServiceState clientConfig = null;
@@ -95,7 +95,7 @@ public class ClientConfiguredServices {
 //                clientConfig = new Configurator(configService).retrieveConfig(Optional.empty());
 //            } catch (NoConfigException e) {
 //                //if that failed then wait and retry
-//                LOGGER.warn("No client configuration present, waiting...");
+//                LOGGER.warn("No clients configuration present, waiting...");
 //                //keep trying after short delay
 //                try {
 //                    Thread.sleep(ConfigConsts.DELAY);
@@ -106,7 +106,7 @@ public class ClientConfiguredServices {
 //
 //        //check if we exited with nothing
 //        if (isNull(clientConfig)) {
-//            throw new RuntimeException("Couldn't retrieve client configuration. Is configuration service running? Is the configuration service populated?");
+//            throw new RuntimeException("Couldn't retrieve clients configuration. Is configuration service running? Is the configuration service populated?");
 //        }
 //
 //        return clientConfig;
@@ -150,7 +150,7 @@ public class ClientConfiguredServices {
      * then an empty optional is returned.
      *
      * @param serviceClass the class to create
-     * @param state        the service state for the client
+     * @param state        the service state for the clients
      * @param <T>          the Service type
      * @return an optional that may contain the created service class
      */

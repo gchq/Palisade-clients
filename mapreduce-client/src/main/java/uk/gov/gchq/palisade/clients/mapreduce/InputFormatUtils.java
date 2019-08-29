@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.mapreduce;
+package uk.gov.gchq.palisade.clients.mapreduce;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
 
-import uk.gov.gchq.palisade.Util;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.util.HashMap;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.gchq.palisade.client;
+package uk.gov.gchq.palisade.clients.clientcommon;
 
 //import uk.gov.gchq.palisade.config.service.ConfigUtils;
 //import uk.gov.gchq.palisade.config.service.ConfigurationService;
@@ -39,7 +39,7 @@ public final class ClientUtil {
 
     /**
      * Gets the entry point into the Palisade system. This should be the first method into the Palisade system that
-     * client code should call. It will try to find the details for how to connect to Palisade's configuration service
+     * clients code should call. It will try to find the details for how to connect to Palisade's configuration service
      * by loading a configuration file referenced by system environment variable {@link uk.gov.gchq.palisade.config.service.ConfigConsts#CONFIG_SERVICE_PATH}.
      * It will then attempt to connect to this configuration service to find the main Palisade entry point which will
      * be an instance of {@link PalisadeService}. Clients should then call methods on this returned object.
@@ -51,7 +51,7 @@ public final class ClientUtil {
 //        //attempt to connect to Palisade
 //        final InputStream stream = StreamUtil.openStream(ClientUtil.class, ConfigUtils.retrieveConfigurationPath());
 //        ConfigurationService configService = JSONSerialiser.deserialise(stream, ConfigurationService.class);
-//        //get the client services
+//        //get the clients services
 //        ClientConfiguredServices configuredServices = new ClientConfiguredServices(configService);
 //        //create paliade service
 //        PalisadeService palisade = configuredServices.getPalisadeService();

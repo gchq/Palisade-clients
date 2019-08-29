@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.mapreduce;
+package uk.gov.gchq.palisade.clients.mapreduce;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -40,8 +40,8 @@ import java.util.Objects;
 
 
 /**
- * The main client class for using Palisade data inside of the Hadoop framework. Clients should set this class as the
- * input format for a MapReduce job inside their client code.
+ * The main clients class for using Palisade data inside of the Hadoop framework. Clients should set this class as the
+ * input format for a MapReduce job inside their clients code.
  *
  * @param <V> The value type for the map task
  */
@@ -51,7 +51,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      */
     public static final String REGISTER_REQUESTS_KEY = "uk.gov.gchq.palisade.mapreduce.registered.requests";
     /**
-     * Hadoop configuration key for setting the client hint for the maximum number of mappers.
+     * Hadoop configuration key for setting the clients hint for the maximum number of mappers.
      */
     public static final String MAXIMUM_MAP_HINT_KEY = "uk.gov.gchq.palisade.mapreduce.max.map.hint";
     /**
@@ -184,7 +184,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * Set a hint for the maximum number of map tasks that the given job should be split into. Note that this is a hint
      * and the system is free to ignore it. There will always be at least one map task per data request generated,
      * however since each request may require multiple ${@link uk.gov.gchq.palisade.resource.Resource}s to be processed,
-     * this method allows the client to provide a hint at how widely those resouces should be spread across map tasks.
+     * this method allows the clients to provide a hint at how widely those resouces should be spread across map tasks.
      *
      * @param context the job to set the maximum hint for
      * @param maxMaps the maximum number of mappers desired, a value of 0 implies no limit
@@ -371,7 +371,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
     /**
      * {@inheritDoc}
      * <p>
-     * Creates a {@link uk.gov.gchq.palisade.mapreduce.PalisadeRecordReader}.
+     * Creates a {@link PalisadeRecordReader}.
      */
     @Override
     public RecordReader<LeafResource, V> createRecordReader(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext) throws IOException, InterruptedException {
