@@ -21,7 +21,6 @@ podTemplate(containers: [
 
     node(POD_LABEL) {
         stage('Bootstrap') {
-//            sh 'printenv'
             sh "echo ${env.BRANCH_NAME}"
         }
 

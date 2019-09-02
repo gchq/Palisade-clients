@@ -19,8 +19,13 @@
 
 The cat client is designed to provide a capability similar to the linux terminal 'cat' command for printing out to the terminal the contents of a file.
 
-To use the cat client you will need to have a running deployment of Palisade. An example would be to run through the [local-jvm example](../../example/deployment/local-jvm/README.md) 
-but instead of running the runLocalJVMExample.sh, you should run the following command: 
+To use the cat client you will need to have a running deployment of Palisade.  An example would be to run through the local JVM example:
+
+```bash
+git clone https://github.com/gchq/Palisade-examples
+```
+see the Readme at ~/Palisade-examles/example/deployment/local-jvm/README.md but instead of running the runLocalJVMExample.sh, you should run the following command: 
+
 ```bash
 PALISADE_REST_CONFIG_PATH="$(pwd)/example/example-model/src/main/resources/configRest.json" java -cp $(pwd)/client-impl/cat-client/target/cat-client-*-shaded.jar CatClient Alice file://$(pwd)/example/resources/employee_file0.avro SALARY
 ```
