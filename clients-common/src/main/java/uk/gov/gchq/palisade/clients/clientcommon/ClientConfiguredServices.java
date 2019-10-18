@@ -42,7 +42,14 @@ import java.time.Duration;
 //import uk.gov.gchq.palisade.user.service.UserService;
 
 @Deprecated
-public class ClientConfiguredServices {
+public final class ClientConfiguredServices {
+
+    /*
+    *Method here to clear Checkstyle warnings.
+     */
+    private ClientConfiguredServices() {
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfiguredServices.class);
 
     public static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(1);
