@@ -37,14 +37,16 @@
         <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
         <slf4j.api.version>1.7.25</slf4j.api.version>
         <slf4j.simple.version>1.7.25</slf4j.simple.version>
+        <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
+        <checkstyle.phase>verify</checkstyle.phase>
     </properties>
 
 
     <modules>
-        <module>simple-client</module>
-        <module>mapreduce-client</module>
-        <module>cat-client</module>
-        <module>client-common</module>
+        <module>clients-simple</module>
+        <module>clients-mapreduce</module>
+        <module>clients-cat</module>
+        <module>clients-common</module>
     </modules>
 
 
@@ -69,4 +71,40 @@
             <url>${snapshot.url}</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.plugin.version}</version>
+                <configuration>
+                    <configLocation>code-style/checkstyle.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                    <headerLocation>code-style/licenseHeader.txt
+                    </headerLocation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>${checkstyle.phase}</phase>
+                        <configuration>
+                            <configLocation>code-style/checkstyle.xml
+                            </configLocation>
+                            <encoding>UTF-8</encoding>
+                            <consoleOutput>true</consoleOutput>
+                            <failsOnError>true</failsOnError>
+                            <headerLocation>code-style/licenseHeader.txt
+                            </headerLocation>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

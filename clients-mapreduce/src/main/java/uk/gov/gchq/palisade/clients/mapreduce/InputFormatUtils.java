@@ -17,7 +17,6 @@ package uk.gov.gchq.palisade.clients.mapreduce;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
-
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.util.HashMap;
@@ -55,12 +54,12 @@ final class InputFormatUtils {
                 //group by the indexIt, which will round robin the resources to
                 //different groupings
                 .collect(Collectors.groupingBy(ignored -> indexIt.next(), listToMapCollector()))
-                        //now take the values of that map (we don't care about the keys)
+                //now take the values of that map (we don't care about the keys)
                 .values()
                 .stream()
-                        //make each map into an input split
+                //make each map into an input split
                 .map(m -> new PalisadeInputSplit(response.getToken(), m, response.getOriginalRequestId()))
-                        //reduce to a list
+                //reduce to a list
                 .collect(Collectors.toList());
     }
 
