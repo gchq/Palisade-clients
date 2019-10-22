@@ -23,7 +23,6 @@ import uk.gov.gchq.palisade.resource.StubResource;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
 
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;

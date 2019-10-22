@@ -45,7 +45,7 @@ import java.time.Duration;
 public final class ClientConfiguredServices {
 
     /*
-    *Method here to clear Checkstyle warnings.
+     *Method here to clear Checkstyle warnings.
      */
     private ClientConfiguredServices() {
     }
