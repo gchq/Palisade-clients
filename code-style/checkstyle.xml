@@ -127,9 +127,7 @@
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
         <module name="ConstantName"/>
-        <module name="HideUtilityClassConstructor"/>
         <module name="InterfaceIsType"/>
-
         <module name="ArrayTypeStyle"/>
         <module name="FinalParameters">
             <property name="tokens" value="METHOD_DEF, CTOR_DEF"/>
