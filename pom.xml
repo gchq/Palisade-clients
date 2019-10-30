@@ -40,6 +40,7 @@
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <checkstyle.phase>verify</checkstyle.phase>
         <depends.phase>validate</depends.phase>
+        <depends.maven.version>1.4.0</depends.maven.version>
     </properties>
 
 
@@ -89,7 +90,7 @@
             <plugin>
                 <groupId>org.apache.servicemix.tooling</groupId>
                 <artifactId>depends-maven-plugin</artifactId>
-                <version>1.4.0</version>
+                <version>${depends.maven.version}</version>
                 <executions>
                     <execution>
                         <configuration>
