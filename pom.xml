@@ -39,6 +39,8 @@
         <slf4j.simple.version>1.7.25</slf4j.simple.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <checkstyle.phase>verify</checkstyle.phase>
+        <depends.phase>validate</depends.phase>
+        <depends.maven.version>1.4.0</depends.maven.version>
     </properties>
 
 
@@ -72,8 +74,38 @@
         </snapshotRepository>
     </distributionManagement>
 
+
     <build>
+        <!--this extension provides version number substitution for child poms-->
+        <!--see here: https://github.com/jcgay/unique-revision-maven-filtering-->
+        <!--ths article explains the issue solved by this extension: https://jeanchristophegay.com/en/posts/maven-unique-version-multi-modules-build/-->
+        <extensions>
+            <extension>
+                <groupId>fr.jcgay.maven.extension</groupId>
+                <artifactId>unique-revision-maven-filtering</artifactId>
+                <version>1.1</version>
+            </extension>
+        </extensions>
         <plugins>
+            <plugin>
+                <groupId>org.apache.servicemix.tooling</groupId>
+                <artifactId>depends-maven-plugin</artifactId>
+                <version>${depends.maven.version}</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <outputFile>mvn_dependency_tree.txt</outputFile>
+                            <includeScope>false</includeScope>
+                            <includeType>false</includeType>
+                        </configuration>
+                        <id>depends</id>
+                        <phase>${depends.phase}</phase>
+                        <goals>
+                            <goal>generate-depends-file</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
