@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import uk.gov.gchq.palisade.resource.StubResource;
-import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
+//import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -45,7 +45,7 @@ public class PalisadeInputSplitTest {
     }
 
     private StubResource stubResource = new StubResource("test type", "test id", "test format");
-    private StubConnectionDetail stubConnectionDetail = new StubConnectionDetail("test con");
+//    private StubConnectionDetail stubConnectionDetail = new StubConnectionDetail("test con");
 
     @Test
     public void shouldSerialiseToEqualObject() throws IOException {
