@@ -2,7 +2,6 @@ uk.gov.gchq.palisade:clients-mapreduce:jar:0.4.0-SNAPSHOT
 +- org.apache.commons:commons-lang3:jar:3.8.1:compile
 +- org.apache.hadoop:hadoop-common:jar:3.2.0:compile
 |  +- org.apache.hadoop:hadoop-annotations:jar:3.2.0:compile
-|  |  \- jdk.tools:jdk.tools:jar:1.8:system
 |  +- com.google.guava:guava:jar:11.0.2:compile
 |  +- commons-cli:commons-cli:jar:1.2:compile
 |  +- org.apache.commons:commons-math3:jar:3.1.1:compile

@@ -3,17 +3,12 @@ package uk.gov.gchq.palisade.clients.mapreduce;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import uk.gov.gchq.palisade.RequestId;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.data.serialise.SimpleStringSerialiser;
 import uk.gov.gchq.palisade.resource.Resource;
-import uk.gov.gchq.palisade.resource.StubResource;
-import uk.gov.gchq.palisade.service.request.DataRequestResponse;
-import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
 
 import java.io.IOException;
 import java.util.List;
@@ -135,27 +130,27 @@ public class PalisadeInputFormatTest {
     }
 
     //    private static RegisterDataRequest request1;
-    private static DataRequestResponse req1Response;
+//    private static DataRequestResponse req1Response;
     //    private static RegisterDataRequest request2;
-    private static DataRequestResponse req2Response;
+//    private static DataRequestResponse req2Response;
 
-    @BeforeClass
-    public static void setup() {
-//        request1 = new RegisterDataRequest().resourceId("res1").userId(new UserId().id("user1")).context(new Context().purpose("purpose1"));
-        req1Response = new DataRequestResponse().token("token1")
-                .resource(new StubResource("type1", "id1", "format1"), new StubConnectionDetail("con1"))
-                .resource(new StubResource("type2", "id2", "format2"), new StubConnectionDetail("con2"))
-                .resource(new StubResource("type3", "id3", "format3"), new StubConnectionDetail("con3"))
-                .resource(new StubResource("type4", "id4", "format4"), new StubConnectionDetail("con4"))
-                .resource(new StubResource("type5", "id5", "format5"), new StubConnectionDetail("con5"));
-        req1Response.originalRequestId(new RequestId().id("request1.setup"));
-
-//        request2 = new RegisterDataRequest().resourceId("res2").userId(new UserId().id("user2")).context(new Context().purpose("purpose2"));
-        req2Response = new DataRequestResponse().token("request2")
-                .resource(new StubResource("type_a", "id6", "format6"), new StubConnectionDetail("con6"))
-                .resource(new StubResource("type_b", "id7", "format7"), new StubConnectionDetail("con7"));
-        req2Response.originalRequestId(new RequestId().id("request2.setup"));
-    }
+//    @BeforeClass
+//    public static void setup() {
+////        request1 = new RegisterDataRequest().resourceId("res1").userId(new UserId().id("user1")).context(new Context().purpose("purpose1"));
+//        req1Response = new DataRequestResponse().token("token1")
+//                .resource(new StubResource("type1", "id1", "format1"), new StubConnectionDetail("con1"))
+//                .resource(new StubResource("type2", "id2", "format2"), new StubConnectionDetail("con2"))
+//                .resource(new StubResource("type3", "id3", "format3"), new StubConnectionDetail("con3"))
+//                .resource(new StubResource("type4", "id4", "format4"), new StubConnectionDetail("con4"))
+//                .resource(new StubResource("type5", "id5", "format5"), new StubConnectionDetail("con5"));
+//        req1Response.originalRequestId(new RequestId().id("request1.setup"));
+//
+////        request2 = new RegisterDataRequest().resourceId("res2").userId(new UserId().id("user2")).context(new Context().purpose("purpose2"));
+//        req2Response = new DataRequestResponse().token("request2")
+//                .resource(new StubResource("type_a", "id6", "format6"), new StubConnectionDetail("con6"))
+//                .resource(new StubResource("type_b", "id7", "format7"), new StubConnectionDetail("con7"));
+//        req2Response.originalRequestId(new RequestId().id("request2.setup"));
+//    }
 
 //    /**
 //     * Simulate a job set up, mock up a job and ask the input format to create splits for it. The given {@link
