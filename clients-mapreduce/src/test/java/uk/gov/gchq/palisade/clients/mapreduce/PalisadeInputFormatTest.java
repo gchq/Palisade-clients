@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Crown Copyright
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.gchq.palisade.clients.mapreduce;
 
 import org.apache.hadoop.conf.Configuration;
@@ -203,7 +219,7 @@ public class PalisadeInputFormatTest {
 //        return callGetSplits(maxMapHint, reqs, palisadeService);
 //    }
     @SuppressWarnings("unchecked")
-    private static <R extends InputSplit> List<R> convert(List<InputSplit> list) {
+    private static <R extends InputSplit> List<R> convert(final List<InputSplit> list) {
         return (List<R>) list;
     }
 
@@ -304,7 +320,7 @@ public class PalisadeInputFormatTest {
 //        checkForExpectedResources(splits, 7, 7);
     }
 
-    private void checkForExpectedResources(List<PalisadeInputSplit> splits, int expectedSplits, int expectedNumberResources) {
+    private void checkForExpectedResources(final List<PalisadeInputSplit> splits, final int expectedSplits, final int expectedNumberResources) {
         assertEquals(expectedSplits, splits.size());
         //combine all the resources from both splits and check we have all 5 resources covered
         //first check expectedTotal total

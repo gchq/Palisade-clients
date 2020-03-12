@@ -123,7 +123,7 @@ public class PalisadeRecordReaderTest {
      * @param <T>        value type of reader
      * @throws IOException that shouldn't happen
      */
-    private static <T> void readValuesAndValidate(Stream<T> expected, PalisadeRecordReader<T> testReader) throws IOException {
+    private static <T> void readValuesAndValidate(final Stream<T> expected, final PalisadeRecordReader<T> testReader) throws IOException {
         expected.forEach(item -> {
             try {
                 assertTrue(testReader.nextKeyValue());
@@ -142,19 +142,19 @@ public class PalisadeRecordReaderTest {
      *
      * @param response the collection of all responses that will have been read
      */
-    private static void verifyMocksCalled(DataRequestResponse response) {
+    private static void verifyMocksCalled(final DataRequestResponse response) {
 //        for (ConnectionDetail entry : response.getResources().values()) {
 //            verify(((DataService) entry.createService()), times(1)).read(any());
 //        }
     }
 
-    /**
-     * Creates a DataService that will respond to any request with the given data.
-     *
-     * @param dataToReturn collection of data that will be streamed back from the data reader
-     * @param shouldFail   if true the service will fail to return the data
-     * @return a mock data service instance
-     */
+//    /**
+//     * Creates a DataService that will respond to any request with the given data.
+//     *
+//     * @param dataToReturn collection of data that will be streamed back from the data reader
+//     * @param shouldFail   if true the service will fail to return the data
+//     * @return a mock data service instance
+//     */
 //    private static DataService createMockDS(Collection<String> dataToReturn, boolean shouldFail) throws IOException {
 //        //create the simulated response
 //        ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -185,13 +185,12 @@ public class PalisadeRecordReaderTest {
 
     }
 
-    /**
-     * Runs a test with one resource that will fail and a second one that should succeed.
-     *
-     * @param mode the failure mode for resources
-     * @throws IOException
-     */
-    private void resourceFailure(ReaderFailureMode mode) throws IOException {
+//    * Runs a test with one resource that will fail and a second one that should succeed.
+//     *
+//     * @param mode the failure mode for resources
+//     * @throws IOException
+//     */
+   private void resourceFailure(final ReaderFailureMode mode) throws IOException {
 //        //Given - multiple resources
 //        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
 //        //add more data which should succeed
