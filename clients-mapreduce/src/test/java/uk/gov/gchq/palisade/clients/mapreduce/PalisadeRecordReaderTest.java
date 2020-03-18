@@ -148,13 +148,7 @@ public class PalisadeRecordReaderTest {
 //        }
     }
 
-//    /**
-//     * Creates a DataService that will respond to any request with the given data.
-//     *
-//     * @param dataToReturn collection of data that will be streamed back from the data reader
-//     * @param shouldFail   if true the service will fail to return the data
-//     * @return a mock data service instance
-//     */
+
 //    private static DataService createMockDS(Collection<String> dataToReturn, boolean shouldFail) throws IOException {
 //        //create the simulated response
 //        ByteArrayOutputStream baos = new ByteArrayOutputStream();
