@@ -149,7 +149,7 @@ public class PalisadeRecordReaderTest {
     }
 
 
-//    private static DataService createMockDS(Collection<String> dataToReturn, boolean shouldFail) throws IOException {
+    //    private static DataService createMockDS(Collection<String> dataToReturn, boolean shouldFail) throws IOException {
 //        //create the simulated response
 //        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 //        serialiser.serialise(dataToReturn.stream(), baos);
@@ -179,12 +179,13 @@ public class PalisadeRecordReaderTest {
 
     }
 
-//    * Runs a test with one resource that will fail and a second one that should succeed.
-//     *
-//     * @param mode the failure mode for resources
-//     * @throws IOException
-//     */
-   private void resourceFailure(final ReaderFailureMode mode) throws IOException {
+    /**
+     * Runs a test with one resource that will fail and a second one that should succeed.
+     *
+     * @param mode the failure mode for resources
+     * @throws IOException IOException
+     */
+    private void resourceFailure(final ReaderFailureMode mode) throws IOException {
 //        //Given - multiple resources
 //        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
 //        //add more data which should succeed
