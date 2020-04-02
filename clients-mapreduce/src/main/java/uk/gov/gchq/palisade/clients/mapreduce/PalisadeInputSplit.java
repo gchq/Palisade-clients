@@ -15,14 +15,12 @@
  */
 package uk.gov.gchq.palisade.clients.mapreduce;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.util.StringUtils;
 
+import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.RequestId;
-import uk.gov.gchq.palisade.ToStringBuilder;
 import uk.gov.gchq.palisade.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
 import uk.gov.gchq.palisade.service.ConnectionDetail;
@@ -33,6 +31,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * The input split for {@link PalisadeInputFormat}. This class contains all the information for describing the resources
@@ -61,11 +62,9 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      * @throws NullPointerException if anything is null
      */
     public PalisadeInputSplit(final String token, final Map<LeafResource, ConnectionDetail> resources, final RequestId originalRequestId) {
-        Objects.requireNonNull(token, "token");
-        Objects.requireNonNull(resources, "resources");
-        Objects.requireNonNull(originalRequestId, "originalRequestId");
-        requestResponse = new DataRequestResponse().token(token).resources(resources);
-        requestResponse.originalRequestId(originalRequestId);
+        DataRequestResponse temp = new DataRequestResponse().token(requireNonNull(token)).resources(requireNonNull(resources));
+        temp.originalRequestId(requireNonNull(originalRequestId));
+        this.setRequestResponse(temp);
     }
 
     /**
@@ -75,17 +74,28 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      * @throws NullPointerException if {@code requestResponse} is null
      */
     public PalisadeInputSplit(final DataRequestResponse requestResponse) {
-        Objects.requireNonNull(requestResponse);
-        this.requestResponse = requestResponse;
+        this.setRequestResponse(requestResponse);
     }
 
     /**
-     * Get the response for this input split. This response object may contain many resources for a single request.
+     * Get the response for this input split. This response object may contain many resources for a single request
      *
      * @return the response object
      */
+    @Generated
     public DataRequestResponse getRequestResponse() {
         return requestResponse;
+    }
+
+    /**
+     * Sets request response.
+     *
+     * @param requestResponse the request response
+     */
+    @Generated
+    public void setRequestResponse(final DataRequestResponse requestResponse) {
+        requireNonNull(requestResponse);
+        this.requestResponse = requestResponse;
     }
 
     /**
@@ -96,7 +106,8 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      * @return the number of resources contained in this split
      */
     @Override
-    public long getLength() throws IOException, InterruptedException {
+    @Generated
+    public long getLength() {
         return getRequestResponse().getResources().size();
     }
 
@@ -108,7 +119,8 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      * @return always returns an empty string array
      */
     @Override
-    public String[] getLocations() throws IOException, InterruptedException {
+    @Generated
+    public String[] getLocations() {
         return StringUtils.emptyStringArray;
     }
 
@@ -117,7 +129,7 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      */
     @Override
     public void write(final DataOutput dataOutput) throws IOException {
-        Objects.requireNonNull(dataOutput, "dataOutput");
+        requireNonNull(dataOutput, "dataOutput");
         //serialise this class to JSON and write out
         byte[] serial = JSONSerialiser.serialise(requestResponse);
 
@@ -130,7 +142,7 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      */
     @Override
     public void readFields(final DataInput dataInput) throws IOException {
-        Objects.requireNonNull(dataInput, "dataInput");
+        requireNonNull(dataInput, "dataInput");
         int length = dataInput.readInt();
         //validate length
         if (length < 0) {
@@ -141,39 +153,35 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
         dataInput.readFully(buffer);
         //deserialise
         DataRequestResponse deserialisedResponse = JSONSerialiser.deserialise(buffer, DataRequestResponse.class);
-        Objects.requireNonNull(deserialisedResponse, "deserialised request response was null");
+        requireNonNull(deserialisedResponse, "deserialised request response was null");
         //all clear
         this.requestResponse = deserialisedResponse;
     }
 
     @Override
+    @Generated
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
-
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof PalisadeInputSplit)) {
             return false;
         }
-
-        final PalisadeInputSplit other = (PalisadeInputSplit) o;
-
-        return new EqualsBuilder()
-                .append(requestResponse, other.requestResponse)
-                .isEquals();
+        final PalisadeInputSplit that = (PalisadeInputSplit) o;
+        return Objects.equals(requestResponse, that.requestResponse);
     }
 
     @Override
+    @Generated
     public int hashCode() {
-        return new HashCodeBuilder(13, 29)
-                .append(requestResponse)
-                .toHashCode();
+        return Objects.hash(requestResponse);
     }
 
     @Override
+    @Generated
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("requestResponse", requestResponse)
+        return new StringJoiner(", ", PalisadeInputSplit.class.getSimpleName() + "[", "]")
+                .add("requestResponse=" + requestResponse)
                 .toString();
     }
 }

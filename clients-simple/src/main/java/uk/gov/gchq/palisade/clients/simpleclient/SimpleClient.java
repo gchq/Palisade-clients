@@ -17,6 +17,7 @@
 package uk.gov.gchq.palisade.clients.simpleclient;
 
 
+import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.RequestId;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
@@ -26,6 +27,8 @@ import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -49,8 +52,8 @@ public class SimpleClient<T> {
 //        this.serialiser = serialiser;
 //    }
 
-    public SimpleClient(final Serialiser<T> serializer) {
-        this.serialiser = serializer;
+    public SimpleClient(final Serialiser<T> serialiser) {
+        this.serialiser = requireNonNull(serialiser);
     }
 
     public DataRequestResponse makeRequest(final String fileName, final String resourceType, final String userId, final String purpose) {
@@ -95,8 +98,35 @@ public class SimpleClient<T> {
         return getObjectStreams(dataRequestResponse);
     }
 
+    @Generated
     public Serialiser<T> getSerialiser() {
         return serialiser;
     }
 
+    @Override
+    @Generated
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SimpleClient)) {
+            return false;
+        }
+        final SimpleClient<?> that = (SimpleClient<?>) o;
+        return Objects.equals(serialiser, that.serialiser);
+    }
+
+    @Override
+    @Generated
+    public int hashCode() {
+        return Objects.hash(serialiser);
+    }
+
+    @Override
+    @Generated
+    public String toString() {
+        return new StringJoiner(", ", SimpleClient.class.getSimpleName() + "[", "]")
+                .add("serialiser=" + serialiser)
+                .toString();
+    }
 }
