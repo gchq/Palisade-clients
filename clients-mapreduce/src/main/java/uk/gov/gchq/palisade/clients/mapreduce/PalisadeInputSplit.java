@@ -78,9 +78,9 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
     }
 
     /**
-     * Gets request response.
+     * Get the response for this input split. This response object may contain many resources for a single request
      *
-     * @return the request response
+     * @return the response object
      */
     @Generated
     public DataRequestResponse getRequestResponse() {
