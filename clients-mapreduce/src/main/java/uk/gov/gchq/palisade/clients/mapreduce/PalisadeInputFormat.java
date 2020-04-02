@@ -24,6 +24,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
@@ -191,8 +192,10 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @throws NullPointerException     if {@code context} is null
      * @throws IllegalArgumentException if {@code maxMaps} is negative
      */
+    @Generated
     public static void setMaxMapTasksHint(final JobContext context, final int maxMaps) {
         Objects.requireNonNull(context);
+        Objects.requireNonNull(maxMaps);
         if (maxMaps < 0) {
             throw new IllegalArgumentException("maxMaps must be >= 0");
         }
@@ -251,8 +254,8 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @return the maximum number of map tasks hint
      * @throws NullPointerException if {@code context} is null
      */
+    @Generated
     public static int getMaxMapTasksHint(final JobContext context) {
-        Objects.requireNonNull(context);
         return context.getConfiguration().getInt(MAXIMUM_MAP_HINT_KEY, DEFAULT_MAX_MAP_HINT);
     }
 
@@ -266,9 +269,10 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @param serialiser the serialiser that can decode the value type this job is processing
      * @param <T>        the output type of the {@link Serialiser}
      */
+    @Generated
     public static <T> void setSerialiser(final JobContext context, final Serialiser<T> serialiser) {
-        Objects.requireNonNull(context, "context");
-        Objects.requireNonNull(serialiser, "serialiser");
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(serialiser);
         setSerialiser(context.getConfiguration(), serialiser);
     }
 
@@ -283,9 +287,10 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @param <T>        the object type of the {@link Serialiser}
      * @throws NullPointerException for null parameters
      */
+    @Generated
     public static <T> void setSerialiser(final Configuration conf, final Serialiser<T> serialiser) {
-        Objects.requireNonNull(conf, "conf");
-        Objects.requireNonNull(serialiser, "serialiser");
+        Objects.requireNonNull(conf);
+        Objects.requireNonNull(serialiser);
         conf.set(SERIALISER_CLASSNAME_KEY, serialiser.getClass().getName());
         conf.set(SERLIALISER_CONFIG_KEY, new String(JSONSerialiser.serialise(serialiser), StandardCharsets.UTF_8));
     }
@@ -300,8 +305,8 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @throws IOException          if de-serialisation could not happen
      * @throws NullPointerException if anything is null
      */
+    @Generated
     public static <V> Serialiser<V> getSerialiser(final JobContext context) throws IOException {
-        Objects.requireNonNull(context, "context");
         return getSerialiser(context.getConfiguration());
     }
 
@@ -313,8 +318,10 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @throws NullPointerException if anything is null
      * @see ReaderFailureMode
      */
+    @Generated
     public static void setResourceErrorBehaviour(final JobContext context, final ReaderFailureMode mode) {
-        Objects.requireNonNull(context, "context");
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(mode);
         context.getConfiguration().setEnum(RESOURCE_ERROR_BEHAVIOUR, mode);
     }
 
@@ -326,8 +333,8 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @return the failure mode
      * @throws NullPointerException if anything is null
      */
+    @Generated
     public static ReaderFailureMode getResourceErrorBehaviour(final JobContext context) {
-        Objects.requireNonNull(context, "context");
         return context.getConfiguration().getEnum(RESOURCE_ERROR_BEHAVIOUR, ReaderFailureMode.CONTINUE_ON_READ_FAILURE);
     }
 
@@ -342,10 +349,9 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @throws NullPointerException if parameter is null
      */
     @SuppressWarnings("unchecked")
+    @Generated
     public static <V> Serialiser<V> getSerialiser(final Configuration conf) throws IOException {
-        Objects.requireNonNull(conf, "conf");
         String serialConfig = conf.get(SERLIALISER_CONFIG_KEY);
-
         String className = conf.get(SERIALISER_CLASSNAME_KEY);
         if (className == null) {
             throw new IOException("No serialisation classname set. Have you called PalisadeInputFormat.setSerialiser() ?");
@@ -364,7 +370,8 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
     }
 
     @Override
-    public List<InputSplit> getSplits(final JobContext jobContext) throws IOException, InterruptedException {
+    @Generated
+    public List<InputSplit> getSplits(final JobContext jobContext) {
         return null;
     }
 

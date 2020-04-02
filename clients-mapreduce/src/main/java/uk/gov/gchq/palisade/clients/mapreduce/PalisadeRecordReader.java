@@ -21,6 +21,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
 import uk.gov.gchq.palisade.service.ConnectionDetail;
@@ -30,7 +31,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.concurrent.CompletionException;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * The main {@link RecordReader} class for Palisade MapReduce clients. This class implements the logic for connecting to
@@ -40,14 +44,8 @@ import java.util.concurrent.CompletionException;
  * key will become the current resource being processed and the value will become the current item from that resource.
  *
  * @param <V> the value type which will be de-serialised from the resources this input split is processing
- * @implNote This class currently requests each Resource from its data service sequentially. We avoid launching all the
- * requests to the data service(s) in parallel because Hadoop's processing of tasks in an individual map task is
- * necessarily serial. If we launch multiple requests for data in parallel, but Hadoop/the user's MapReduce job spends a
- * long time processing the first Resource(s), then the data services waiting to send the ones later in the list may
- * timeout. Thus, we only make the request to the  responsible for an individual resource when we
- * need it. This may change in the future and SHOULD NOT be relied upon in any implementation decisions.
- * @implNote In order to do this, we create a DataRequestResponse for each Resource and send it to the data service
- * created by the corresponding ConnectionDetail object.
+ * @implNote This class currently requests each Resource from its data service sequentially. We avoid launching all the requests to the data service(s) in parallel because Hadoop's processing of tasks in an individual map task is necessarily serial. If we launch multiple requests for data in parallel, but Hadoop/the user's MapReduce job spends a long time processing the first Resource(s), then the data services waiting to send the ones later in the list may timeout. Thus, we only make the request to the  responsible for an individual resource when we need it. This may change in the future and SHOULD NOT be relied upon in any implementation decisions.
+ * @implNote In order to do this, we create a DataRequestResponse for each Resource and send it to the data service created by the corresponding ConnectionDetail object.
  */
 public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeRecordReader.class);
@@ -108,8 +106,8 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      */
     @Override
     public void initialize(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext) throws IOException {
-        Objects.requireNonNull(inputSplit, "inputSplit");
-        Objects.requireNonNull(taskAttemptContext, "taskAttemptContext");
+        requireNonNull(inputSplit, "inputSplit");
+        requireNonNull(taskAttemptContext, "taskAttemptContext");
         if (!(inputSplit instanceof PalisadeInputSplit)) {
             throw new ClassCastException("input split MUST be instance of " + PalisadeInputSplit.class.getName());
         }
@@ -190,6 +188,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
         }
     }
 
+
     /**
      * Internal method to move to the next resource in our iterator of resources. This makes the actual call to the data
      * service and waits for the request to complete before extracting the data stream iterator which clients will use.
@@ -233,20 +232,15 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
 //        currentKey = resource;
 //        processed++;
 //    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public LeafResource getCurrentKey() throws IOException {
+    @Generated
+    public LeafResource getCurrentKey() {
         return currentKey;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public V getCurrentValue() throws IOException {
+    @Generated
+    public V getCurrentValue() {
         return currentValue;
     }
 
@@ -274,5 +268,48 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
         serialiser = null;
         errResource = null;
         processed = 0;
+    }
+
+    @Override
+    @Generated
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PalisadeRecordReader)) {
+            return false;
+        }
+        final PalisadeRecordReader<?> that = (PalisadeRecordReader<?>) o;
+        return processed == that.processed &&
+                Objects.equals(context, that.context) &&
+                Objects.equals(dataRequestResponse, that.dataRequestResponse) &&
+                Objects.equals(resIt, that.resIt) &&
+                Objects.equals(itemIt, that.itemIt) &&
+                Objects.equals(currentKey, that.currentKey) &&
+                Objects.equals(currentValue, that.currentValue) &&
+                Objects.equals(serialiser, that.serialiser) &&
+                Objects.equals(errResource, that.errResource);
+    }
+
+    @Override
+    @Generated
+    public int hashCode() {
+        return Objects.hash(context, dataRequestResponse, resIt, itemIt, currentKey, currentValue, serialiser, processed, errResource);
+    }
+
+    @Override
+    @Generated
+    public String toString() {
+        return new StringJoiner(", ", PalisadeRecordReader.class.getSimpleName() + "[", "]")
+                .add("context=" + context)
+                .add("dataRequestResponse=" + dataRequestResponse)
+                .add("resIt=" + resIt)
+                .add("itemIt=" + itemIt)
+                .add("currentKey=" + currentKey)
+                .add("currentValue=" + currentValue)
+                .add("serialiser=" + serialiser)
+                .add("processed=" + processed)
+                .add("errResource=" + errResource)
+                .toString();
     }
 }
