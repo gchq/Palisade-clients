@@ -21,8 +21,6 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
@@ -75,7 +73,6 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * Default number of mappers to use. Hint only. Zero means unlimited.
      */
     public static final int DEFAULT_MAX_MAP_HINT = 0;
-    private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeInputFormat.class);
 
     /**
      * Map that stores relationship between unique IDs and the needed by that job. We use UUIDs
@@ -195,7 +192,6 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
     @Generated
     public static void setMaxMapTasksHint(final JobContext context, final int maxMaps) {
         Objects.requireNonNull(context);
-        Objects.requireNonNull(maxMaps);
         if (maxMaps < 0) {
             throw new IllegalArgumentException("maxMaps must be >= 0");
         }
@@ -271,6 +267,8 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      */
     @Generated
     public static <T> void setSerialiser(final JobContext context, final Serialiser<T> serialiser) {
+        Objects.requireNonNull(context, "context");
+        Objects.requireNonNull(serialiser, "serialiser");
         setSerialiser(context.getConfiguration(), serialiser);
     }
 
@@ -318,8 +316,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      */
     @Generated
     public static void setResourceErrorBehaviour(final JobContext context, final ReaderFailureMode mode) {
-        Objects.requireNonNull(context);
-        Objects.requireNonNull(mode);
+        Objects.requireNonNull(context, "context");
         context.getConfiguration().setEnum(RESOURCE_ERROR_BEHAVIOUR, mode);
     }
 
@@ -350,6 +347,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
     @Generated
     public static <V> Serialiser<V> getSerialiser(final Configuration conf) throws IOException {
         String serialConfig = conf.get(SERLIALISER_CONFIG_KEY);
+
         String className = conf.get(SERIALISER_CLASSNAME_KEY);
         if (className == null) {
             throw new IOException("No serialisation classname set. Have you called PalisadeInputFormat.setSerialiser() ?");
@@ -379,7 +377,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * Creates a {@link PalisadeRecordReader}.
      */
     @Override
-    public RecordReader<LeafResource, V> createRecordReader(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext) throws IOException, InterruptedException {
+    public RecordReader<LeafResource, V> createRecordReader(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext)  {
         return new PalisadeRecordReader<>();
     }
 }
