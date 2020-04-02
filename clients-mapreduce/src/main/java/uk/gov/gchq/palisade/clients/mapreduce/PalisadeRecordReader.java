@@ -271,7 +271,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      * {@inheritDoc}
      */
     @Override
-    public void close() throws IOException {
+    public void close() {
         context = null;
         dataRequestResponse = null;
         currentKey = null;
@@ -282,7 +282,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
         errResource = null;
         processed = 0;
     }
-    
+
     @Override
     @Generated
     public boolean equals(final Object o) {
