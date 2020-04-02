@@ -194,7 +194,6 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
         }
     }
 
-
     /**
      * Internal method to move to the next resource in our iterator of resources. This makes the actual call to the data
      * service and waits for the request to complete before extracting the data stream iterator which clients will use.
@@ -238,12 +237,19 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
 //        currentKey = resource;
 //        processed++;
 //    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Generated
     public LeafResource getCurrentKey() {
         return currentKey;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Generated
     public V getCurrentValue() {
@@ -254,7 +260,8 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      * {@inheritDoc} Counts completed resource as units of progress.
      */
     @Override
-    public float getProgress() throws IOException {
+    @Generated
+    public float getProgress() {
         return (dataRequestResponse != null && dataRequestResponse.getResources().size() > 0)
                 ? (float) processed / dataRequestResponse.getResources().size()
                 : 0;
@@ -275,7 +282,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
         errResource = null;
         processed = 0;
     }
-
+    
     @Override
     @Generated
     public boolean equals(final Object o) {
