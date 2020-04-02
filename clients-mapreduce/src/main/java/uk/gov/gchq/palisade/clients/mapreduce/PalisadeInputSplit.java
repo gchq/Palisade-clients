@@ -62,8 +62,8 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      * @throws NullPointerException if anything is null
      */
     public PalisadeInputSplit(final String token, final Map<LeafResource, ConnectionDetail> resources, final RequestId originalRequestId) {
-        DataRequestResponse temp = new DataRequestResponse().token(token).resources(resources);
-        temp.originalRequestId(originalRequestId);
+        DataRequestResponse temp = new DataRequestResponse().token(requireNonNull(token)).resources(requireNonNull(resources));
+        temp.originalRequestId(requireNonNull(originalRequestId));
         this.setRequestResponse(temp);
     }
 

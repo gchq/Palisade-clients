@@ -271,8 +271,6 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      */
     @Generated
     public static <T> void setSerialiser(final JobContext context, final Serialiser<T> serialiser) {
-        Objects.requireNonNull(context);
-        Objects.requireNonNull(serialiser);
         setSerialiser(context.getConfiguration(), serialiser);
     }
 
