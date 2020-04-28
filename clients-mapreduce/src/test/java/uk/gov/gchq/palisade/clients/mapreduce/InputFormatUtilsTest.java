@@ -19,15 +19,9 @@ import org.junit.Test;
 
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.PrimitiveIterator;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class InputFormatUtilsTest {
@@ -46,40 +40,40 @@ public class InputFormatUtilsTest {
 //        reqResponse.originalRequestId(new RequestId().id("test"));
 //    }
 
-    @Test
-    public void testListToMapCollector() {
-        //Given - a Map of numbers to their double
-        Map<Integer, Integer> original = IntStream
-                .range(1, 20)
-                .boxed()
-                .collect(Collectors.toMap(Function.identity(), x -> x * 2));
-        //When - convert to a list of entry
-        List<Map.Entry<Integer, Integer>> entries = original
-                .entrySet()
-                .stream()
-                .collect(Collectors.toList());
-        //Then - should equal original map
-        assertEquals(original, entries
-                .stream()
-                .collect(InputFormatUtils.listToMapCollector())
-        );
-    }
+//    @Test
+//    public void testListToMapCollector() {
+//        //Given - a Map of numbers to their double
+//        Map<Integer, Integer> original = IntStream
+//                .range(1, 20)
+//                .boxed()
+//                .collect(Collectors.toMap(Function.identity(), x -> x * 2));
+//        //When - convert to a list of entry
+//        List<Map.Entry<Integer, Integer>> entries = original
+//                .entrySet()
+//                .stream()
+//                .collect(Collectors.toList());
+//        //Then - should equal original map
+//        assertEquals(original, entries
+//                .stream()
+//                .collect(InputFormatUtils.listToMapCollector())
+//        );
+//    }
 
-    @Test
-    public void testListToMapCollectorEmpty() {
-        //Given - a Map of numbers to their double
-        Map<Integer, Integer> original = Collections.emptyMap();
-        //When - convert to a list of entry
-        List<Map.Entry<Integer, Integer>> entries = original
-                .entrySet()
-                .stream()
-                .collect(Collectors.toList());
-        //Then - should equal original map
-        assertEquals(original, entries
-                .stream()
-                .collect(InputFormatUtils.listToMapCollector())
-        );
-    }
+//    @Test
+//    public void testListToMapCollectorEmpty() {
+//        //Given - a Map of numbers to their double
+//        Map<Integer, Integer> original = Collections.emptyMap();
+//        //When - convert to a list of entry
+//        List<Map.Entry<Integer, Integer>> entries = original
+//                .entrySet()
+//                .stream()
+//                .collect(Collectors.toList());
+//        //Then - should equal original map
+//        assertEquals(original, entries
+//                .stream()
+//                .collect(InputFormatUtils.listToMapCollector())
+//        );
+//    }
 
     @Test(expected = NullPointerException.class)
     public void shouldReturnErrorAsThereAreNoResourcesSet() {

@@ -23,14 +23,13 @@ import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.RequestId;
 import uk.gov.gchq.palisade.jsonserialisation.JSONSerialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
-import uk.gov.gchq.palisade.service.ConnectionDetail;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import static java.util.Objects.requireNonNull;
@@ -61,7 +60,7 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
      * @param originalRequestId this Id is unique per data access request from a user
      * @throws NullPointerException if anything is null
      */
-    public PalisadeInputSplit(final String token, final Map<LeafResource, ConnectionDetail> resources, final RequestId originalRequestId) {
+    public PalisadeInputSplit(final String token, final Set<LeafResource> resources, final RequestId originalRequestId) {
         DataRequestResponse temp = new DataRequestResponse().token(requireNonNull(token)).resources(requireNonNull(resources));
         temp.originalRequestId(requireNonNull(originalRequestId));
         this.setRequestResponse(temp);

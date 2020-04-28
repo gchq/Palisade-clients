@@ -18,14 +18,13 @@ package uk.gov.gchq.palisade.clients.mapreduce;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.gov.gchq.palisade.resource.StubResource;
-//import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+//import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
 
 public class PalisadeInputSplitTest {
 
@@ -44,7 +43,7 @@ public class PalisadeInputSplitTest {
         Assert.fail("exception expected");
     }
 
-    private StubResource stubResource = new StubResource("test type", "test id", "test format");
+//    private StubResource stubResource = new StubResource("test type", "test id", "test format");
 //    private StubConnectionDetail stubConnectionDetail = new StubConnectionDetail("test con");
 
     @Test

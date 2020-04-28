@@ -326,12 +326,12 @@ public class PalisadeInputFormatTest {
         //first check expectedTotal total
         assertEquals(expectedNumberResources, splits
                 .stream()
-                .flatMap(split -> split.getRequestResponse().getResources().entrySet().stream())
+                .flatMap(split -> split.getRequestResponse().getResources().stream())
                 .count());
         //check for no duplicates
         Set<Resource> allResponses = splits
                 .stream()
-                .flatMap(split -> split.getRequestResponse().getResources().keySet().stream())
+                .flatMap(split -> split.getRequestResponse().getResources().stream())
                 .collect(Collectors.toSet());
         assertEquals(expectedNumberResources, allResponses.size());
     }
