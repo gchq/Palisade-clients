@@ -116,5 +116,4 @@ public class SimpleClient<T> {
                 .collect(Collectors.toList());
     }
 
-
 }
