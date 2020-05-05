@@ -24,8 +24,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-//import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
-
 public class PalisadeInputSplitTest {
 
     @Test(expected = IOException.class)
@@ -43,12 +41,11 @@ public class PalisadeInputSplitTest {
         Assert.fail("exception expected");
     }
 
-//    private StubResource stubResource = new StubResource("test type", "test id", "test format");
-//    private StubConnectionDetail stubConnectionDetail = new StubConnectionDetail("test con");
-
     @Test
     public void shouldSerialiseToEqualObject() throws IOException {
 //        //Given
+//        StubResource stubResource = new StubResource("test type", "test id", "test format");
+//        ConnectionDetail stubConnectionDetail = new SimpleConnectionDetail().uri("http://data-service");
 //        DataRequestResponse drr = new DataRequestResponse()
 //                .token("test string")
 //                .resource(stubResource, stubConnectionDetail);
