@@ -24,6 +24,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
+    <!--  *********** Aritfact ID ***********    -->
     <artifactId>clients-simple</artifactId>
     <version>0.4.0-${revision}</version>
 
