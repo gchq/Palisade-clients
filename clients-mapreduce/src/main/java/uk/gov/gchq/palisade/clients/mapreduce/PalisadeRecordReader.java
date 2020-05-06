@@ -24,12 +24,10 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
-import uk.gov.gchq.palisade.service.ConnectionDetail;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.CompletionException;
@@ -69,7 +67,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     /**
      * Iterates through the resources to be processed.
      */
-    private Iterator<Map.Entry<LeafResource, ConnectionDetail>> resIt;
+    private Iterator<LeafResource> resIt;
 
     /**
      * Value supplier.
@@ -124,7 +122,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
             throw new IOException("no resource details in input split");
         }
         dataRequestResponse = reqDetails;
-        resIt = reqDetails.getResources().entrySet().iterator();
+        resIt = reqDetails.getResources().iterator();
         serialiser = PalisadeInputFormat.getSerialiser(taskAttemptContext);
         context = taskAttemptContext;
         currentKey = null;

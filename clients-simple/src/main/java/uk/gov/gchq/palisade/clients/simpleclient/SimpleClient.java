@@ -26,7 +26,6 @@ import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
@@ -67,8 +66,8 @@ public class SimpleClient<T> {
         requireNonNull(response, "response");
 
         final List<CompletableFuture<Stream<T>>> futureResults = new ArrayList<>(response.getResources().size());
-        for (final Entry<LeafResource, ConnectionDetail> entry : response.getResources().entrySet()) {
-            final ConnectionDetail connectionDetail = entry.getValue();
+        for (final LeafResource leafResource : response.getResources()) {
+            final ConnectionDetail connectionDetail = leafResource.getConnectionDetail();
 //            final DataService dataService = connectionDetail.createService();
             final RequestId uuid = response.getOriginalRequestId();
 

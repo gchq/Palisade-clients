@@ -20,13 +20,10 @@ import org.apache.hadoop.mapreduce.JobContext;
 
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.PrimitiveIterator;
 import java.util.UUID;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -51,40 +48,17 @@ final class InputFormatUtils {
                                                   final PrimitiveIterator.OfInt indexIt) {
         Objects.requireNonNull(response);
         Objects.requireNonNull(indexIt);
-        return response.getResources().entrySet().stream()
+        return response.getResources().stream()
                 //group by the indexIt, which will round robin the resources to
                 //different groupings
-                .collect(Collectors.groupingBy(ignored -> indexIt.next(), listToMapCollector()))
+                .collect(Collectors.groupingBy(x -> indexIt.next(), Collectors.toSet()))
                 //now take the values of that map (we don't care about the keys)
                 .values()
                 .stream()
                 //make each map into an input split
-                .map(m -> new PalisadeInputSplit(response.getToken(), m, response.getOriginalRequestId()))
+                .map(resources -> new PalisadeInputSplit(response.getToken(), resources, response.getOriginalRequestId()))
                 //reduce to a list
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns a {@link Collector} that reduces a stream of {@link java.util.Map.Entry} into the corresponding {@link
-     * Map} with those mappings.
-     *
-     * @param <K> the key type of the entries being converted to a map
-     * @param <R> the value type of the entries
-     * @return a collector that reduces a stream to a map
-     */
-    static <K, R> Collector<Map.Entry<K, R>, Map<K, R>, Map<K, R>> listToMapCollector() {
-        return Collector.of(
-                //Supplier
-                HashMap<K, R>::new,
-                //Accumulator
-                (map, entry) -> {
-                    map.put(entry.getKey(), entry.getValue());
-                },
-                //Combiner
-                (leftMap, rightMap) -> {
-                    leftMap.putAll(rightMap);
-                    return leftMap;
-                });
     }
 
     /**
