@@ -19,7 +19,6 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import uk.gov.gchq.palisade.resource.request.AddResourceRequest;
 
 import java.net.URI;
 
