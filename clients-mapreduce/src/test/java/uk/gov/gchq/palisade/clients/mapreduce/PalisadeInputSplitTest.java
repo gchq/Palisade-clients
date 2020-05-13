@@ -18,9 +18,6 @@ package uk.gov.gchq.palisade.clients.mapreduce;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.gov.gchq.palisade.resource.StubResource;
-//import uk.gov.gchq.palisade.service.request.StubConnectionDetail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -44,12 +41,11 @@ public class PalisadeInputSplitTest {
         Assert.fail("exception expected");
     }
 
-    private StubResource stubResource = new StubResource("test type", "test id", "test format");
-//    private StubConnectionDetail stubConnectionDetail = new StubConnectionDetail("test con");
-
     @Test
     public void shouldSerialiseToEqualObject() throws IOException {
 //        //Given
+//        StubResource stubResource = new StubResource("test type", "test id", "test format");
+//        ConnectionDetail stubConnectionDetail = new SimpleConnectionDetail().uri("http://data-service");
 //        DataRequestResponse drr = new DataRequestResponse()
 //                .token("test string")
 //                .resource(stubResource, stubConnectionDetail);

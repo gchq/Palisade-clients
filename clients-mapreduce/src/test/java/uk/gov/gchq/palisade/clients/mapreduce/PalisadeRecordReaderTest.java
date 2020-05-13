@@ -29,7 +29,7 @@ import uk.gov.gchq.palisade.data.serialise.SimpleStringSerialiser;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
@@ -84,7 +84,7 @@ public class PalisadeRecordReaderTest {
     public void throwOnNoResourceInSplit() throws IOException {
         //Given
         PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-        PalisadeInputSplit is = new PalisadeInputSplit("test", new HashMap<>(), new RequestId().id("test"));
+        PalisadeInputSplit is = new PalisadeInputSplit("test", new HashSet<>(), new RequestId().id("test"));
         //When
         prr.initialize(is, con);
         //Then

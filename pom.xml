@@ -74,6 +74,16 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    <profiles>
+        <profile>
+            <id>quick</id>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+                <checkstyle.skip>true</checkstyle.skip>
+                <dockerfile.skip>true</dockerfile.skip>
+            </properties>
+        </profile>
+    </profiles>
 
     <scm>
         <!-- <connection>scm:git:https://github.com/dev-958/ci-example.git</connection> -->
@@ -96,7 +106,6 @@
             <url>${snapshot.url}</url>
         </snapshotRepository>
     </distributionManagement>
-
 
     <build>
         <!--this extension provides version number substitution for child poms-->
