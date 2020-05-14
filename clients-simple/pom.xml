@@ -17,6 +17,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>clients-simple</artifactId>
+    <version>0.4.0-${revision}</version>
+
     <parent>
         <groupId>uk.gov.gchq.palisade</groupId>
         <artifactId>clients</artifactId>
@@ -24,9 +27,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!--  *********** Aritfact ID ***********    -->
-    <artifactId>clients-simple</artifactId>
-    <!--  *********** Aritfact ID ***********    -->
+    <properties>
+        <eureka.version>1.9.16</eureka.version>
+        <spring-cloud-starter-ribbon.version>1.4.7.RELEASE</spring-cloud-starter-ribbon.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -37,6 +41,24 @@
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.eureka</groupId>
+            <artifactId>eureka-client</artifactId>
+            <version>${eureka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.gchq.palisade</groupId>
+            <artifactId>readers-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
