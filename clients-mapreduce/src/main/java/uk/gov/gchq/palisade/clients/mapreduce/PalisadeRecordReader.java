@@ -42,13 +42,13 @@ import static java.util.Objects.requireNonNull;
  * key will become the current resource being processed and the value will become the current item from that resource.
  *
  * @param <V> the value type which will be de-serialised from the resources this input split is processing
- * @implNote This class currently requests each Resource from its data service sequentially. We avoid launching all the
+ * This class currently requests each Resource from its data service sequentially. We avoid launching all the
  * requests to the data service(s) in parallel because Hadoop's processing of tasks in an individual map task is
  * necessarily serial. If we launch multiple requests for data in parallel, but Hadoop/the user's MapReduce job spends a
  * long time processing the first Resource(s), then the data services waiting to send the ones later in the list may
  * timeout. Thus, we only make the request to the  responsible for an individual resource when we
  * need it. This may change in the future and SHOULD NOT be relied upon in any implementation decisions.
- * @implNote In order to do this, we create a DataRequestResponse for each Resource and send it to the data service
+ * In order to do this, we create a DataRequestResponse for each Resource and send it to the data service
  * created by the corresponding ConnectionDetail object.
  */
 public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
