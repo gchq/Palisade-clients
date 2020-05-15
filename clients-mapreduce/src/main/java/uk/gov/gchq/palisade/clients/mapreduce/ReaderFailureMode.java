@@ -17,15 +17,15 @@ package uk.gov.gchq.palisade.clients.mapreduce;
 
 /**
  * This enum allows the specification of how a {@link PalisadeRecordReader} should behave on failure to connect to a
- * {@link uk.gov.gchq.palisade.data.service.DataService}. As a {@link PalisadeRecordReader} may have several resources
- * to process for one map task of a MapReduce job, the user may wish the job to continue in the face of a failed read of
- * a Resource or may a job to terminate. This can be set by calling {@link PalisadeInputFormat#setResourceErrorBehaviour(org.apache.hadoop.mapreduce.JobContext,
+ * data-service. As a {@link PalisadeRecordReader} may have several resources to process for one map task of a MapReduce
+ * job, the user may wish the job to continue in the face of a failed read of a Resource or may a job to terminate.
+ * This can be set by calling {@link PalisadeInputFormat#setResourceErrorBehaviour(org.apache.hadoop.mapreduce.JobContext,
  * ReaderFailureMode)}. All failures will be logged and a counter set on the task.
  */
 public enum ReaderFailureMode {
     /**
      * Cause the entire task to fail when a {@link uk.gov.gchq.palisade.resource.LeafResource} cannot be retrieved from a
-     * {@link uk.gov.gchq.palisade.data.service.DataService}.
+     * data-service.
      */
     FAIL_ON_READ_FAILURE,
     /**

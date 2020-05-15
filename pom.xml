@@ -34,20 +34,27 @@
     <packaging>pom</packaging>
 
     <properties>
+        <!-- Versions -->
         <java.version>11</java.version>
-        <!-- Sane default when no revision property is passed in from the command line -->
         <revision>SNAPSHOT</revision>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+
+        <!-- Plugins -->
         <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
-        <slf4j.api.version>1.7.25</slf4j.api.version>
-        <slf4j.simple.version>1.7.25</slf4j.simple.version>
+        <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <checkstyle.phase>verify</checkstyle.phase>
         <depends.phase>validate</depends.phase>
         <depends.maven.version>3.1.1</depends.maven.version>
+
+        <!-- Dependencies -->
+        <slf4j.api.version>1.7.25</slf4j.api.version>
+        <slf4j.simple.version>1.7.25</slf4j.simple.version>
+
         <!-- Sonar -->
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
@@ -79,6 +86,7 @@
             <id>quick</id>
             <properties>
                 <maven.test.skip>true</maven.test.skip>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
                 <checkstyle.skip>true</checkstyle.skip>
                 <dockerfile.skip>true</dockerfile.skip>
             </properties>
@@ -119,6 +127,26 @@
             </extension>
         </extensions>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${javadoc.plugin.version}</version>
+                <configuration>
+                    <show>private</show>
+                    <nohelp>true</nohelp>
+                    <quiet>true</quiet>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>javadoc</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>javadoc-no-fork</goal>
+                            <goal>aggregate-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
