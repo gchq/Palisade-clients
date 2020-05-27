@@ -90,7 +90,7 @@ spec:
             dir('Palisade-clients') {
                 git url: 'https://github.com/gchq/Palisade-clients.git'
                 sh "git checkout ${GIT_BRANCH_NAME}"
-                container('maven') {
+                container('docker-cmds') {
                     configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
                         sh 'mvn -s $MAVEN_SETTINGS install'
                     }
@@ -100,7 +100,7 @@ spec:
 
         stage('SonarQube analysis') {
             dir('Palisade-clients') {
-                container('maven') {
+                container('docker-cmds') {
                     withCredentials([string(credentialsId: '3dc8e0fb-23de-471d-8009-ed1d5890333a', variable: 'SONARQUBE_WEBHOOK'),
                                      string(credentialsId: 'b01b7c11-ccdf-4ac5-b022-28c9b861379a', variable: 'KEYSTORE_PASS'),
                                      file(credentialsId: '91d1a511-491e-4fac-9da5-a61b7933f4f6', variable: 'KEYSTORE')]) {
@@ -129,7 +129,7 @@ spec:
 
         stage('Maven deploy') {
             dir('Palisade-clients') {
-                container('maven') {
+                container('docker-cmds') {
                     configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
                         if (("${env.BRANCH_NAME}" == "develop") ||
                                 ("${env.BRANCH_NAME}" == "master")) {
