@@ -14,9 +14,53 @@
  * limitations under the License.
  */
 
-podTemplate(containers: [
-        containerTemplate(name: 'maven', image: 'maven:3.6.1-jdk-11', ttyEnabled: true, command: 'cat')
-]) {
+podTemplate(yaml: '''
+apiVersion: v1
+kind: Pod
+metadata: 
+    name: dind 
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: palisade-node-name
+            operator: In
+            values: 
+            - node1
+            - node2
+            - node3
+  containers:
+  - name: jnlp
+    image: jenkins/jnlp-slave
+    imagePullPolicy: Always
+    args: 
+    - $(JENKINS_SECRET)
+    - $(JENKINS_NAME)
+    resources:
+      requests:
+        ephemeral-storage: "4Gi"
+      limits:
+        ephemeral-storage: "8Gi"
+
+  - name: docker-cmds
+    image: 779921734503.dkr.ecr.eu-west-1.amazonaws.com/jnlp-did:INFRA
+    imagePullPolicy: IfNotPresent
+    command:
+    - sleep
+    args:
+    - 99d
+    env:
+      - name: DOCKER_HOST
+        value: tcp://localhost:2375
+    resources:
+      requests:
+        ephemeral-storage: "4Gi"
+      limits:
+        ephemeral-storage: "8Gi"            
+''') {
     node(POD_LABEL) {
         def GIT_BRANCH_NAME
 
@@ -33,7 +77,7 @@ podTemplate(containers: [
             dir('Palisade-common') {
                 git url: 'https://github.com/gchq/Palisade-common.git'
                 if (sh(script: "git checkout ${GIT_BRANCH_NAME}", returnStatus: true) == 0) {
-                    container('maven') {
+                    container('docker-cmds') {
                         configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
                             sh 'mvn -s $MAVEN_SETTINGS install -P quick'
                         }
