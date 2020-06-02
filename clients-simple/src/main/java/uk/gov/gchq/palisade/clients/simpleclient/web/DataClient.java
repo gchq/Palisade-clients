@@ -29,7 +29,7 @@ import java.net.URI;
 public interface DataClient {
 
     @PostMapping(value = "/read/chunked", consumes = "application/json", produces = "application/octet-stream")
-    Response readChunked(final URI url, @RequestBody final ReadRequest request);
+    Response readChunked(@RequestBody final ReadRequest request);
 
     @PostMapping(value = "/addSerialiser", consumes = "application/json", produces = "application/json")
     Boolean addSerialiser(final URI url, @RequestBody final AddSerialiserRequest request);

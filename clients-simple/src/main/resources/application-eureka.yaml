@@ -1,0 +1,19 @@
+  eureka:
+    instance:
+      hostname: localhost
+      port: 8083
+      preferIpAddress: false
+      lease-renewal-interval-in-seconds: 5
+      metadataMap:
+        instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+    client:
+      serviceUrl:
+        defaultZone: http://${eureka.instance.hostname}:${eureka.instance.port}/eureka/
+    enabled: true
+    registerWithEureka: false
+    fetchRegistry: true
+    registry-fetch-interval-seconds: 5
+  web:
+    client:
+      palisade-service: palisade-service
+      data-service: data-service

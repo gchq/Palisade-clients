@@ -1,0 +1,5 @@
+
+web:
+  client:
+    palisade-service: "palisade-service-not-configured"
+    data-service: "palisade-service-not-configured"

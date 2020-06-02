@@ -1,0 +1,4 @@
+web:
+  client:
+    data-service: http://localhost:8082
+    palisade-service: http://localhost:8084

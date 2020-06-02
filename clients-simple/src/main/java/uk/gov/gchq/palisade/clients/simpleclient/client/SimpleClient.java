@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.clients.simpleclient.client;
 
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import feign.Feign;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.ServiceInstance;
@@ -93,7 +94,8 @@ public class SimpleClient<T> {
             readRequest.setOriginalRequestId(uuid);
 
             LOGGER.info("Resource {} has DATA-SERVICE connection detail {}", resource.getId(), connectionDetail);
-            InputStream responseStream = dataClient.readChunked(dataService, readRequest).body().asInputStream();
+            DataClient dataClient = Feign.builder().target(DataClient.class, dataService.toString());
+            InputStream responseStream = dataClient.readChunked(readRequest).body().asInputStream();
             Stream<T> dataStream = getSerialiser().deserialise(responseStream);
             dataStreams.add(dataStream);
         }
