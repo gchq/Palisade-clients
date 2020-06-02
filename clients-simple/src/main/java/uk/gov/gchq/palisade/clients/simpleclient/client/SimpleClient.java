@@ -17,12 +17,9 @@
 package uk.gov.gchq.palisade.clients.simpleclient.client;
 
 import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import feign.Feign;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 
 import uk.gov.gchq.palisade.Context;
 import uk.gov.gchq.palisade.RequestId;
@@ -43,7 +40,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
@@ -75,8 +71,7 @@ public class SimpleClient<T> {
         RegisterDataRequest dataRequest = new RegisterDataRequest().resourceId(fileName).userId(new UserId().id(userId)).context(new Context().purpose(purpose));
 
         // While there may be many palisade services, just use one
-        ServiceInstance palisadeService = getServiceInstances("palisade-service").get(0);
-        return palisadeClient.registerDataRequestSync(palisadeService.getUri(), dataRequest);
+        return palisadeClient.registerDataRequestSync(dataRequest);
     }
 
     public Stream<T> getObjectStreams(final DataRequestResponse response) throws URISyntaxException, IOException {
@@ -105,16 +100,4 @@ public class SimpleClient<T> {
     public Serialiser<T> getSerialiser() {
         return serialiser;
     }
-
-
-    public List<ServiceInstance> getServiceInstances(final String serviceName) {
-        return eurekaClient.getApplications().getRegisteredApplications().stream()
-                .map(Application::getInstances)
-                .flatMap(List::stream)
-                .filter(instance -> instance.getAppName().equalsIgnoreCase(serviceName))
-                .peek(instance -> LOGGER.info("Discovered {} :: {}:{}/{} ({})", instance.getAppName(), instance.getIPAddr(), instance.getPort(), instance.getSecurePort(), instance.getStatus()))
-                .map(EurekaServiceInstance::new)
-                .collect(Collectors.toList());
-    }
-
 }

@@ -22,12 +22,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.gchq.palisade.clients.simpleclient.request.RegisterDataRequest;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
-import java.net.URI;
-
 @FeignClient(name = "palisade-service", url = "${web.client.palisade-service}")
 public interface PalisadeClient {
 
     @PostMapping(value = "/registerDataRequest", consumes = "application/json", produces = "application/json")
-    DataRequestResponse registerDataRequestSync(final URI url, @RequestBody final RegisterDataRequest request);
+    DataRequestResponse registerDataRequestSync(@RequestBody final RegisterDataRequest request);
 
 }
