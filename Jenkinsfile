@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+//node-affinity
+//nodes 1..3 are reserved for Jenkins slave pods.
+//node 0 is used for the Jenkins master
 
 podTemplate(yaml: '''
 apiVersion: v1
