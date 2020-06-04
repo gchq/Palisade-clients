@@ -29,5 +29,5 @@
     registry-fetch-interval-seconds: 5
   web:
     client:
-      palisade-service: palisade-service
-      data-service: data-service
+      palisade-service: ""
+      data-service: ""

@@ -14,5 +14,5 @@
 #
 web:
   client:
-    palisade-service: "palisade-service-not-configured"
-    data-service: "data-service-not-configured"
+    data-service: http://localhost:8082
+    palisade-service: http://localhost:8084

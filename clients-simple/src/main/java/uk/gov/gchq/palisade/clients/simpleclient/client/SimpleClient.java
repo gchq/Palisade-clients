@@ -16,7 +16,6 @@
 
 package uk.gov.gchq.palisade.clients.simpleclient.client;
 
-import com.netflix.discovery.EurekaClient;
 import feign.Feign;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,13 +51,10 @@ public class SimpleClient<T> {
     final PalisadeClient palisadeClient;
     final DataClient dataClient;
 
-    final EurekaClient eurekaClient;
-
-    public SimpleClient(final Serialiser<T> serialiser, final PalisadeClient palisadeClient, final DataClient dataClient, final EurekaClient eurekaClient) {
+    public SimpleClient(final Serialiser<T> serialiser, final PalisadeClient palisadeClient, final DataClient dataClient) {
         this.serialiser = serialiser;
         this.palisadeClient = palisadeClient;
         this.dataClient = dataClient;
-        this.eurekaClient = eurekaClient;
     }
 
     public Stream<T> read(final String filename, final String resourceType, final String userId, final String purpose) throws IOException, URISyntaxException {
@@ -89,8 +85,8 @@ public class SimpleClient<T> {
             readRequest.setOriginalRequestId(uuid);
 
             LOGGER.info("Resource {} has DATA-SERVICE connection detail {}", resource.getId(), connectionDetail);
-            DataClient dataClient = Feign.builder().target(DataClient.class, dataService.toString());
-            InputStream responseStream = dataClient.readChunked(readRequest).body().asInputStream();
+            DataClient dataClientFeign = Feign.builder().target(DataClient.class, "${web.client.data-service}");
+            InputStream responseStream = dataClientFeign.readChunked(readRequest).body().asInputStream();
             Stream<T> dataStream = getSerialiser().deserialise(responseStream);
             dataStreams.add(dataStream);
         }
