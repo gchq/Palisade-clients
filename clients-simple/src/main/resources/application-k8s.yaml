@@ -15,4 +15,3 @@
 web:
   client:
     palisade-service: palisade-service
-    data-service: data-service

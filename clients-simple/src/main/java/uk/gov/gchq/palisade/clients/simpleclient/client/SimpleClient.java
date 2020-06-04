@@ -16,7 +16,6 @@
 
 package uk.gov.gchq.palisade.clients.simpleclient.client;
 
-import feign.Feign;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,7 @@ import uk.gov.gchq.palisade.RequestId;
 import uk.gov.gchq.palisade.UserId;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.RegisterDataRequest;
-import uk.gov.gchq.palisade.clients.simpleclient.web.DataClient;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DynamicDataClient;
 import uk.gov.gchq.palisade.clients.simpleclient.web.PalisadeClient;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
@@ -34,8 +33,6 @@ import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -49,34 +46,33 @@ public class SimpleClient<T> {
     private final Serialiser<T> serialiser;
 
     final PalisadeClient palisadeClient;
-    final DataClient dataClient;
+    final DynamicDataClient dynamicDataClient;
 
-    public SimpleClient(final Serialiser<T> serialiser, final PalisadeClient palisadeClient, final DataClient dataClient) {
+    public SimpleClient(final Serialiser<T> serialiser, final PalisadeClient palisadeClient, final DynamicDataClient dynamicDataClient) {
         this.serialiser = serialiser;
         this.palisadeClient = palisadeClient;
-        this.dataClient = dataClient;
+        this.dynamicDataClient = dynamicDataClient;
     }
 
-    public Stream<T> read(final String filename, final String resourceType, final String userId, final String purpose) throws IOException, URISyntaxException {
-        DataRequestResponse dataRequestResponse = makeRequest(filename, resourceType, userId, purpose);
+    public Stream<T> read(final String filename, final String userId, final String purpose) throws IOException {
+        DataRequestResponse dataRequestResponse = makeRequest(filename, userId, purpose);
         Stream<T> objectStreams = getObjectStreams(dataRequestResponse);
         return objectStreams;
     }
 
-    private DataRequestResponse makeRequest(final String fileName, final String resourceType, final String userId, final String purpose) {
+    private DataRequestResponse makeRequest(final String fileName, final String userId, final String purpose) {
         RegisterDataRequest dataRequest = new RegisterDataRequest().resourceId(fileName).userId(new UserId().id(userId)).context(new Context().purpose(purpose));
 
         // While there may be many palisade services, just use one
         return palisadeClient.registerDataRequestSync(dataRequest);
     }
 
-    public Stream<T> getObjectStreams(final DataRequestResponse response) throws URISyntaxException, IOException {
+    public Stream<T> getObjectStreams(final DataRequestResponse response) throws IOException {
         requireNonNull(response, "response");
 
         final List<Stream<T>> dataStreams = new ArrayList<>(response.getResources().size());
         for (final LeafResource resource : response.getResources()) {
             final ConnectionDetail connectionDetail = resource.getConnectionDetail();
-            final URI dataService = new URI(connectionDetail.createConnection());
             final RequestId uuid = response.getOriginalRequestId();
 
             final ReadRequest readRequest = new ReadRequest()
@@ -85,8 +81,8 @@ public class SimpleClient<T> {
             readRequest.setOriginalRequestId(uuid);
 
             LOGGER.info("Resource {} has DATA-SERVICE connection detail {}", resource.getId(), connectionDetail);
-            DataClient dataClientFeign = Feign.builder().target(DataClient.class, "${web.client.data-service}");
-            InputStream responseStream = dataClientFeign.readChunked(readRequest).body().asInputStream();
+            DynamicDataClient.DataClient dataClient = dynamicDataClient.clientFor(connectionDetail.createConnection());
+            InputStream responseStream = dataClient.readChunked(readRequest).body().asInputStream();
             Stream<T> dataStream = getSerialiser().deserialise(responseStream);
             dataStreams.add(dataStream);
         }
