@@ -48,7 +48,7 @@ public interface DynamicDataClient {
 @Profile("!eureka")
 class UrlDataClient implements DynamicDataClient {
 
-    @Value("${web.client}")
+    @Value("#{${web.client}}")
     private Map<String, String> dataServices;
 
     private final FeignClientBuilder feignClientBuilder;
