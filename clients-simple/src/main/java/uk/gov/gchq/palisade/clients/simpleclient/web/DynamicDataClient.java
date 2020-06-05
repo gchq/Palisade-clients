@@ -17,7 +17,6 @@ package uk.gov.gchq.palisade.clients.simpleclient.web;
 
 import feign.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.FeignClientBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import uk.gov.gchq.palisade.clients.simpleclient.config.ApplicationConfiguration.ClientConfiguration;
 import uk.gov.gchq.palisade.clients.simpleclient.request.AddSerialiserRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 
@@ -48,13 +48,12 @@ public interface DynamicDataClient {
 @Profile("!eureka")
 class UrlDataClient implements DynamicDataClient {
 
-    @Value("#{${web.client}}")
-    private Map<String, String> dataServices;
-
     private final FeignClientBuilder feignClientBuilder;
+    private final Map<String, String> dataServices;
 
-    public UrlDataClient(@Autowired final ApplicationContext appContext) {
+    UrlDataClient(@Autowired final ApplicationContext appContext, @Autowired final ClientConfiguration dataServices) {
         this.feignClientBuilder = new FeignClientBuilder(appContext);
+        this.dataServices = dataServices.getClient();
     }
 
     public DataClient clientFor(final String serviceId) {
@@ -71,7 +70,7 @@ class NamedDataClient implements DynamicDataClient {
 
     private final FeignClientBuilder feignClientBuilder;
 
-    public NamedDataClient(@Autowired final ApplicationContext appContext) {
+    NamedDataClient(@Autowired final ApplicationContext appContext) {
         this.feignClientBuilder = new FeignClientBuilder(appContext);
     }
 
