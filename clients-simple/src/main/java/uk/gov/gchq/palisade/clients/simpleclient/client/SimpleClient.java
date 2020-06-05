@@ -76,7 +76,6 @@ public class SimpleClient<T> {
         final List<Stream<T>> dataStreams = new ArrayList<>(response.getResources().size());
         for (final LeafResource resource : response.getResources()) {
             final ConnectionDetail connectionDetail = resource.getConnectionDetail();
-            final URI dataService = new URI(connectionDetail.createConnection());
             final RequestId uuid = response.getOriginalRequestId();
 
             final ReadRequest readRequest = new ReadRequest()
