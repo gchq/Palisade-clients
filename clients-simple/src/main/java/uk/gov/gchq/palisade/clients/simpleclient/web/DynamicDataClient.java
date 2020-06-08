@@ -16,19 +16,11 @@
 package uk.gov.gchq.palisade.clients.simpleclient.web;
 
 import feign.Response;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.openfeign.FeignClientBuilder;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import uk.gov.gchq.palisade.clients.simpleclient.config.ApplicationConfiguration.ClientConfiguration;
 import uk.gov.gchq.palisade.clients.simpleclient.request.AddSerialiserRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
-
-import java.util.Map;
 
 public interface DynamicDataClient {
     interface DataClient {
@@ -44,39 +36,5 @@ public interface DynamicDataClient {
     DataClient clientFor(final String serviceId);
 }
 
-@Component
-@Profile("!eureka")
-class UrlDataClient implements DynamicDataClient {
 
-    private final FeignClientBuilder feignClientBuilder;
-    private final Map<String, String> dataServices;
 
-    UrlDataClient(@Autowired final ApplicationContext appContext, @Autowired final ClientConfiguration dataServices) {
-        this.feignClientBuilder = new FeignClientBuilder(appContext);
-        this.dataServices = dataServices.getClient();
-    }
-
-    public DataClient clientFor(final String serviceId) {
-        return feignClientBuilder
-                .forType(DataClient.class, serviceId)
-                .url(dataServices.getOrDefault(serviceId, serviceId))
-                .build();
-    }
-}
-
-@Component
-@Profile("eureka")
-class NamedDataClient implements DynamicDataClient {
-
-    private final FeignClientBuilder feignClientBuilder;
-
-    NamedDataClient(@Autowired final ApplicationContext appContext) {
-        this.feignClientBuilder = new FeignClientBuilder(appContext);
-    }
-
-    public DataClient clientFor(final String serviceId) {
-        return feignClientBuilder
-                .forType(DataClient.class, serviceId)
-                .build();
-    }
-}
