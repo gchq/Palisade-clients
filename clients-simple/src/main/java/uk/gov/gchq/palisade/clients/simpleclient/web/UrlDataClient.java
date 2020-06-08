@@ -25,6 +25,9 @@ import uk.gov.gchq.palisade.clients.simpleclient.config.ApplicationConfiguration
 
 import java.util.Map;
 
+/**
+ * The type Url data client for when the profile is not Eureka.
+ */
 @Component
 @Profile("!eureka")
 class UrlDataClient implements DynamicDataClient {
@@ -32,6 +35,12 @@ class UrlDataClient implements DynamicDataClient {
     private final FeignClientBuilder feignClientBuilder;
     private final Map<String, String> dataServices;
 
+    /**
+     * Instantiates a new Url data client with a Feign Builder of url serviceId i.e localhost:8085.
+     *
+     * @param appContext   the app context
+     * @param dataServices the data services
+     */
     UrlDataClient(@Autowired final ApplicationContext appContext, @Autowired final ClientConfiguration dataServices) {
         this.feignClientBuilder = new FeignClientBuilder(appContext);
         this.dataServices = dataServices.getClient();

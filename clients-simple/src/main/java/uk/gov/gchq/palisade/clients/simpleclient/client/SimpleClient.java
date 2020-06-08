@@ -40,24 +40,44 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * The type Simple client.
+ *
+ * @param <T> the type parameter
+ */
 public class SimpleClient<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleClient.class);
     private final Serialiser<T> serialiser;
 
-    final PalisadeClient palisadeClient;
-    final DynamicDataClient dynamicDataClient;
+    private final PalisadeClient palisadeClient;
+    private final DynamicDataClient dynamicDataClient;
 
+    /**
+     * Instantiates a new Simple client.
+     *
+     * @param serialiser        the serialiser
+     * @param palisadeClient    the palisade client
+     * @param dynamicDataClient the dynamic data client
+     */
     public SimpleClient(final Serialiser<T> serialiser, final PalisadeClient palisadeClient, final DynamicDataClient dynamicDataClient) {
         this.serialiser = serialiser;
         this.palisadeClient = palisadeClient;
         this.dynamicDataClient = dynamicDataClient;
     }
 
+    /**
+     * Read stream.
+     *
+     * @param filename the filename
+     * @param userId   the user id
+     * @param purpose  the purpose
+     * @return a stream of getObjectStream
+     * @throws IOException the io exception
+     */
     public Stream<T> read(final String filename, final String userId, final String purpose) throws IOException {
         DataRequestResponse dataRequestResponse = makeRequest(filename, userId, purpose);
-        Stream<T> objectStreams = getObjectStreams(dataRequestResponse);
-        return objectStreams;
+        return getObjectStreams(dataRequestResponse);
     }
 
     private DataRequestResponse makeRequest(final String fileName, final String userId, final String purpose) {
@@ -67,6 +87,13 @@ public class SimpleClient<T> {
         return palisadeClient.registerDataRequestSync(dataRequest);
     }
 
+    /**
+     * For a given DataRequestResponse returns a stream of deserialised objects from the dataClient
+     *
+     * @param response the response
+     * @return the object streams
+     * @throws IOException the io exception
+     */
     public Stream<T> getObjectStreams(final DataRequestResponse response) throws IOException {
         requireNonNull(response, "response");
 
@@ -89,6 +116,11 @@ public class SimpleClient<T> {
         return dataStreams.stream().flatMap(Function.identity());
     }
 
+    /**
+     * Gets serialiser.
+     *
+     * @return the serialiser
+     */
     public Serialiser<T> getSerialiser() {
         return serialiser;
     }

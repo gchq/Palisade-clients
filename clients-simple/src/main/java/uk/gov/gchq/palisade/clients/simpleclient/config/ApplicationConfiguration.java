@@ -26,23 +26,44 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * The type Application configuration.
+ */
 @Configuration
 public class ApplicationConfiguration {
 
+    /**
+     * Client configuration bean
+     *
+     * @return a new clientConfiguration
+     */
     @Bean
     @ConfigurationProperties(prefix = "web")
     public ClientConfiguration clientConfiguration() {
         return new ClientConfiguration();
     }
 
+    /**
+     * ClientConfiguration class
+     */
     public static class ClientConfiguration {
         private Map<String, String> client;
 
+        /**
+         * Gets client map of String, String
+         *
+         * @return the client
+         */
         @Generated
         public Map<String, String> getClient() {
             return client;
         }
 
+        /**
+         * Sets client map of String, String.
+         *
+         * @param client the client
+         */
         @Generated
         public void setClient(final Map<String, String> client) {
             requireNonNull(client);

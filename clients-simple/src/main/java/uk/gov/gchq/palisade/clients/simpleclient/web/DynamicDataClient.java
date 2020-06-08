@@ -22,17 +22,41 @@ import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.gchq.palisade.clients.simpleclient.request.AddSerialiserRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 
+/**
+ * The interface Dynamic data client.
+ */
 public interface DynamicDataClient {
+    /**
+     * The interface Data client.
+     */
     interface DataClient {
 
+        /**
+         * Read chunked response.
+         *
+         * @param request the request
+         * @return the response
+         */
         @PostMapping(value = "/read/chunked", consumes = "application/json", produces = "application/octet-stream")
         Response readChunked(@RequestBody final ReadRequest request);
 
+        /**
+         * Add serialiser boolean.
+         *
+         * @param request the request
+         * @return the boolean
+         */
         @PostMapping(value = "/addSerialiser", consumes = "application/json", produces = "application/json")
         Boolean addSerialiser(@RequestBody final AddSerialiserRequest request);
 
     }
 
+    /**
+     * Client for data client.
+     *
+     * @param serviceId the service id
+     * @return the data client
+     */
     DataClient clientFor(final String serviceId);
 }
 
