@@ -17,14 +17,12 @@
 package uk.gov.gchq.palisade.clients.simpleclient.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import uk.gov.gchq.palisade.Generated;
-
-import java.util.Map;
-
-import static java.util.Objects.requireNonNull;
+import uk.gov.gchq.palisade.clients.simpleclient.web.NamedDataClient;
+import uk.gov.gchq.palisade.clients.simpleclient.web.UrlDataClient;
 
 /**
  * The type Application configuration.
@@ -43,32 +41,14 @@ public class ApplicationConfiguration {
         return new ClientConfiguration();
     }
 
-    /**
-     * ClientConfiguration class
-     */
-    public static class ClientConfiguration {
-        private Map<String, String> client;
+    @Bean
+    public UrlDataClient urlDataClient(final ApplicationContext applicationContext, final ClientConfiguration clientConfiguration) {
+        return new UrlDataClient(applicationContext, clientConfiguration);
+    }
 
-        /**
-         * Gets client map of String, String
-         *
-         * @return the client
-         */
-        @Generated
-        public Map<String, String> getClient() {
-            return client;
-        }
-
-        /**
-         * Sets client map of String, String.
-         *
-         * @param client the client
-         */
-        @Generated
-        public void setClient(final Map<String, String> client) {
-            requireNonNull(client);
-            this.client = client;
-        }
+    @Bean
+    public NamedDataClient namedDataClient(final ApplicationContext applicationContext) {
+        return new NamedDataClient(applicationContext);
     }
 
 }

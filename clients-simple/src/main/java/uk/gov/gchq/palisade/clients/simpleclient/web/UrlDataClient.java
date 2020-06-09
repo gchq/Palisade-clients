@@ -15,38 +15,36 @@
  */
 package uk.gov.gchq.palisade.clients.simpleclient.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.FeignClientBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
-import uk.gov.gchq.palisade.clients.simpleclient.config.ApplicationConfiguration.ClientConfiguration;
+import uk.gov.gchq.palisade.clients.simpleclient.config.ClientConfiguration;
 
 import java.util.Map;
 
 /**
  * The type Url data client for when the profile is not Eureka.
  */
-@Component
 @Profile("!eureka")
-class UrlDataClient implements DynamicDataClient {
+public class UrlDataClient implements DynamicDataClient {
 
     private final FeignClientBuilder feignClientBuilder;
-    private final Map<String, String> dataServices;
+    private final ClientConfiguration clientConfiguration;
 
     /**
      * Instantiates a new Url data client with a Feign Builder of url serviceId i.e localhost:8085.
      *
-     * @param appContext   the app context
-     * @param dataServices the data services
+     * @param appContext          the app context
+     * @param clientConfiguration the clientConfiguration
      */
-    UrlDataClient(@Autowired final ApplicationContext appContext, @Autowired final ClientConfiguration dataServices) {
+    public UrlDataClient(final ApplicationContext appContext, final ClientConfiguration clientConfiguration) {
         this.feignClientBuilder = new FeignClientBuilder(appContext);
-        this.dataServices = dataServices.getClient();
+        this.clientConfiguration = clientConfiguration;
     }
 
     public DataClient clientFor(final String serviceId) {
+        Map<String, String> dataServices = clientConfiguration.getClient();
         return feignClientBuilder
                 .forType(DataClient.class, serviceId)
                 .url(dataServices.getOrDefault(serviceId, serviceId))
