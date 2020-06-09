@@ -20,6 +20,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import uk.gov.gchq.palisade.clients.simpleclient.web.NamedDataClient;
 import uk.gov.gchq.palisade.clients.simpleclient.web.UrlDataClient;
@@ -42,11 +43,13 @@ public class ApplicationConfiguration {
     }
 
     @Bean
+    @Profile("!eureka")
     public UrlDataClient urlDataClient(final ApplicationContext applicationContext, final ClientConfiguration clientConfiguration) {
         return new UrlDataClient(applicationContext, clientConfiguration);
     }
 
     @Bean
+    @Profile("eureka")
     public NamedDataClient namedDataClient(final ApplicationContext applicationContext) {
         return new NamedDataClient(applicationContext);
     }
