@@ -40,19 +40,10 @@ public interface DynamicDataClient {
         @PostMapping(value = "/read/chunked", consumes = "application/json", produces = "application/octet-stream")
         Response readChunked(@RequestBody final ReadRequest request);
 
-        /**
-         * Add serialiser boolean.
-         *
-         * @param request the request
-         * @return the boolean
-         */
-        @PostMapping(value = "/addSerialiser", consumes = "application/json", produces = "application/json")
-        Boolean addSerialiser(@RequestBody final AddSerialiserRequest request);
-
     }
 
     /**
-     * Client for data client.
+     * Implemented by either the NamedDataClient or UrlDataClient to dynamically build FeignBuilders for the DataClients Rest calls
      *
      * @param serviceId the service id
      * @return the data client

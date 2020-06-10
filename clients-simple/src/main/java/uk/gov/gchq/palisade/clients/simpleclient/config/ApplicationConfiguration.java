@@ -42,12 +42,26 @@ public class ApplicationConfiguration {
         return new ClientConfiguration();
     }
 
+    /**
+     * urlDataClient bean which takes applicationContext and clientConfiguration which contains a map of service names to urls
+     * so that the DynamicDataClient has a FeignBuilder with the correct data-services pulled from the connectionDetail
+     * This will only run if the profile is not Eureka
+     *
+     * @param applicationContext
+     * @param clientConfiguration
+     */
     @Bean
     @Profile("!eureka")
     public UrlDataClient urlDataClient(final ApplicationContext applicationContext, final ClientConfiguration clientConfiguration) {
         return new UrlDataClient(applicationContext, clientConfiguration);
     }
 
+    /**
+     * namedDataClient bean used to create a FeignBuilder for use in the DynamicDataClient to resolve data-services by hostname from eureka.
+     * This will only run if the profile is Eureka
+     * @param applicationContext
+     * @return
+     */
     @Bean
     @Profile("eureka")
     public NamedDataClient namedDataClient(final ApplicationContext applicationContext) {

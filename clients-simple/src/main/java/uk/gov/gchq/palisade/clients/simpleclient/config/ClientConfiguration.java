@@ -21,6 +21,9 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * ClientConfiguration is used by the UrlDataClient to store a map of serviceName - urls used in the Feign {@link feign.Feign.Builder}, i.e data-service, localhost:8082
+ */
 public class ClientConfiguration {
 
     private Map<String, String> client;
