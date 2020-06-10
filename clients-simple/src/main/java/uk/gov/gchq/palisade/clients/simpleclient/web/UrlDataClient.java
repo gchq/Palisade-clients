@@ -17,7 +17,6 @@ package uk.gov.gchq.palisade.clients.simpleclient.web;
 
 import org.springframework.cloud.openfeign.FeignClientBuilder;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Profile;
 
 import uk.gov.gchq.palisade.clients.simpleclient.config.ClientConfiguration;
 
@@ -26,8 +25,7 @@ import java.util.Map;
 /**
  * The type Url data client for when the profile is not Eureka.
  */
-@Profile("!eureka")
-public class UrlDataClient implements DynamicDataClient {
+public class UrlDataClient implements DataClientFactory {
 
     private final FeignClientBuilder feignClientBuilder;
     private final ClientConfiguration clientConfiguration;
@@ -43,7 +41,7 @@ public class UrlDataClient implements DynamicDataClient {
         this.clientConfiguration = clientConfiguration;
     }
 
-    public DataClient clientFor(final String serviceId) {
+    public DataClient build(final String serviceId) {
         Map<String, String> dataServices = clientConfiguration.getClient();
         return feignClientBuilder
                 .forType(DataClient.class, serviceId)

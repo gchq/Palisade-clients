@@ -17,13 +17,11 @@ package uk.gov.gchq.palisade.clients.simpleclient.web;
 
 import org.springframework.cloud.openfeign.FeignClientBuilder;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Profile;
 
 /**
  * The type Named data client for when the profile is Eureka
  */
-@Profile("eureka")
-public class NamedDataClient implements DynamicDataClient {
+public class NamedDataClient implements DataClientFactory {
 
     private final FeignClientBuilder feignClientBuilder;
 
@@ -36,7 +34,7 @@ public class NamedDataClient implements DynamicDataClient {
         this.feignClientBuilder = new FeignClientBuilder(appContext);
     }
 
-    public DataClient clientFor(final String serviceId) {
+    public DataClient build(final String serviceId) {
         return feignClientBuilder
                 .forType(DataClient.class, serviceId)
                 .build();

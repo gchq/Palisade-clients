@@ -24,7 +24,7 @@ import uk.gov.gchq.palisade.RequestId;
 import uk.gov.gchq.palisade.UserId;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.RegisterDataRequest;
-import uk.gov.gchq.palisade.clients.simpleclient.web.DynamicDataClient;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory;
 import uk.gov.gchq.palisade.clients.simpleclient.web.PalisadeClient;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
@@ -51,19 +51,19 @@ public class SimpleClient<T> {
     private final Serialiser<T> serialiser;
 
     private final PalisadeClient palisadeClient;
-    private final DynamicDataClient dynamicDataClient;
+    private final DataClientFactory dataClientFactory;
 
     /**
      * Instantiates a new Simple client.
      *
      * @param serialiser        the serialiser
      * @param palisadeClient    the palisade client
-     * @param dynamicDataClient the dynamic data client
+     * @param dataClientFactory the data client factory
      */
-    public SimpleClient(final Serialiser<T> serialiser, final PalisadeClient palisadeClient, final DynamicDataClient dynamicDataClient) {
+    public SimpleClient(final Serialiser<T> serialiser, final PalisadeClient palisadeClient, final DataClientFactory dataClientFactory) {
         this.serialiser = serialiser;
         this.palisadeClient = palisadeClient;
-        this.dynamicDataClient = dynamicDataClient;
+        this.dataClientFactory = dataClientFactory;
     }
 
     /**
@@ -108,7 +108,7 @@ public class SimpleClient<T> {
             readRequest.setOriginalRequestId(uuid);
 
             LOGGER.info("Resource {} has DATA-SERVICE connection detail {}", resource.getId(), connectionDetail);
-            DynamicDataClient.DataClient dataClient = dynamicDataClient.clientFor(connectionDetail.createConnection());
+            DataClientFactory.DataClient dataClient = dataClientFactory.build(connectionDetail.createConnection());
             InputStream responseStream = dataClient.readChunked(readRequest).body().asInputStream();
             Stream<T> dataStream = getSerialiser().deserialise(responseStream);
             dataStreams.add(dataStream);

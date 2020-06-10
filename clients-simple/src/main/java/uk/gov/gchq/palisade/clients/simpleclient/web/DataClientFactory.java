@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 
 /**
- * The interface Dynamic data client.
+ * DataClientFactory interface
  */
-public interface DynamicDataClient {
+public interface DataClientFactory {
     /**
      * The interface Data client.
      */
@@ -47,7 +47,7 @@ public interface DynamicDataClient {
      * @param serviceId the service id
      * @return the data client
      */
-    DataClient clientFor(final String serviceId);
+    DataClient build(final String serviceId);
 }
 
 
