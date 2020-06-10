@@ -47,8 +47,9 @@ public class ApplicationConfiguration {
      * so that the DynamicDataClient has a FeignBuilder with the correct data-services pulled from the connectionDetail
      * This will only run if the profile is not Eureka
      *
-     * @param applicationContext
-     * @param clientConfiguration
+     * @param applicationContext  {@link ApplicationContext}
+     * @param clientConfiguration contains a map of service names to urls for the connection detail so feign can build a client to resolve the data-services
+     * @return UrlDataClient a new instance of the UrlDataClient
      */
     @Bean
     @Profile("!eureka")
@@ -59,8 +60,9 @@ public class ApplicationConfiguration {
     /**
      * namedDataClient bean used to create a FeignBuilder for use in the DynamicDataClient to resolve data-services by hostname from eureka.
      * This will only run if the profile is Eureka
-     * @param applicationContext
-     * @return
+     *
+     * @param applicationContext {@link ApplicationContext}
+     * @return NamedDataClient a new instance of the NamedDataClient
      */
     @Bean
     @Profile("eureka")

@@ -19,7 +19,6 @@ import feign.Response;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import uk.gov.gchq.palisade.clients.simpleclient.request.AddSerialiserRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 
 /**
