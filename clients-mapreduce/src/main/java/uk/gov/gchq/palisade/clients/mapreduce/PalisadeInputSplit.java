@@ -120,7 +120,7 @@ public class PalisadeInputSplit extends InputSplit implements Writable {
     @Override
     @Generated
     public String[] getLocations() {
-        return StringUtils.emptyStringArray;
+        return new String[0];
     }
 
     /**

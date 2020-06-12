@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>clients-common</artifactId>
+            <artifactId>clients-simple</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

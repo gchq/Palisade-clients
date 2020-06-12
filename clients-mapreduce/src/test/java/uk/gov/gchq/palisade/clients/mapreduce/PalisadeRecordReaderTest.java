@@ -15,6 +15,7 @@
  */
 package uk.gov.gchq.palisade.clients.mapreduce;
 
+import feign.Response;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -24,12 +25,22 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import uk.gov.gchq.palisade.RequestId;
+import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory.DataClient;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.data.serialise.SimpleStringSerialiser;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.TreeMap;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
@@ -37,15 +48,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-
-//TODO REQUIRES REFACTORING TO DEPEND ON COMMON ELEMENTS
-//TODO THE CLIENT SHOULD NOT DEPEND ON THE SERVICES SUCH AS PALISADE AND DATA SERVICE
-//TODO INSTEAD THE RESTFUL INTERFACE SHOULD BE USED
-//TODO we should be using feign annotation to do this
-
+import static org.mockito.Mockito.when;
 
 public class PalisadeRecordReaderTest {
+    private static Configuration conf;
+    private static TaskAttemptContext con;
+    private static Serialiser<String> serialiser;
 
     @BeforeClass
     public static void setup() {
@@ -54,19 +64,6 @@ public class PalisadeRecordReaderTest {
         serialiser = new SimpleStringSerialiser();
         PalisadeInputFormat.setSerialiser(conf, serialiser);
         con = new TaskAttemptContextImpl(conf, new TaskAttemptID());
-    }
-
-    private static Configuration conf;
-    private static TaskAttemptContext con;
-    private static Serialiser<String> serialiser;
-
-    @Test
-    public void shouldReportZeroProgressWhenClose() throws Exception {
-        //Given
-        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-        //When - nothing
-        //Then
-        assertEquals(0, prr.getProgress(), 0);
     }
 
     @Test(expected = ClassCastException.class)
@@ -81,7 +78,7 @@ public class PalisadeRecordReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void throwOnNoResourceInSplit() throws IOException {
+    public void shouldThrowOnNoResourceInSplit() throws IOException {
         //Given
         PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
         PalisadeInputSplit is = new PalisadeInputSplit("test", new HashSet<>(), new RequestId().id("test"));
@@ -92,26 +89,26 @@ public class PalisadeRecordReaderTest {
     }
 
     @Test
-    public void shouldReturnFalseAfterClosed() throws IOException {
-//        //Given
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        Collection<String> resData = Arrays.asList("s1", "s2", "s3", "s4");
-//        DataRequestResponse response = new DataRequestResponse().token("request1")
-//                .resource(new StubResource("type_a", "id1", "format1"), new StubConnectionDetail("con1")
-//                        .setServiceToCreate(createMockDS(resData, false)))
-//                .resource(new StubResource("type_b", "id2", "format2"), new StubConnectionDetail("con2")
-//                        .setServiceToCreate(createMockDS(resData, false)));
-//        response.originalRequestId(new RequestId().id("test 1"));
-//
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //start the stream reading
-//        prr.nextKeyValue();
-//        prr.nextKeyValue();
-//        prr.close();
-//        //Then
-//        assertFalse(prr.nextKeyValue());
+    public void shouldNotHaveNextAfterClosed() throws IOException {
+        //Given
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        Collection<String> resData = Arrays.asList("s1", "s2", "s3", "s4");
+        DataRequestResponse response = new DataRequestResponse().token("request1")
+                .resource(new StubResource("type_a", "id1", "format1"), new StubConnectionDetail("con1")
+                        .setServiceToCreate(createMockDS(resData, false)))
+                .resource(new StubResource("type_b", "id2", "format2"), new StubConnectionDetail("con2")
+                        .setServiceToCreate(createMockDS(resData, false)));
+        response.originalRequestId(new RequestId().id("test 1"));
+
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //start the stream reading
+        prr.nextKeyValue();
+        prr.nextKeyValue();
+        prr.close();
+        //Then
+        assertFalse(prr.nextKeyValue());
     }
 
     /**
@@ -123,49 +120,40 @@ public class PalisadeRecordReaderTest {
      * @param <T>        value type of reader
      * @throws IOException that shouldn't happen
      */
-    private static <T> void readValuesAndValidate(final Stream<T> expected, final PalisadeRecordReader<T> testReader) throws IOException {
+    private static <T> void readValuesAndValidate(final Stream<T> expected, final PalisadeRecordReader<T> testReader) {
         expected.forEach(item -> {
-            try {
-                assertTrue(testReader.nextKeyValue());
-                assertEquals(item, testReader.getCurrentValue());
-            } catch (IOException e) {
-                fail("unexpected IOException on test");
-                e.printStackTrace();
-            }
+            assertTrue(testReader.nextKeyValue());
+            assertEquals(item, testReader.getCurrentValue());
         });
         assertFalse(testReader.nextKeyValue());
     }
 
     /**
      * Validates that the read method for each mock data service was called once. This method assumes that each resource
-     * in the DataResponseRequest has its own unique mock DataService.
+     * in the DataResponseRequest has its own unique mock DataClient.
      *
      * @param response the collection of all responses that will have been read
      */
     private static void verifyMocksCalled(final DataRequestResponse response) {
-//        for (ConnectionDetail entry : response.getResources().values()) {
-//            verify(((DataService) entry.createService()), times(1)).read(any());
-//        }
+        // Must be reworked
     }
 
+    private static DataClient createMockDS(Collection<String> dataToReturn, boolean shouldFail) throws IOException {
+        //create the simulated response
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serialiser.serialise(dataToReturn.stream(), baos);
+        Response readResponse = mock(Response.class);
+        when(readResponse.body().asInputStream()).thenReturn(new ByteArrayInputStream(baos.toByteArray()));
+        //mock a data service to return it
+        DataClient mock = mock(DataClient.class);
+        if (shouldFail) {
+            when(mock.readChunked(any(ReadRequest.class))).thenThrow(new RuntimeException("test exception"));
+        } else {
+            when(mock.readChunked(any(ReadRequest.class))).thenReturn(readResponse);
+        }
+        return mock;
+    }
 
-    //    private static DataService createMockDS(Collection<String> dataToReturn, boolean shouldFail) throws IOException {
-//        //create the simulated response
-//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//        serialiser.serialise(dataToReturn.stream(), baos);
-//        ReadResponse readResponse = new ClientReadResponse(new ByteArrayInputStream(baos.toByteArray()));
-//        //mock a data service to return it
-//        DataService mock = mock(DataService.class);
-//        if (shouldFail) {
-//            given(mock.read(any(ReadRequest.class))).willReturn(CompletableFuture.supplyAsync(() -> {
-//                throw new RuntimeException("test exception");
-//            }));
-//        } else {
-//            given(mock.read(any(ReadRequest.class))).willReturn(CompletableFuture.completedFuture(readResponse));
-//        }
-//        return mock;
-//    }
-//
     @Test
     public void shouldContinueOnResourceError() throws IOException {
         resourceFailure(ReaderFailureMode.CONTINUE_ON_READ_FAILURE);
@@ -174,9 +162,7 @@ public class PalisadeRecordReaderTest {
     @Test(expected = CompletionException.class)
     public void shouldFailOnResourceError() throws IOException {
         resourceFailure(ReaderFailureMode.FAIL_ON_READ_FAILURE);
-        throw new CompletionException(new Exception("test needs to be reworked"));
-        //TODO this test needs to be rerun when PalisadeInputSplit is reworked with the spring boot services
-
+        fail("Expected exception to be thrown");
     }
 
     /**
@@ -186,159 +172,159 @@ public class PalisadeRecordReaderTest {
      * @throws IOException IOException
      */
     private void resourceFailure(final ReaderFailureMode mode) throws IOException {
-//        //Given - multiple resources
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        //add more data which should succeed
-//        List<String> returnResources2 = Arrays.asList("s5", "s6", "s7", "s8");
-//        DataRequestResponse response = new DataRequestResponse().token("test")
-//                //set up some data which should return an error
-//                .resource(new StubResource("type_a", "id1", "format1"),
-//                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), true)))
-//                .resource(new StubResource("type_b", "id2", "format2"),
-//                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(returnResources2, false)));
-//        response.originalRequestId(new RequestId().id("test"));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        PalisadeInputFormat.setResourceErrorBehaviour(con, mode);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(returnResources2.stream(), prr);
-//        verifyMocksCalled(response);
+        //Given - multiple resources
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        //add more data which should succeed
+        List<String> returnResources2 = Arrays.asList("s5", "s6", "s7", "s8");
+        DataRequestResponse response = new DataRequestResponse().token("test")
+                //set up some data which should return an error
+                .resource(new StubResource("type_a", "id1", "format1"),
+                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), true)))
+                .resource(new StubResource("type_b", "id2", "format2"),
+                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(returnResources2, false)));
+        response.originalRequestId(new RequestId().id("test"));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        PalisadeInputFormat.setResourceErrorBehaviour(con, mode);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(returnResources2.stream(), prr);
+        verifyMocksCalled(response);
     }
 
     @Test
     public void shouldReadbackResourcesFromOneResource() throws IOException {
-//        //Given
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        //set up some data
-//        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
-//        DataRequestResponse response = new DataRequestResponse().token("request1")
-//                //set up the mock data service
-//                .resource(new StubResource("type_a", "id1", "format1"),
-//                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)));
-//        response.originalRequestId(new RequestId().id("test"));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(returnResources.stream(), prr);
-//        verifyMocksCalled(response);
+        //Given
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        //set up some data
+        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
+        DataRequestResponse response = new DataRequestResponse().token("request1")
+                //set up the mock data service
+                .resource(new StubResource("type_a", "id1", "format1"),
+                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)));
+        response.originalRequestId(new RequestId().id("test"));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(returnResources.stream(), prr);
+        verifyMocksCalled(response);
     }
 
     @Test
     public void shouldReadbackResultsFromOneResourcePlusOneEmpty() throws IOException {
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        //set up some data
-//        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
-//        //inject a treemap to ensure iteration order
-//        DataRequestResponse response = new DataRequestResponse().token("test")
-//                .resource(new StubResource("type_a", "id1", "format1"),
-//                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)))
-//                //make an empty resource response
-//                .resource(new StubResource("type_b", "id2", "format2"),
-//                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
-//        response.originalRequestId(new RequestId().id("test"));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(Stream.concat(returnResources.stream(), Stream.empty()), prr);
-//        verifyMocksCalled(response);
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        //set up some data
+        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
+        //inject a treemap to ensure iteration order
+        DataRequestResponse response = new DataRequestResponse().token("test")
+                .resource(new StubResource("type_a", "id1", "format1"),
+                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)))
+                //make an empty resource response
+                .resource(new StubResource("type_b", "id2", "format2"),
+                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
+        response.originalRequestId(new RequestId().id("test"));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(Stream.concat(returnResources.stream(), Stream.empty()), prr);
+        verifyMocksCalled(response);
     }
 
     @Test
     public void shouldReadbackNothingFromEmptyResource() throws IOException {
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        DataRequestResponse response = new DataRequestResponse().token("request1")
-//                //make an empty resource response
-//                .resource(new StubResource("type_a", "id1", "format1"),
-//                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
-//        response.originalRequestId(new RequestId().id("test"));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(Stream.empty(), prr);
-//        verifyMocksCalled(response);
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        DataRequestResponse response = new DataRequestResponse().token("request1")
+                //make an empty resource response
+                .resource(new StubResource("type_a", "id1", "format1"),
+                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
+        response.originalRequestId(new RequestId().id("test"));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(Stream.empty(), prr);
+        verifyMocksCalled(response);
     }
 
     @Test
     public void shouldReadbackResultsFromEmptyResourceThenOneResourceWithData() throws IOException {
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        //set up some data
-//        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
-//        DataRequestResponse response = new DataRequestResponse().token("test")
-//                .resource(new StubResource("type_a", "id1", "format1"),
-//                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), false)))
-//                .resource(new StubResource("type_b", "id2", "format2"),
-//                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(returnResources, false)));
-//        response.originalRequestId(new RequestId().id("test"));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(Stream.concat(Stream.empty(), returnResources.stream()), prr);
-//        verifyMocksCalled(response);
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        //set up some data
+        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
+        DataRequestResponse response = new DataRequestResponse().token("test")
+                .resource(new StubResource("type_a", "id1", "format1"),
+                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), false)))
+                .resource(new StubResource("type_b", "id2", "format2"),
+                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(returnResources, false)));
+        response.originalRequestId(new RequestId().id("test"));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(Stream.concat(Stream.empty(), returnResources.stream()), prr);
+        verifyMocksCalled(response);
     }
 
     @Test
     public void shouldReturnResultsFromTwoResources() throws IOException {
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        //set up some data
-//        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
-//        //add more data
-//        List<String> returnResources2 = Arrays.asList("s5", "s6", "s7", "s8");
-//        DataRequestResponse response = new DataRequestResponse().token("test")
-//                .resource(new StubResource("type_a", "id1", "format1"),
-//                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)))
-//                .resource(new StubResource("type_b", "id2", "format2"),
-//                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(returnResources2, false)));
-//        response.originalRequestId(new RequestId().id("test"));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(Stream.concat(returnResources.stream(), returnResources2.stream()), prr);
-//        verifyMocksCalled(response);
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        //set up some data
+        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
+        //add more data
+        List<String> returnResources2 = Arrays.asList("s5", "s6", "s7", "s8");
+        DataRequestResponse response = new DataRequestResponse().token("test")
+                .resource(new StubResource("type_a", "id1", "format1"),
+                        new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)))
+                .resource(new StubResource("type_b", "id2", "format2"),
+                        new StubConnectionDetail("con2").setServiceToCreate(createMockDS(returnResources2, false)));
+        response.originalRequestId(new RequestId().id("test"));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(Stream.concat(returnResources.stream(), returnResources2.stream()), prr);
+        verifyMocksCalled(response);
     }
 
     @Test
     public void shouldReturnResultsFromTwoResourcesWithEmptyInBetween() throws IOException {
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        DataRequestResponse response = new DataRequestResponse().token("test")
-//                .resources(new TreeMap<>());
-//        response.originalRequestId(new RequestId().id("test"));
-//        //set up some data
-//        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
-//        response.getResources().put(new StubResource("type_a", "id1", "format1"), new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)));
-//        //add an empty
-//        response.getResources().put(new StubResource("type_b", "id2", "format2"), new StubConnectionDetail("con2").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
-//        //add more data
-//        List<String> returnResources2 = Arrays.asList("s5", "s6", "s7", "s8");
-//        response.getResources().put(new StubResource("type_c", "id3", "format3"), new StubConnectionDetail("con3").setServiceToCreate(createMockDS(returnResources2, false)));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(Stream.concat(returnResources.stream(), returnResources2.stream()), prr);
-//        verifyMocksCalled(response);
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        DataRequestResponse response = new DataRequestResponse().token("test")
+                .resources(new TreeMap<>());
+        response.originalRequestId(new RequestId().id("test"));
+        //set up some data
+        List<String> returnResources = Arrays.asList("s1", "s2", "s3", "s4");
+        response.getResources().put(new StubResource("type_a", "id1", "format1"), new StubConnectionDetail("con1").setServiceToCreate(createMockDS(returnResources, false)));
+        //add an empty
+        response.getResources().put(new StubResource("type_b", "id2", "format2"), new StubConnectionDetail("con2").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
+        //add more data
+        List<String> returnResources2 = Arrays.asList("s5", "s6", "s7", "s8");
+        response.getResources().put(new StubResource("type_c", "id3", "format3"), new StubConnectionDetail("con3").setServiceToCreate(createMockDS(returnResources2, false)));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(Stream.concat(returnResources.stream(), returnResources2.stream()), prr);
+        verifyMocksCalled(response);
     }
 
     @Test
     public void shouldReturnNothingFromEmpties() throws IOException {
-//        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
-//        DataRequestResponse response = new DataRequestResponse().token("test")
-//                .resources(new TreeMap<>());
-//        response.originalRequestId(new RequestId().id("test"));
-//        //add empty resources
-//        response.getResources().put(new StubResource("type_a", "id1", "format1"), new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
-//        response.getResources().put(new StubResource("type_b", "id2", "format2"), new StubConnectionDetail("con2").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
-//        response.getResources().put(new StubResource("type_c", "id3", "format3"), new StubConnectionDetail("con3").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
-//        //When
-//        PalisadeInputSplit split = new PalisadeInputSplit(response);
-//        prr.initialize(split, con);
-//        //Then
-//        readValuesAndValidate(Stream.empty(), prr);
-//        verifyMocksCalled(response);
+        PalisadeRecordReader<String> prr = new PalisadeRecordReader<>();
+        DataRequestResponse response = new DataRequestResponse().token("test")
+                .resources(new HashMap<>());
+        response.originalRequestId(new RequestId().id("test"));
+        //add empty resources
+        response.getResources().put(new StubResource("type_a", "id1", "format1"), new StubConnectionDetail("con1").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
+        response.getResources().put(new StubResource("type_b", "id2", "format2"), new StubConnectionDetail("con2").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
+        response.getResources().put(new StubResource("type_c", "id3", "format3"), new StubConnectionDetail("con3").setServiceToCreate(createMockDS(Collections.emptyList(), false)));
+        //When
+        PalisadeInputSplit split = new PalisadeInputSplit(response);
+        prr.initialize(split, con);
+        //Then
+        readValuesAndValidate(Stream.empty(), prr);
+        verifyMocksCalled(response);
     }
 }

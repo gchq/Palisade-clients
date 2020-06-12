@@ -18,6 +18,12 @@ package uk.gov.gchq.palisade.clients.mapreduce;
 import org.junit.Assert;
 import org.junit.Test;
 
+import uk.gov.gchq.palisade.RequestId;
+import uk.gov.gchq.palisade.resource.impl.FileResource;
+import uk.gov.gchq.palisade.service.ConnectionDetail;
+import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
+import uk.gov.gchq.palisade.service.request.DataRequestResponse;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -27,7 +33,7 @@ import java.io.IOException;
 public class PalisadeInputSplitTest {
 
     @Test(expected = IOException.class)
-    public void shouldntAcceptNegativeLength() throws IOException {
+    public void shouldThrowOnNegativeLength() throws IOException {
         //Given
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(buffer);
@@ -43,26 +49,24 @@ public class PalisadeInputSplitTest {
 
     @Test
     public void shouldSerialiseToEqualObject() throws IOException {
-//        //Given
-//        StubResource stubResource = new StubResource("test type", "test id", "test format");
-//        ConnectionDetail stubConnectionDetail = new SimpleConnectionDetail().uri("http://data-service");
-//        DataRequestResponse drr = new DataRequestResponse()
-//                .token("test string")
-//                .resource(stubResource, stubConnectionDetail);
-//        drr.originalRequestId(new RequestId().id("test id"));
-//        PalisadeInputSplit test = new PalisadeInputSplit(drr);
-//
-//        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-//        DataOutputStream dos = new DataOutputStream(buffer);
-//        //When
-//        test.write(dos);
-//        ByteArrayInputStream bis = new ByteArrayInputStream(buffer.toByteArray());
-//        DataInputStream dis = new DataInputStream(bis);
-//        PalisadeInputSplit readBack = new PalisadeInputSplit();
-//        readBack.readFields(dis);
-//        //Then
-//        Assert.assertEquals(test, readBack);
+        //Given
+        ConnectionDetail connectionDetail = new SimpleConnectionDetail().serviceName("data-service");
+        FileResource fileResource = new FileResource().id("test id").type("test type").serialisedFormat("test format").connectionDetail(connectionDetail);
+        DataRequestResponse drr = new DataRequestResponse()
+                .token("test string")
+                .resource(fileResource);
+        drr.originalRequestId(new RequestId().id("test id"));
+        PalisadeInputSplit test = new PalisadeInputSplit(drr);
 
-        //TODO this test needs to be rerun when PalisadeInputSplit is reworked with the spring boot services
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(buffer);
+        //When
+        test.write(dos);
+        ByteArrayInputStream bis = new ByteArrayInputStream(buffer.toByteArray());
+        DataInputStream dis = new DataInputStream(bis);
+        PalisadeInputSplit readBack = new PalisadeInputSplit();
+        readBack.readFields(dis);
+        //Then
+        Assert.assertEquals(test, readBack);
     }
 }

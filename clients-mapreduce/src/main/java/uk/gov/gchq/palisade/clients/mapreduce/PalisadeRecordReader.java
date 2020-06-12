@@ -15,15 +15,21 @@
  */
 package uk.gov.gchq.palisade.clients.mapreduce;
 
+import feign.Response;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.gov.gchq.palisade.Generated;
+import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory.DataClient;
 import uk.gov.gchq.palisade.data.serialise.Serialiser;
 import uk.gov.gchq.palisade.resource.LeafResource;
+import uk.gov.gchq.palisade.service.ConnectionDetail;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.io.IOException;
@@ -34,6 +40,11 @@ import java.util.concurrent.CompletionException;
 
 import static java.util.Objects.requireNonNull;
 
+//TODO REQUIRES REFACTORING TO DEPEND ON COMMON ELEMENTS
+//TODO THE CLIENT SHOULD NOT DEPEND ON THE SERVICES SUCH AS PALISADE AND DATA SERVICE
+//TODO INSTEAD THE RESTFUL INTERFACE SHOULD BE USED
+//TODO we should be using feign annotation to do this
+
 /**
  * The main {@link RecordReader} class for Palisade MapReduce clients. This class implements the logic for connecting to
  * a data service and retrieving the results from the returned stream. It will contact the necessary data service for
@@ -42,14 +53,14 @@ import static java.util.Objects.requireNonNull;
  * key will become the current resource being processed and the value will become the current item from that resource.
  *
  * @param <V> the value type which will be de-serialised from the resources this input split is processing
- * This class currently requests each Resource from its data service sequentially. We avoid launching all the
- * requests to the data service(s) in parallel because Hadoop's processing of tasks in an individual map task is
- * necessarily serial. If we launch multiple requests for data in parallel, but Hadoop/the user's MapReduce job spends a
- * long time processing the first Resource(s), then the data services waiting to send the ones later in the list may
- * timeout. Thus, we only make the request to the  responsible for an individual resource when we
- * need it. This may change in the future and SHOULD NOT be relied upon in any implementation decisions.
- * In order to do this, we create a DataRequestResponse for each Resource and send it to the data service
- * created by the corresponding ConnectionDetail object.
+ *            This class currently requests each Resource from its data service sequentially. We avoid launching all the
+ *            requests to the data service(s) in parallel because Hadoop's processing of tasks in an individual map task is
+ *            necessarily serial. If we launch multiple requests for data in parallel, but Hadoop/the user's MapReduce job spends a
+ *            long time processing the first Resource(s), then the data services waiting to send the ones later in the list may
+ *            timeout. Thus, we only make the request to the  responsible for an individual resource when we
+ *            need it. This may change in the future and SHOULD NOT be relied upon in any implementation decisions.
+ *            In order to do this, we create a DataRequestResponse for each Resource and send it to the data service
+ *            created by the corresponding ConnectionDetail object.
  */
 public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeRecordReader.class);
@@ -90,7 +101,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     private Serialiser<V> serialiser;
 
     /**
-     * Count of number of resources already processed, used for Haodop progress monitoring.
+     * Count of number of resources already processed, used for Hadoop progress monitoring.
      */
     private int processed;
 
@@ -99,10 +110,14 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      */
     private LeafResource errResource;
 
+    @Autowired
+    private DataClientFactory dataClientFactory;
+
     /**
      * No-arg constructor.
      */
     public PalisadeRecordReader() {
+        // empty
     }
 
     /**
@@ -135,7 +150,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      * {@inheritDoc}
      */
     @Override
-    public boolean nextKeyValue() throws IOException {
+    public boolean nextKeyValue() {
         //if we don't have a current item iterator or it's empty...
         while (itemIt == null || !itemIt.hasNext()) {
             try {
@@ -146,7 +161,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
             } catch (final CompletionException e) {
                 //something went wrong while fetching the next resource, what we do now depends on the user choice of how
                 //they want to handle errors, either way we need to log the error
-                LOGGER.warn("Failed to connect to resource {} due to {}", errResource, e.getCause());
+                LOGGER.warn("Failed to connect to resource {}", errResource);
                 LOGGER.warn("Failure exception is", e);
                 errResource = null;
                 //notify via counter
@@ -182,7 +197,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
             //any resources left to process?
             if (resIt.hasNext()) {
                 //set up the next resource
-//                setupItemStream();
+                setupItemStream();
                 return true;
             } else {
                 //end of things to be iterated
@@ -200,41 +215,30 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      * @throws java.util.concurrent.CompletionException if the next source of data suffered a failure on establishing
      *                                                  data stream
      */
+    private void setupItemStream() {
+        final LeafResource resource = resIt.next();
+        final ConnectionDetail conDetails = resource.getConnectionDetail();
+        final DataClient service = dataClientFactory.build(conDetails.createConnection());
+        //lodge request with the data service
+        ReadRequest readRequest = new ReadRequest()
+                .token(dataRequestResponse.getToken())
+                .resource(resource);
+        readRequest.setOriginalRequestId(dataRequestResponse.getOriginalRequestId());
 
+        final Response response = service.readChunked(readRequest);
+        errResource = resource;
 
-//TODO REQUIRES REFACTORING TO DEPEND ON COMMON ELEMENTS
-//TODO THE CLIENT SHOULD NOT DEPEND ON THE SERVICES SUCH AS PALISADE AND DATA SERVICE
-//TODO INSTEAD THE RESTFUL INTERFACE SHOULD BE USED
-//TODO we should be using feign annotation to do this
+        //when this future completes, we should have an iterator of things once we deserialise
+        try {
+            itemIt = serialiser.deserialise(response.body().asInputStream()).iterator();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-
-//    private void setupItemStream() {
-//        Map.Entry<LeafResource, ConnectionDetail> entry = resIt.next();
-//        final LeafResource resource = entry.getKey();
-//        final ConnectionDetail conDetails = entry.getValue();
-//        final DataService service = conDetails.createService();
-//        //lodge request with the data service
-//        ReadRequest readRequest = new ReadRequest()
-//                .token(dataRequestResponse.getToken())
-//                .resource(resource);
-//        readRequest.setOriginalRequestId(dataRequestResponse.getOriginalRequestId());
-//
-//        final CompletableFuture<ReadResponse> futureResponse = service.read(readRequest);
-//        errResource = resource;
-//        //when this future completes, we should have an iterator of things once we deserialise
-//        itemIt = futureResponse.thenApply(response -> {
-//            try {
-//                return serialiser.deserialise(response.asInputStream()).iterator();
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        })
-//                //force code to block at this point waiting for resource data to become available
-//                .join();
-//        //stash the resource
-//        currentKey = resource;
-//        processed++;
-//    }
+        //stash the resource
+        currentKey = resource;
+        processed++;
+    }
 
     /**
      * {@inheritDoc}
@@ -260,7 +264,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     @Override
     @Generated
     public float getProgress() {
-        return (dataRequestResponse != null && dataRequestResponse.getResources().size() > 0)
+        return (dataRequestResponse != null && !dataRequestResponse.getResources().isEmpty())
                 ? (float) processed / dataRequestResponse.getResources().size()
                 : 0;
     }
