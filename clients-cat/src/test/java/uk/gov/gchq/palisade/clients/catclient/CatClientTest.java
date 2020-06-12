@@ -15,36 +15,52 @@
  */
 package uk.gov.gchq.palisade.clients.catclient;
 
+import feign.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import uk.gov.gchq.palisade.Context;
+import uk.gov.gchq.palisade.RequestId;
+import uk.gov.gchq.palisade.UserId;
+import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
+import uk.gov.gchq.palisade.clients.simpleclient.request.RegisterDataRequest;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory.DataClient;
+import uk.gov.gchq.palisade.clients.simpleclient.web.PalisadeClient;
+import uk.gov.gchq.palisade.resource.impl.FileResource;
+import uk.gov.gchq.palisade.service.ConnectionDetail;
+import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
+import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.concurrent.CompletableFuture;
+
+import static org.junit.Assert.assertEquals;
 
 //TODO REQUIRES REFACTORING TO DEPEND ON COMMON ELEMENTS
 //TODO THE CLIENT SHOULD NOT DEPEND ON THE SERVICES SUCH AS PALISADE AND DATA SERVICE
 //TODO INSTEAD THE RESTFUL INTERFACE SHOULD BE USED
 //TODO we should be using feign annotation to do this
 
-
-@Deprecated
 public class CatClientTest {
 
     // mock creation
-//    private static final PalisadeService mockPalisadeService = MockPalisadeService.getMock();
-//    private static final DataService mockDataService = MockDataService.getMock();
-//    private static final ConnectionDetail mockConnectionDetail = new SimpleConnectionDetail().service(mockDataService);
-//
-//    private static RegisterDataRequest registerDataRequest; // Client to Palisade service
-//    private static CompletableFuture<DataRequestResponse> reqResponse; // Palisade to Client response
-//    private static ReadRequest readRequest1; // Client to Data Service request 1
-//    private static ReadRequest readRequest2; // Client to Data Service request 2
-//    private static CompletableFuture<ReadResponse> readResponse1; // Data Service to Client response 1
-//    private static CompletableFuture<ReadResponse> readResponse2; // Data Service to Client response 2
-//
-//    private static FileResource resource1 = new FileResource().id("resource 1");
-//    private static FileResource resource2 = new FileResource().id("resource 2");
+    private static final PalisadeClient mockPalisadeClient = Mockito.mock(PalisadeClient.class);
+    private static final DataClient mockDataClient = Mockito.mock(DataClient.class);
+    private static final ConnectionDetail mockConnectionDetail = new SimpleConnectionDetail().serviceName("mock-data-client");
+
+    private static RegisterDataRequest registerDataRequest; // Client to Palisade service
+    private static DataRequestResponse reqResponse; // Palisade to Client response
+    private static ReadRequest readRequest1; // Client to Data Service request 1
+    private static ReadRequest readRequest2; // Client to Data Service request 2
+    private static Response readResponse1; // Data Service to Client response 1
+    private static Response readResponse2; // Data Service to Client response 2
+
+    private static FileResource resource1 = new FileResource().id("resource 1");
+    private static FileResource resource2 = new FileResource().id("resource 2");
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
@@ -58,51 +74,45 @@ public class CatClientTest {
     }
 
     @Test
-    public void testClientToPalisade() throws InterruptedException {
-//        //Given
-//        String dir = "test directory";
-//        String userId = "Alice";
-//        String purpose = "test purpose";
-//
-//        String token = "Test token";
-//        RequestId reqId = new RequestId().id("testId");
-//
-//        registerDataRequest = new RegisterDataRequest().userId(new UserId().id(userId)).resourceId(dir).context(new Context().purpose(purpose));
-//
-//        readRequest1 = new ReadRequest().token(token).resource(resource1);
-//        readRequest1.originalRequestId(reqId);
-//        readRequest2 = new ReadRequest().token(token).resource(resource2);
-//        readRequest2.originalRequestId(reqId);
-//        DataRequestResponse response = new DataRequestResponse()
-//                .token(token)
-//                .resource(resource1, mockConnectionDetail)
-//                .resource(resource2, mockConnectionDetail);
-//        response.originalRequestId(new RequestId().id("Test ID"));
-//
-//        reqResponse = CompletableFuture.completedFuture(response);
-//
-//        readResponse1 = CompletableFuture.completedFuture(
-//                new ClientReadResponse(IOUtils.toInputStream("Test data 1", StandardCharsets.UTF_8)));
-//
-//        readResponse2 = CompletableFuture.completedFuture(
-//                new ClientReadResponse(IOUtils.toInputStream("Test data 2", StandardCharsets.UTF_8)));
-//
-//        Mockito.when(mockPalisadeService.registerDataRequest(Mockito.refEq(registerDataRequest, "id"))).thenReturn(reqResponse);
-//        Mockito.when(mockDataService.read(Mockito.refEq(readRequest1, "id", "originalRequestId"))).thenReturn(readResponse1);
-//        Mockito.when(mockDataService.read(Mockito.refEq(readRequest2, "id", "originalRequestId"))).thenReturn(readResponse2);
-//
-//        //When
-//        CatClient catClient = new CatClient(mockPalisadeService);
-//        catClient.read(userId, dir, purpose);
-//
-//        //Verify
-//
-//        Mockito.verify(mockPalisadeService, Mockito.times(1)).registerDataRequest(Mockito.refEq(registerDataRequest, "id"));
-//        Mockito.verify(mockDataService, Mockito.times(1)).read(Mockito.refEq(readRequest1, "id", "originalRequestId"));
-//        Mockito.verify(mockDataService, Mockito.times(1)).read(Mockito.refEq(readRequest2, "id", "originalRequestId"));
-//
-//        //Then
-//        assertEquals(String.format("Test data 1%nTest data 2%n"), outContent.toString());
+    public void testClientToPalisade() throws InterruptedException, IOException {
+        //Given
+        String dir = "test directory";
+        String userId = "Alice";
+        String purpose = "test purpose";
+
+        String token = "Test token";
+        RequestId reqId = new RequestId().id("testId");
+
+        registerDataRequest = new RegisterDataRequest().userId(new UserId().id(userId)).resourceId(dir).context(new Context().purpose(purpose));
+
+        readRequest1 = new ReadRequest().token(token).resource(resource1);
+        readRequest1.originalRequestId(reqId);
+        readRequest2 = new ReadRequest().token(token).resource(resource2);
+        readRequest2.originalRequestId(reqId);
+        reqResponse = new DataRequestResponse()
+                .token(token)
+                .resource(resource1.connectionDetail(mockConnectionDetail))
+                .resource(resource2.connectionDetail(mockConnectionDetail));
+        reqResponse.originalRequestId(new RequestId().id("Test ID"));
+
+        // readResponse1
+        // readResponse2
+
+        Mockito.when(mockPalisadeClient.registerDataRequestSync(Mockito.refEq(registerDataRequest, "id"))).thenReturn(reqResponse);
+        Mockito.when(mockDataClient.readChunked(Mockito.refEq(readRequest1, "id", "originalRequestId"))).thenReturn(readResponse1);
+        Mockito.when(mockDataClient.readChunked(Mockito.refEq(readRequest2, "id", "originalRequestId"))).thenReturn(readResponse2);
+
+        //When
+        CatClient catClient = new CatClient();
+        catClient.cat(userId, dir, purpose);
+
+        //Verify
+        Mockito.verify(mockPalisadeClient, Mockito.times(1)).registerDataRequestSync(Mockito.refEq(registerDataRequest, "id"));
+        Mockito.verify(mockDataClient, Mockito.times(1)).readChunked(Mockito.refEq(readRequest1, "id", "originalRequestId"));
+        Mockito.verify(mockDataClient, Mockito.times(1)).readChunked(Mockito.refEq(readRequest2, "id", "originalRequestId"));
+
+        //Then
+        assertEquals(String.format("Test data 1%nTest data 2%n"), outContent.toString());
     }
 
     @After

@@ -21,57 +21,69 @@ package uk.gov.gchq.palisade.clients.catclient;
 //TODO INSTEAD THE RESTFUL INTERFACE SHOULD BE USED
 //TODO we should be using feign annotation to do this
 
-@Deprecated
+import feign.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import uk.gov.gchq.palisade.Context;
+import uk.gov.gchq.palisade.UserId;
+import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
+import uk.gov.gchq.palisade.clients.simpleclient.request.RegisterDataRequest;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory;
+import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory.DataClient;
+import uk.gov.gchq.palisade.clients.simpleclient.web.PalisadeClient;
+import uk.gov.gchq.palisade.resource.LeafResource;
+import uk.gov.gchq.palisade.service.ConnectionDetail;
+import uk.gov.gchq.palisade.service.request.DataRequestResponse;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+@SpringBootApplication
 public class CatClient {
-//
-//    private final PalisadeService palisadeService;
-//
-//    public CatClient(final PalisadeService palisadeService) {
-//        Objects.requireNonNull(palisadeService, "palisade service must be provided");
-//        this.palisadeService = palisadeService;
-//    }
-//
-//    public static void main(final String[] args) throws InterruptedException {
-//
-//        if (args.length == 3) {
-//
-//            String userId = args[0];
-//            String resource = args[1];
-//            String purpose = args[2];
-//
-//            PalisadeService palisade = ClientUtil.getPalisadeClientEntryPoint();
-//
-//            new CatClient(palisade).read(userId, resource, purpose);
-//
-//        } else {
-//            System.out.printf("Usage: %s userId resource purpose\n\n", CatClient.class.getSimpleName());
-//            System.out.println("userId\t\t the unique id of the user making this query");
-//            System.out.println("resource\t the name of the resource being requested");
-//            System.out.println("purpose\t\t purpose for accessing the resource");
-//        }
-//    }
-//
-//    protected void read(final String userId, final String resource, final String purpose) {
-//        final RegisterDataRequest dataRequest = new RegisterDataRequest().resourceId(resource).userId(new UserId().id(userId)).context(new Context().purpose(purpose));
-//        final DataRequestResponse dataRequestResponse = palisadeService.registerDataRequest(dataRequest).join();
-//        for (final Entry<LeafResource, ConnectionDetail> entry : dataRequestResponse.getResources().entrySet()) {
-//            final ConnectionDetail connectionDetail = entry.getValue();
-//            final DataService dataService = connectionDetail.createService();
-//
-//            final ReadRequest readRequest = new ReadRequest()
-//                    .token(dataRequestResponse.getToken())
-//                    .resource(entry.getKey());
-//            readRequest.setOriginalRequestId(dataRequestResponse.getOriginalRequestId());
-//
-//            final CompletableFuture<ReadResponse> futureResponse = dataService.read(readRequest);
-//            final CompletableFuture<InputStream> futureResult = futureResponse.thenApply(readResponse -> {
-//                try {
-//                    return readResponse.asInputStream();
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            });
-//            new BufferedReader(new InputStreamReader(futureResult.join())).lines().forEachOrdered(System.out::println);
-//        }
-//    }
+
+    @Autowired
+    private PalisadeClient palisadeClient;
+    @Autowired
+    private DataClientFactory dataClientFactory;
+
+    public CatClient(final PalisadeClient palisadeClient, final DataClientFactory dataClientFactory) {
+        this.palisadeClient = palisadeClient;
+        this.dataClientFactory = dataClientFactory;
+    }
+
+    public CatClient() {
+    }
+
+    public static void main(final String[] args) throws IOException {
+        if (args.length == 3) {
+            String userId = args[0];
+            String resource = args[1];
+            String purpose = args[2];
+
+            new CatClient().cat(userId, resource, purpose);
+        } else {
+            System.out.printf("Usage: %s userId resource purpose%n%n", CatClient.class.getSimpleName());
+            System.out.println("userId\t\t the unique id of the user making this query");
+            System.out.println("resource\t the name of the resource being requested");
+            System.out.println("purpose\t\t purpose for accessing the resource");
+        }
+    }
+
+    public void cat(final String userId, final String resource, final String purpose) throws IOException {
+        final RegisterDataRequest dataRequest = new RegisterDataRequest().resourceId(resource).userId(new UserId().id(userId)).context(new Context().purpose(purpose));
+        final DataRequestResponse dataRequestResponse = palisadeClient.registerDataRequestSync(dataRequest);
+        for (final LeafResource leafResource : dataRequestResponse.getResources()) {
+            final ConnectionDetail connectionDetail = leafResource.getConnectionDetail();
+            final DataClient dataClient = dataClientFactory.build(connectionDetail.createConnection());
+            final ReadRequest readRequest = new ReadRequest()
+                    .token(dataRequestResponse.getToken())
+                    .resource(leafResource);
+            readRequest.setOriginalRequestId(dataRequestResponse.getOriginalRequestId());
+
+            final Response response = dataClient.readChunked(readRequest);
+            new BufferedReader(new InputStreamReader(response.body().asInputStream())).lines().forEachOrdered(System.out::println);
+        }
+    }
 }
