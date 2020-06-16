@@ -22,12 +22,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.gchq.palisade.clients.simpleclient.request.RegisterDataRequest;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
-import java.net.URI;
-
+/**
+ * The interface Palisade client which uses Feign to either resolve services called palisade-service or looks up a url specified in the relevant profiles yaml.
+ */
 @FeignClient(name = "palisade-service", url = "${web.client.palisade-service}")
 public interface PalisadeClient {
 
+    /**
+     * Register data request sync data request response.
+     *
+     * @param request the request
+     * @return the data request response
+     */
     @PostMapping(value = "/registerDataRequest", consumes = "application/json", produces = "application/json")
-    DataRequestResponse registerDataRequestSync(final URI url, @RequestBody final RegisterDataRequest request);
+    DataRequestResponse registerDataRequestSync(@RequestBody final RegisterDataRequest request);
 
 }

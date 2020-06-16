@@ -16,22 +16,39 @@
 package uk.gov.gchq.palisade.clients.simpleclient.web;
 
 import feign.Response;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import uk.gov.gchq.palisade.clients.simpleclient.request.AddSerialiserRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 
-import java.net.URI;
+/**
+ * DataClientFactory interface
+ */
+public interface DataClientFactory {
+    /**
+     * The interface Data client.
+     */
+    interface DataClient {
 
-@FeignClient(name = "data-service", url = "${web.client.data-service}")
-public interface DataClient {
+        /**
+         * Read chunked response.
+         *
+         * @param request the request
+         * @return the response
+         */
+        @PostMapping(value = "/read/chunked", consumes = "application/json", produces = "application/octet-stream")
+        Response readChunked(@RequestBody final ReadRequest request);
 
-    @PostMapping(value = "/read/chunked", consumes = "application/json", produces = "application/octet-stream")
-    Response readChunked(final URI url, @RequestBody final ReadRequest request);
+    }
 
-    @PostMapping(value = "/addSerialiser", consumes = "application/json", produces = "application/json")
-    Boolean addSerialiser(final URI url, @RequestBody final AddSerialiserRequest request);
-
+    /**
+     * Implemented by either the NamedDataClient or UrlDataClient to dynamically build FeignBuilders for the DataClients Rest calls
+     *
+     * @param serviceId the service id
+     * @return the data client
+     */
+    DataClient build(final String serviceId);
 }
+
+
+
