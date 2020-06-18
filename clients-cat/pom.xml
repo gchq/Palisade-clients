@@ -26,6 +26,7 @@
 
     <!--  *********** Aritfact ID ***********    -->
     <artifactId>clients-cat</artifactId>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/clients-cat</url>
     <!--  *********** Aritfact ID ***********    -->
 
     <dependencies>

@@ -31,6 +31,7 @@
 
     <!--  *********** Aritfact ID ***********    -->
     <artifactId>clients-mapreduce</artifactId>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/clients-mapreduce</url>
     <!--  *********** Aritfact ID ***********    -->
 
     <dependencies>
