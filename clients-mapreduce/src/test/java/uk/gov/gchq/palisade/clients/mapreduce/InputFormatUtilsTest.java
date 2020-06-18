@@ -24,7 +24,7 @@ import uk.gov.gchq.palisade.resource.impl.FileResource;
 import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
-import java.util.HashSet;
+//import java.util.HashSet;
 import java.util.List;
 import java.util.PrimitiveIterator;
 import java.util.Set;

@@ -17,7 +17,7 @@ package uk.gov.gchq.palisade.clients.mapreduce;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.util.StringUtils;
+//import org.apache.hadoop.util.StringUtils;
 
 import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.RequestId;

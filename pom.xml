@@ -67,7 +67,6 @@
         <module>clients-simple</module>
         <module>clients-mapreduce</module>
         <module>clients-cat</module>
-        <module>clients-common</module>
     </modules>
 
     <dependencyManagement>

@@ -182,12 +182,11 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
 
     /**
      * Get the current {@link PalisadeClient} for a job.
+     * This method should ALWAYS be used instead of accessing the field directly, even internally in this class.
      *
      * @param context the job to fetch the service for
      * @return the service or null if none set
      * @throws NullPointerException if {@code context} is null
-     * @apiNote This method should ALWAYS be used instead of accessing the field directly, even internally in this
-     * class.
      */
     public static synchronized PalisadeClient getPalisadeClient(final JobContext context) {
         Objects.requireNonNull(context, "context");
