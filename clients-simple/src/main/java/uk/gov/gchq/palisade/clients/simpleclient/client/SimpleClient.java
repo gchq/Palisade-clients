@@ -35,10 +35,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * The type Simple client.
@@ -76,27 +75,25 @@ public class SimpleClient<T> {
      * @throws IOException the io exception
      */
     public Stream<T> read(final String filename, final String userId, final String purpose) throws IOException {
-        DataRequestResponse dataRequestResponse = makeRequest(filename, userId, purpose);
-        return getObjectStreams(dataRequestResponse);
+        DataRequestResponse dataRequestResponse = registerRequest(filename, userId, purpose);
+        return readResponse(dataRequestResponse);
     }
 
-    private DataRequestResponse makeRequest(final String fileName, final String userId, final String purpose) {
+    public DataRequestResponse registerRequest(final String fileName, final String userId, final String purpose) {
         RegisterDataRequest dataRequest = new RegisterDataRequest().resourceId(fileName).userId(new UserId().id(userId)).context(new Context().purpose(purpose));
-
-        // While there may be many palisade services, just use one
-        return palisadeClient.registerDataRequestSync(dataRequest);
+        return registerRequest(dataRequest);
     }
 
-    /**
-     * For a given DataRequestResponse returns a stream of deserialised objects from the dataClient
-     *
-     * @param response the response
-     * @return the object streams
-     * @throws IOException the io exception
-     */
-    public Stream<T> getObjectStreams(final DataRequestResponse response) throws IOException {
-        requireNonNull(response, "response");
+    public DataRequestResponse registerRequest(final RegisterDataRequest request) {
+        return palisadeClient.registerDataRequestSync(request);
+    }
 
+    public Stream<T> readResponse(final String token, final Set<LeafResource> resourceSet) throws IOException {
+        DataRequestResponse requestResponse = new DataRequestResponse().resources(resourceSet).token(token);
+        return readResponse(requestResponse);
+    }
+
+    public Stream<T> readResponse(final DataRequestResponse response) throws IOException {
         final List<Stream<T>> dataStreams = new ArrayList<>(response.getResources().size());
         for (final LeafResource resource : response.getResources()) {
             final ConnectionDetail connectionDetail = resource.getConnectionDetail();
@@ -107,7 +104,7 @@ public class SimpleClient<T> {
                     .resource(resource);
             readRequest.setOriginalRequestId(uuid);
 
-            LOGGER.info("Resource {} has DATA-SERVICE connection detail {}", resource.getId(), connectionDetail);
+            LOGGER.debug("Resource {} has DATA-SERVICE connection detail {}", resource.getId(), connectionDetail);
             DataClientFactory.DataClient dataClient = dataClientFactory.build(connectionDetail.createConnection());
             InputStream responseStream = dataClient.readChunked(readRequest).body().asInputStream();
             Stream<T> dataStream = getSerialiser().deserialise(responseStream);

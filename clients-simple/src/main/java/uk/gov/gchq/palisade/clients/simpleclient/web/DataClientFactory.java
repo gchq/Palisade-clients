@@ -26,6 +26,14 @@ import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
  */
 public interface DataClientFactory {
     /**
+     * Implemented by either the NamedDataClient or UrlDataClient to dynamically build FeignBuilders for the DataClients Rest calls
+     *
+     * @param serviceId the service id
+     * @return the data client
+     */
+    DataClient build(final String serviceId);
+
+    /**
      * The interface Data client.
      */
     interface DataClient {
@@ -40,14 +48,6 @@ public interface DataClientFactory {
         Response readChunked(@RequestBody final ReadRequest request);
 
     }
-
-    /**
-     * Implemented by either the NamedDataClient or UrlDataClient to dynamically build FeignBuilders for the DataClients Rest calls
-     *
-     * @param serviceId the service id
-     * @return the data client
-     */
-    DataClient build(final String serviceId);
 }
 
 
