@@ -87,7 +87,6 @@ public class SimpleClient<T> {
      * @param userId     the user id
      * @param purpose    the purpose
      * @return the {@link DataRequestResponse} from the palisade-service
-     * @throws IOException if deserialisation of the data-service response failed
      */
     public DataRequestResponse registerRequest(final String resourceId, final String userId, final String purpose) {
         RegisterDataRequest dataRequest = new RegisterDataRequest().resourceId(resourceId).userId(new UserId().id(userId)).context(new Context().purpose(purpose));
@@ -100,7 +99,6 @@ public class SimpleClient<T> {
      *
      * @param request the request
      * @return the {@link DataRequestResponse} from the palisade-service
-     * @throws IOException if deserialisation of the data-service response failed
      */
     public DataRequestResponse registerRequest(final RegisterDataRequest request) {
         return palisadeClient.registerDataRequestSync(request);
