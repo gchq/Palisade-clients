@@ -101,15 +101,14 @@ public class RegisterDataRequest extends Request {
         context(context);
     }
 
+    @Override
+    public RequestId getOriginalRequestId() {
+        throw new ForbiddenException("Should not call RegisterDataRequest.getOriginalRequestId()");
+    }
 
     @Override
     public void setOriginalRequestId(final RequestId originalRequestId) {
         throw new ForbiddenException("Should not call RegisterDataRequest.setOriginalRequestId()");
-    }
-
-    @Override
-    public RequestId getOriginalRequestId() {
-        throw new ForbiddenException("Should not call RegisterDataRequest.getOriginalRequestId()");
     }
 
     @Override
