@@ -45,7 +45,7 @@ public class UrlDataClient implements DataClientFactory {
         Map<String, String> dataServices = clientConfiguration.getClient();
         return feignClientBuilder
                 .forType(DataClient.class, serviceId)
-                .url(dataServices.getOrDefault(serviceId, serviceId))
+                .url(dataServices.getOrDefault(serviceId, "http://" + serviceId))
                 .build();
     }
 }
