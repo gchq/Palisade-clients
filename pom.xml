@@ -99,12 +99,6 @@
         </profile>
     </profiles>
 
-    <scm>
-        <!-- <connection>scm:git:https://github.com/dev-958/ci-example.git</connection> -->
-        <developerConnection>scm:git:ssh://git@github.com:gchq/Palisade-clients.git</developerConnection>
-        <url>https://github.com/gchq/Palisade-clients</url>
-    </scm>
-
     <distributionManagement>
         <!-- in order to use this, one must have nexus up and running on a given url -->
         <repository>
