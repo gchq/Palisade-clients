@@ -29,6 +29,7 @@ public class UrlDataClient implements DataClientFactory {
 
     private final FeignClientBuilder feignClientBuilder;
     private final ClientConfiguration clientConfiguration;
+    private static final String HTTP = "http://";
 
     /**
      * Instantiates a new Url data client with a Feign Builder of url serviceId i.e localhost:8085.
@@ -45,7 +46,7 @@ public class UrlDataClient implements DataClientFactory {
         Map<String, String> dataServices = clientConfiguration.getClient();
         return feignClientBuilder
                 .forType(DataClient.class, serviceId)
-                .url(dataServices.getOrDefault(serviceId, "http://" + serviceId))
+                .url(dataServices.getOrDefault(serviceId, HTTP.concat(serviceId)))
                 .build();
     }
 }
