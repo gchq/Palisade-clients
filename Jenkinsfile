@@ -89,18 +89,7 @@ spec:
             }
         }
 
-        stage('Build : Cached') {
-            dir('Palisade-clients') {
-                git url: 'https://github.com/gchq/Palisade-clients.git'
-                sh "git checkout ${GIT_BRANCH_NAME}"
-                container('docker-cmds') {
-                    configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
-                        sh 'mvn -s $MAVEN_SETTINGS install'
-                    }
-                }
-            }
-        }
-        stage('Build : Uncached') {
+        stage('Install, Unit Tests, Checkstyle') {
             dir('Palisade-clients') {
                 git url: 'https://github.com/gchq/Palisade-clients.git'
                 sh "git checkout ${GIT_BRANCH_NAME}"
