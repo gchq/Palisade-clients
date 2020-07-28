@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.palisade.Context;
 import uk.gov.gchq.palisade.RequestId;
 import uk.gov.gchq.palisade.UserId;
+import uk.gov.gchq.palisade.clients.simpleclient.exception.StreamingIOException;
 import uk.gov.gchq.palisade.clients.simpleclient.request.ReadRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.request.RegisterDataRequest;
 import uk.gov.gchq.palisade.clients.simpleclient.web.DataClientFactory;
@@ -33,10 +34,7 @@ import uk.gov.gchq.palisade.service.request.DataRequestResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -75,7 +73,7 @@ public class SimpleClient<T> {
      * @return a stream of objects of type T from the data-service
      * @throws IOException if deserialisation of the data-service response failed
      */
-    public Stream<T> read(final String resourceId, final String userId, final String purpose) throws IOException {
+    public Stream<Stream<T>> read(final String resourceId, final String userId, final String purpose) throws IOException {
         DataRequestResponse dataRequestResponse = registerRequest(resourceId, userId, purpose);
         return readResponse(dataRequestResponse);
     }
@@ -112,7 +110,7 @@ public class SimpleClient<T> {
      * @return a stream of objects of type T from the data-service
      * @throws IOException if deserialisation of the data-service response failed
      */
-    public Stream<T> readResponse(final String token, final Set<LeafResource> resourceSet) throws IOException {
+    public Stream<Stream<T>> readResponse(final String token, final Set<LeafResource> resourceSet) throws IOException {
         DataRequestResponse requestResponse = new DataRequestResponse().resources(resourceSet).token(token);
         return readResponse(requestResponse);
     }
@@ -124,24 +122,39 @@ public class SimpleClient<T> {
      * @return a stream of objects of type T from the data-service
      * @throws IOException if deserialisation of the data-service response failed
      */
-    public Stream<T> readResponse(final DataRequestResponse response) throws IOException {
-        final List<Stream<T>> dataStreams = new ArrayList<>(response.getResources().size());
-        for (final LeafResource resource : response.getResources()) {
-            final ConnectionDetail connectionDetail = resource.getConnectionDetail();
-            final RequestId uuid = response.getOriginalRequestId();
+    public Stream<Stream<T>> readResponse(final DataRequestResponse response) throws IOException {
+        // Lazily evaluate as a stream so each element represents a new connection for a single resource to the data-service
+        return response.getResources().stream()
+                .map(resource -> {
+                    final ConnectionDetail connectionDetail = resource.getConnectionDetail();
+                    final RequestId uuid = response.getOriginalRequestId();
+                    LOGGER.debug("Resource {} has connection detail {}", resource.getId(), connectionDetail);
+                    DataClientFactory.DataClient dataClient = dataClientFactory.build(connectionDetail.createConnection());
 
-            final ReadRequest readRequest = new ReadRequest()
-                    .token(response.getToken())
-                    .resource(resource);
-            readRequest.setOriginalRequestId(uuid);
-
-            LOGGER.debug("Resource {} has DATA-SERVICE connection detail {}", resource.getId(), connectionDetail);
-            DataClientFactory.DataClient dataClient = dataClientFactory.build(connectionDetail.createConnection());
-            InputStream responseStream = dataClient.readChunked(readRequest).body().asInputStream();
-            Stream<T> dataStream = getSerialiser().deserialise(responseStream);
-            dataStreams.add(dataStream);
-        }
-        return dataStreams.stream().flatMap(Function.identity());
+                    final ReadRequest readRequest = new ReadRequest()
+                            .token(response.getToken())
+                            .resource(resource);
+                    readRequest.setOriginalRequestId(uuid);
+                    try {
+                        // Creates and keeps alive a connection to the data-service
+                        InputStream responseStream = dataClient.readChunked(readRequest)
+                                .body()
+                                .asInputStream();
+                        // Lazily evaluate as a stream so each element represents a record from the parent resource stream
+                        return getSerialiser()
+                                .deserialise(responseStream)
+                                // This inputStream needs to be closed as the stream closes, register that action here
+                                .onClose(() -> {
+                                    try {
+                                        responseStream.close();
+                                    } catch (IOException e) {
+                                        LOGGER.warn("InputStream was already closed", e);
+                                    }
+                                });
+                    } catch (IOException ex) {
+                        throw new StreamingIOException(ex);
+                    }
+                });
     }
 
     /**
