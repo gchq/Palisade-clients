@@ -125,26 +125,19 @@ public class SimpleClient<T> {
     public Stream<Stream<T>> readResponse(final DataRequestResponse response) throws IOException {
         // Lazily evaluate as a stream so each element represents a new connection for a single resource to the data-service
         return response.getResources().stream()
-                .map(resource -> {
+                .map((LeafResource resource) -> {
                     final ConnectionDetail connectionDetail = resource.getConnectionDetail();
                     final RequestId uuid = response.getOriginalRequestId();
                     LOGGER.debug("Resource {} has connection detail {}", resource.getId(), connectionDetail);
                     DataClientFactory.DataClient dataClient = dataClientFactory.build(connectionDetail.createConnection());
-
-                    final ReadRequest readRequest = new ReadRequest()
-                            .token(response.getToken())
-                            .resource(resource);
+                    final ReadRequest readRequest = new ReadRequest().token(response.getToken()).resource(resource);
                     readRequest.setOriginalRequestId(uuid);
                     try {
                         // Creates and keeps alive a connection to the data-service
-                        InputStream responseStream = dataClient.readChunked(readRequest)
-                                .body()
-                                .asInputStream();
+                        InputStream responseStream = dataClient.readChunked(readRequest).body().asInputStream();
                         // Lazily evaluate as a stream so each element represents a record from the parent resource stream
-                        return getSerialiser()
-                                .deserialise(responseStream)
-                                // This inputStream needs to be closed as the stream closes, register that action here
-                                .onClose(() -> {
+                        return getSerialiser().deserialise(responseStream).onClose(() -> {
+                                    // This inputStream needs to be closed as the stream closes, register that action here
                                     try {
                                         responseStream.close();
                                     } catch (IOException e) {
