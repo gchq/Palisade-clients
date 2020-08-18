@@ -20,7 +20,7 @@
     <parent>
         <groupId>uk.gov.gchq.palisade</groupId>
         <artifactId>clients</artifactId>
-        <version>0.4.0-${revision}</version>
+        <version>0.4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -31,7 +31,7 @@
 
     <!--  *********** Aritfact ID ***********    -->
     <artifactId>clients-mapreduce</artifactId>
-    <url>https://github.com/gchq/Palisade-clients/tree/develop/clients-mapreduce</url>
+    <url>https://github.com/gchq/Palisade-clients/tree/main/clients-mapreduce</url>
     <!--  *********** Aritfact ID ***********    -->
 
     <dependencies>
