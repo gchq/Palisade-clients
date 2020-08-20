@@ -21,13 +21,13 @@
     <parent>
         <groupId>uk.gov.gchq.palisade</groupId>
         <artifactId>clients</artifactId>
-        <version>0.4.0</version>
+        <version>0.5.0-${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <!--  *********** Aritfact ID ***********    -->
     <artifactId>clients-simple</artifactId>
-    <url>https://github.com/gchq/Palisade-clients/tree/main/clients-simple</url>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/clients-simple</url>
     <!--  *********** Aritfact ID ***********    -->
 
     <properties>
