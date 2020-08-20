@@ -1,2 +1,2 @@
-uk.gov.gchq.palisade:clients-common:jar:0.4.0
+uk.gov.gchq.palisade:clients-common:jar:0.5.0-SNAPSHOT
 \- org.slf4j:slf4j-api:jar:1.7.25:compile
