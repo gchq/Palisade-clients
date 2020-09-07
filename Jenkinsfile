@@ -107,15 +107,7 @@ timestamps {
                 dir('Palisade-readers') {
                     git branch: 'develop', url: 'https://github.com/gchq/Palisade-readers.git'
                     if (sh(script: "git checkout ${GIT_BRANCH_NAME}", returnStatus: true) == 0) {
-                        container('docker-cmds') {
-                            configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
-                                if (IS_PR == "true") {
-                                    sh "mvn -s ${MAVEN_SETTINGS} -D revision=${READERS_REVISION} -D common.revision=${COMMON_REVISION} deploy"
-                                } else {
-                                    sh "mvn -s ${MAVEN_SETTINGS} -D revision=${READERS_REVISION} -D common.revision=${COMMON_REVISION} install"
-                                }
-                            }
-                        }
+                        COMMON_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
                     }
                 }
             }
