@@ -110,6 +110,11 @@ timestamps {
                     git branch: 'develop', url: 'https://github.com/gchq/Palisade-readers.git'
                     if (sh(script: "git checkout ${GIT_BRANCH_NAME}", returnStatus: true) == 0) {
                         READERS_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
+                    } else {
+                        if (COMMON_REVISION == "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT") {
+                            sh "mvn -s ${MAVEN_SETTINGS} -D revision=${READERS_REVISION} -D common.revision=${COMMON_REVISION} deploy"
+                            READERS_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
+                        }
                     }
                 }
             }
