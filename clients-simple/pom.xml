@@ -57,19 +57,4 @@
         </dependency>
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.parent.groupId}</groupId>
-                <artifactId>clients-common</artifactId>
-                <version>${project.parent.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.parent.groupId}</groupId>
-                <artifactId>common</artifactId>
-                <version>${project.parent.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>
