@@ -70,6 +70,7 @@ timestamps {
             def GIT_BRANCH_NAME
             def COMMON_REVISION
             def READERS_REVISION
+            def CLIENTS_REVISION
             def IS_PR
 
             stage('Bootstrap') {
@@ -83,16 +84,17 @@ timestamps {
                 // set default values for the variables
                 GIT_BRANCH_NAME_LOWER = GIT_BRANCH_NAME.toLowerCase().take(7)
                 COMMON_REVISION = "SNAPSHOT"
-                READERS_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
+                READERS_REVISION = "SNAPSHOT"
+                CLIENTS_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
                 // update values for the variables if this is the develop branch build
                 if ("${env.BRANCH_NAME}" == "develop") {
-                    COMMON_REVISION = "SNAPSHOT"
-                    READERS_REVISION = "SNAPSHOT"
+                    CLIENTS_REVISION = "SNAPSHOT"
                 }
                 // update values for the variables if this is the main branch build
                 if ("${env.BRANCH_NAME}" == "main") {
                     COMMON_REVISION = "RELEASE"
                     READERS_REVISION = "RELEASE"
+                    CLIENTS_REVISION = "RELEASE"
                 }
                 echo sh(script: 'env | sort', returnStdout: true)
             }
@@ -107,7 +109,7 @@ timestamps {
                 dir('Palisade-readers') {
                     git branch: 'develop', url: 'https://github.com/gchq/Palisade-readers.git'
                     if (sh(script: "git checkout ${GIT_BRANCH_NAME}", returnStatus: true) == 0) {
-                        COMMON_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
+                        READERS_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
                     }
                 }
             }
@@ -118,9 +120,9 @@ timestamps {
                     container('docker-cmds') {
                         configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
                            if (IS_PR == "true") {
-                                sh "mvn -s ${MAVEN_SETTINGS} -D revision=${READERS_REVISION} -D common.revision=${COMMON_REVISION} deploy"
+                                sh "mvn -s ${MAVEN_SETTINGS} -D revision=${CLIENTS_REVISION} -D common.revision=${COMMON_REVISION} -D readers.revision=${READERS_REVISION} deploy"
                            } else {
-                                sh "mvn -s ${MAVEN_SETTINGS} -D revision=${READERS_REVISION} -D common.revision=${COMMON_REVISION} install"
+                                sh "mvn -s ${MAVEN_SETTINGS} -D revision=${CLIENTS_REVISION} -D common.revision=${COMMON_REVISION} -D readers.revision=${READERS_REVISION} install"
                            }
                         }
                     }
@@ -152,21 +154,6 @@ timestamps {
                     def qg = waitForQualityGate()
                     if (qg.status != 'OK') {
                         error "Pipeline aborted due to SonarQube quality gate failure: ${qg.status}"
-                    }
-                }
-            }
-
-            stage('Maven deploy') {
-                dir('Palisade-clients') {
-                    container('docker-cmds') {
-                        configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
-                            if (("${env.BRANCH_NAME}" == "develop") ||
-                                    ("${env.BRANCH_NAME}" == "master")) {
-                                sh 'mvn -s $MAVEN_SETTINGS deploy -P quick'
-                            } else {
-                                sh "echo - no deploy"
-                            }
-                        }
                     }
                 }
             }
