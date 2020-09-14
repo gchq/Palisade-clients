@@ -72,7 +72,7 @@ timestamps {
             def READERS_REVISION
             def CLIENTS_REVISION
             def IS_PR
-            def NOT_FEATURE_BRANCH
+            def FEATURE_BRANCH
 
             stage('Bootstrap') {
                 if (env.CHANGE_BRANCH) {
@@ -87,24 +87,24 @@ timestamps {
                 COMMON_REVISION = "SNAPSHOT"
                 READERS_REVISION = "SNAPSHOT"
                 CLIENTS_REVISION = "BRANCH-${GIT_BRANCH_NAME_LOWER}-SNAPSHOT"
-                NOT_FEATURE_BRANCH = "false"
+                FEATURE_BRANCH = "true"
                 // update values for the variables if this is the develop branch build
                 if ("${env.BRANCH_NAME}" == "develop") {
                     CLIENTS_REVISION = "SNAPSHOT"
-                    NOT_FEATURE_BRANCH = "true"
+                    FEATURE_BRANCH = "false"
                 }
                 // update values for the variables if this is the main branch build
                 if ("${env.BRANCH_NAME}" == "main") {
                     COMMON_REVISION = "RELEASE"
                     READERS_REVISION = "RELEASE"
                     CLIENTS_REVISION = "RELEASE"
-                    NOT_FEATURE_BRANCH = "true"
+                    FEATURE_BRANCH = "false"
                 }
                 echo sh(script: 'env | sort', returnStdout: true)
             }
 
             stage('Prerequisites') {
-                if (("${GIT_BRANCH_NAME}" != "develop") && ("${GIT_BRANCH_NAME}" != "main")) {
+                if (FEATURE_BRANCH == "true") {
                     dir('Palisade-common') {
                         git branch: 'develop', url: 'https://github.com/gchq/Palisade-common.git'
                         if (sh(script: "git checkout ${GIT_BRANCH_NAME}", returnStatus: true) == 0) {
@@ -130,7 +130,7 @@ timestamps {
                     git branch: GIT_BRANCH_NAME, url: 'https://github.com/gchq/Palisade-clients.git'
                     container('docker-cmds') {
                         configFileProvider([configFile(fileId: "${env.CONFIG_FILE}", variable: 'MAVEN_SETTINGS')]) {
-                           if (IS_PR == "true" || NOT_FEATURE_BRANCH == "true") {
+                           if (IS_PR == "true" || FEATURE_BRANCH == "false") {
                                 sh "mvn -s ${MAVEN_SETTINGS} -D revision=${CLIENTS_REVISION} -D common.revision=${COMMON_REVISION} -D readers.revision=${READERS_REVISION} deploy"
                            } else {
                                 sh "mvn -s ${MAVEN_SETTINGS} -D revision=${CLIENTS_REVISION} -D common.revision=${COMMON_REVISION} -D readers.revision=${READERS_REVISION} install"
