@@ -72,6 +72,7 @@
         <module>clients-mapreduce</module>
         <module>clients-cat</module>
         <module>clients-common</module>
+        <module>client-java</module>
     </modules>
 
     <dependencyManagement>
