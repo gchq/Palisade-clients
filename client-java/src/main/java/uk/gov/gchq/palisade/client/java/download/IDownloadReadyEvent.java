@@ -17,7 +17,14 @@ package uk.gov.gchq.palisade.client.java.download;
 
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.java.util.TupleStyle;
+
+import java.io.InputStream;
+
 @Value.Immutable
-public interface IDownloadQueueStatusEvent {
+@TupleStyle
+public interface IDownloadReadyEvent {
     String getToken();
+
+    InputStream getInputStream();
 }

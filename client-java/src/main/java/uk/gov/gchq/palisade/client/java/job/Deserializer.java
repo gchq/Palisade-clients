@@ -15,14 +15,14 @@
  */
 package uk.gov.gchq.palisade.client.java.job;
 
-import java.io.*;
+import java.io.InputStream;
 
-public interface Deserializer {
+public interface Deserializer<E> {
 
-    Object deserialize(InputStream inputStream);
+    E deserialize(InputStream inputStream);
 
-    default Object deserialize(byte[] bytea) {
-        return new ByteArrayInputStream(bytea);
+    default E deserialize(byte[] bytea) {
+        return deserialize(bytea);
     }
 
 }

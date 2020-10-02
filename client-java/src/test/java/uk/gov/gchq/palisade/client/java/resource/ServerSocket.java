@@ -1,8 +1,22 @@
-package uk.gov.gchq.palisade.client.java;
+/*
+ * Copyright 2020 Crown Copyright
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package uk.gov.gchq.palisade.client.java.resource;
 
 import org.slf4j.*;
 
-import uk.gov.gchq.palisade.client.java.resource.*;
 import uk.gov.gchq.palisade.client.java.util.ClientUtil;
 
 import javax.websocket.*;
@@ -14,8 +28,6 @@ import java.lang.ref.WeakReference;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static uk.gov.gchq.palisade.client.java.ServerStateType.WAITING;
-
 @ServerEndpoint(
         value = "/name",
         encoders = { ResourceClient.MessageCode.class },
@@ -25,7 +37,7 @@ public class ServerSocket {
 
     private static final Logger log = LoggerFactory.getLogger(ServerSocket.class);
     private static final ObjectMapper objectMapper = ClientUtil.getObjectMapper();
-    private static final int NUM_RESOURCES = 50;
+    private static final int NUM_RESOURCES = 1;
 
     private final ServerStateManager statemanager = new ServerStateManager();
 
@@ -45,7 +57,7 @@ public class ServerSocket {
         switch (inmsg.getType()) {
             case SUBSCRIBE: onSubscribe(session, inmsg); break;
             case CTS:       onCTS(session, inmsg);       break;
-            default: 
+            default:
                 log.warn("Unknown message type: {}", inmsg.getType());
                 break;
         }
@@ -62,9 +74,11 @@ public class ServerSocket {
 
         var oldState = statemanager.find(token).filter(ServerState::isActive);
 
-        var ack = IMessage.create(b -> b.type(MessageType.SUBSCRIBED).token(token)
-                .putHeader("state", (oldState.isPresent() ? "reconnect" : "new"))
-                .putHeader("test", "test response message"));
+        var ack = IMessage.create(b -> b
+            .type(MessageType.SUBSCRIBED)
+            .token(token)
+            .putHeader("state", (oldState.isPresent() ? "reconnect" : "new"))
+            .putHeader("test", "test response message"));
 
         sendMessage(session, ack);
 
@@ -73,9 +87,14 @@ public class ServerSocket {
         var sessionRef = new WeakReference<Session>(session);
 
         var newState = oldState.isPresent()
-                ? oldState.get().change(b -> b.sessionReference(sessionRef).currentState(WAITING))
-                : IServerState.create(b -> b.token(token).sessionReference(sessionRef)
-                        .resourceGenerator(new ResourceGenerator(NUM_RESOURCES)).currentState(WAITING));
+                ? oldState.get().change(b -> b
+                        .sessionReference(sessionRef)
+                        .currentState(ServerStateType.WAITING))
+                : IServerState.create(b -> b
+                        .token(token)
+                        .sessionReference(sessionRef)
+                        .resourceGenerator(new ResourceGenerator(token, NUM_RESOURCES))
+                        .currentState(ServerStateType.WAITING));
 
         statemanager.set(newState);
 

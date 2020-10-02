@@ -23,11 +23,11 @@ import java.lang.annotation.*;
 @Target({ElementType.PACKAGE, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS) // Make it class retention for incremental compilation
 @Value.Style(
-        allParameters = true,
+    allParameters = true,
     typeAbstract = {"I*"}, // 'I' prefix will be detected and trimmed
     typeImmutable = "*", // No prefix or suffix for generated immutable type
     visibility = ImplementationVisibility.PUBLIC, // Generated class will be always public
-        defaults = @Value.Immutable(builder = false))
+    defaults = @Value.Immutable(builder = false))
 public @interface TupleStyle {
     // empty
 }

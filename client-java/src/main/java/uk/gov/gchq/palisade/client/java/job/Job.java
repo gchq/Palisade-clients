@@ -15,14 +15,16 @@
  */
 package uk.gov.gchq.palisade.client.java.job;
 
-import org.slf4j.Logger;
+import org.slf4j.*;
 
-import uk.gov.gchq.palisade.client.java.download.DownloadCompletedEvent;
-import uk.gov.gchq.palisade.client.java.resource.ResourcesExhaustedEvent;
+import uk.gov.gchq.palisade.client.java.download.*;
+import uk.gov.gchq.palisade.client.java.resource.*;
 
 import javax.websocket.ContainerProvider;
 
+import java.io.*;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -41,10 +43,13 @@ import static uk.gov.gchq.palisade.client.java.resource.ResourceClient.createRes
  */
 public class Job<E> {
 
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Job.class);
+    private static final Logger log = LoggerFactory.getLogger(Job.class);
+    private static final String EVENT_CAUGHT = "Job [{}] caught event: {}";
 
     private final String id;
     private final JobContext<E> jobContext;
+
+    private DownloadManager downloadManager;
 
     /**
      * Returns a new Job configured with the provided job context
@@ -56,10 +61,6 @@ public class Job<E> {
     public Job(String id, JobContext<E> jobContext) {
         this.id = id;
         this.jobContext = jobContext;
-    }
-
-    public JobContext<E> getContext() {
-        return this.jobContext;
     }
 
     /**
@@ -77,26 +78,25 @@ public class Job<E> {
         var objectMapper = jobContext.getSystemConfig().getObjectMapper();
 
         /*
-         * The DownloadManager orchestrates the download of 1 or more downloads from the data
-         * service.
-         * Raised events:
-         * * DownloadStartedEvent - published when a thread is starting a download
-         * * DownloadCompletedEvent - published when a download has completed successfully
+         * The DownloadManager orchestrates the download of 1 or more downloads from the
+         * data service.
+         *
+         * Raised events: * DownloadStartedEvent - published when a thread is starting a
+         * download, but before any external connections are made *
+         * DownloadCompletedEvent - published when a download has completed successfully
          * * DownloadFailedEvent - published when a download has failed for some reason
-         * * DownloadQueueEvent - published when the state of the queue changes (full or not)
-         * Consumed events:
-         * * ResourceReadyEvent
+         * * DownloadReadyEvent - published the server has been called and an input
+         * stream is ready to be consumed Consumed events: * ResourceReadyEvent -
+         * published when the websocket server get a CTS and then sends a resource
          */
 
-        var downloadManager = createDownloadManager(b -> b
+        this.downloadManager = createDownloadManager(b -> b
                 .id("dlm:" + token)
                 .eventBus(eventBus)
                 .numThreads(numThreads));
 
-        eventBus.register(downloadManager);
-
         /*
-         * This tracker just exoposes from the download manager what clients need to
+         * This tracker just exposes from the download manager what clients need to
          * manage downloads. The download manager should not be needed by any other
          * object
          */
@@ -105,10 +105,11 @@ public class Job<E> {
 
         /*
          * The resource client.
-         * Raised events:
-         * * ResourceReadyEvent - published when a resource message is received and ready to
-         *   be downloaded
-         * * ResourcesComplete - published when there are no more resources to consume
+         *
+         * Raised events: * ResourceReadyEvent - published when a resource message is
+         * received and ready to be downloaded * ResourcesComplete - published when
+         * there are no more resources to consume
+         *
          * The resource client does not do anything yet. It will be wired up to the
          * WebSocketContainer when Job.start() is called
          */
@@ -119,12 +120,18 @@ public class Job<E> {
                 .downloadTracker(downloadTracker)
                 .token(token));
 
+        /*
+         * Subscribe some major parts to the eventbus
+         *
+         */
+
+        eventBus.register(downloadManager);
         eventBus.register(resourceClient);
 
         /*
-         * Now we wire up the resource (websocket) client to the WebSocketContainer
-         * As soon as this is done, the connection will be made and the onXXX handlers
-         * will start to get fired in the resource client. The first is onOpen.
+         * Now we wire up the resource (websocket) client to the WebSocketContainer As
+         * soon as this is done, the connection will be made and the onXXX handlers will
+         * start to get fired in the resource client. The first is onOpen.
          */
 
         try {
@@ -132,7 +139,7 @@ public class Job<E> {
             var url = getContext().getResponse().getUrl();
             var container = ContainerProvider.getWebSocketContainer();
 
-            container.connectToServer(resourceClient, new URI(url));
+            container.connectToServer(resourceClient, new URI(url)); // this start communication
 
             log.debug("Job [{}] started", id);
 
@@ -143,17 +150,73 @@ public class Job<E> {
     }
 
     @Subscribe
+    public void schedule(ResourceReadyEvent event) {
+        var resource = event.getResource();
+        this.downloadManager.schedule(resource);
+    }
+
+    @Subscribe
+    public void onDownloadStarted(DownloadStartedEvent event) {
+        log.debug(EVENT_CAUGHT, id, event);
+    }
+
+    @Subscribe
+    public void onDownloadReady(DownloadReadyEvent event) {
+        log.debug(EVENT_CAUGHT, id, event.getToken());
+        var ds = getTempDS();
+        var is = event.getInputStream();
+        var object = ds.deserialize(is);
+
+        // now we need to do something with it.
+        // just log it out form now
+        log.debug("Downloaded: {}", object);
+    }
+
+    @Subscribe
     public void onDownloadCompleted(DownloadCompletedEvent event) {
-        log.debug("Job [{}] caught event: {}", id, event);
+        log.debug(EVENT_CAUGHT, id, event);
+    }
+
+    @Subscribe
+    public void onDownloadFailed(DownloadFailedEvent event) {
+        log.debug(EVENT_CAUGHT, id, event);
+        log.debug("Download failed", event.getThrowble());
     }
 
     @Subscribe
     public void onJobComplete(ResourcesExhaustedEvent event) {
-        log.debug("Job [{}] caught event: {}", id, event);
+        log.debug(EVENT_CAUGHT, id, event);
     }
 
     public String getId() {
         return this.id;
     }
 
+    JobContext<E> getContext() {
+        return this.jobContext;
+    }
+
+    private Deserializer<String> getTempDS() {
+
+        return stream -> {
+            var bufferSize = 1024;
+            var buffer = new char[bufferSize];
+            var out = new StringBuilder();
+            var in = new InputStreamReader(stream, StandardCharsets.UTF_8);
+            int charsRead;
+            try {
+                while ((charsRead = in.read(buffer, 0, buffer.length)) > 0) {
+                    out.append(buffer, 0, charsRead);
+                }
+            } catch (IOException ioe) {
+                throw new DeserialiserException("Failed to read stream", ioe);
+            }
+            return out.toString();
+        };
+
+    }
+
+    public DownloadTracker getDownLoadTracker() {
+        return this.downloadManager.getDownloadTracker();
+    }
 }

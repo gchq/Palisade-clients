@@ -18,22 +18,18 @@ package uk.gov.gchq.palisade.client.java.download;
 import okhttp3.ResponseBody;
 import org.immutables.value.Value;
 import org.slf4j.*;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.Response;
 
+import uk.gov.gchq.palisade.client.java.ClientException;
 import uk.gov.gchq.palisade.client.java.data.*;
-import uk.gov.gchq.palisade.client.java.job.Deserializer;
 import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
+import java.io.*;
 import java.util.function.UnaryOperator;
 
-/**
- * A downloader is responsible for downloading from
- *
- * @author dbell
- *
- */
+import com.google.common.eventbus.EventBus;
+
 public class Downloader implements Runnable {
 
     @Value.Immutable
@@ -42,10 +38,9 @@ public class Downloader implements Runnable {
         public static DownloadConfig create(UnaryOperator<DownloadConfig.Builder> func) {
             return func.apply(DownloadConfig.builder()).build();
         }
-        String getToken();
+        EventBus getEventBus();
         Resource getResource();
-
-        Deserializer getDeserialiser();
+        DataClient getDataClient();
     }
 
     static Downloader create(UnaryOperator<DownloadConfig.Builder> func) {
@@ -63,42 +58,46 @@ public class Downloader implements Runnable {
     @Override
     public void run() {
 
-        var url = config.getUrl();
-        var token = config.getToken();
+        log.debug("Downloader Started");
+
+        var eventBus = config.getEventBus();
         var resource = config.getResource();
-        var deserializer = config.getDeserialiser();
+        var dataClient = config.getDataClient();
 
+        var token = resource.getToken();
+
+        var dataRequest = IDataRequest.create(b -> b
+                .token(token)
+                .leafResourceId(resource.getLeafResourceId()));
+
+        Response<ResponseBody> response;
         try {
-
-            log.debug("Downloading {}...", resource);
-
-
-            // create a connection to data service
-            DataClient dataSerice = new Retrofit.Builder()
-                    .addConverterFactory(JacksonConverterFactory.create())
-                    .baseUrl(url)
-                    .build()
-                    .create(DataClient.class);
-
-            IDataRequest.create(b -> b.originalRequestId(resource)
-
-            );
-
-            ResponseBody body = dataSerice.readChunked(request);
-
-            var byteStream = body.byteStream();
-
-            var object = deserializer.deserialize(byteStream);
-
-            // TODO: we need to close the stream
-            Thread.sleep(2000);
-
-            log.debug("Downloaded {}...", resource);
-
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            response = dataClient.readChunked(dataRequest).execute();
+        } catch (IOException e) {
+            throw new ClientException("Failed to read body", e);
         }
+        var responseBody = response.body();
+
+        try (InputStream is = responseBody.byteStream()) {
+
+            log.debug("Got bytestream");
+
+            // here we should publish a downkload started event. This event will have all
+            // the information needed for a deserialiser.
+
+            var event = DownloadReadyEvent.of(token, is);
+            try {
+                eventBus.post(event);
+            } catch (Exception e) {
+                // TODO: add some error handling here
+                // wrap the this as the code receiving the evtn will consume the input stream
+            }
+
+        } catch (IOException ioe) {
+            throw new ClientException("failed to download");
+        }
+
+        log.debug("Downloader ended");
 
     }
 

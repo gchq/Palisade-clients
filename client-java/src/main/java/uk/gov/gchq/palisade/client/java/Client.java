@@ -37,7 +37,7 @@ public interface Client {
      * @return a newly constructed {@code Job} using the provided configuration
      *         function
      */
-    <E> Job<E> createJob(UnaryOperator<JobConfig.Builder<E>> func);
+    <E> Job<E> submit(UnaryOperator<JobConfig.Builder<E>> func);
 
     /**
      * Returns a newly constructed {@code Job} using the provided configuration,
@@ -47,6 +47,6 @@ public interface Client {
      * @param jobConfig The configuration for the job
      * @return a newly constructed {@code Job} using the provided configuration
      */
-    <E> Job<E> createJob(JobConfig<E> jobConfig);
+    <E> Job<E> submit(JobConfig<E> jobConfig);
 
 }

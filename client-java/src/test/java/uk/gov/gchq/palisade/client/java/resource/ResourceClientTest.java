@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java;
+package uk.gov.gchq.palisade.client.java.resource;
 
 import org.glassfish.tyrus.server.Server;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.java.download.DownloadManager;
-import uk.gov.gchq.palisade.client.java.resource.*;
 
 import javax.websocket.*;
 
@@ -31,7 +30,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.eventbus.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.java.util.ClientUtil.*;
+import static uk.gov.gchq.palisade.client.java.util.ClientUtil.getObjectMapper;
 
 class ResourceClientTest {
 
@@ -47,7 +46,7 @@ class ResourceClientTest {
             server.start();
             startClient();
             awaitEvents();
-            assertThat(eventCount).isEqualTo(50);
+            assertThat(eventCount).isEqualTo(1);
         } finally {
             server.stop();
         }
@@ -59,19 +58,24 @@ class ResourceClientTest {
     }
 
     private ResourceClient startClient() throws Exception {
+
         var eb = new EventBus("bus-test");
         eb.register(this);
+
         var dm = DownloadManager.createDownloadManager(b -> b.id("dlm-test").eventBus(eb));
+
         var rc = ResourceClient
                 .createResourceClient(b -> b
                         .token(TOKEN)
                         .eventBus(eb)
-                        .stateManager(getStateManager())
                         .mapper(getObjectMapper().registerModule(new GuavaModule()))
                         .downloadTracker(dm.getDownloadTracker()));
+
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         container.connectToServer(rc, new URI("ws://localhost:8081/name"));
+
         return rc;
+
     }
 
     private void awaitEvents() throws Exception {

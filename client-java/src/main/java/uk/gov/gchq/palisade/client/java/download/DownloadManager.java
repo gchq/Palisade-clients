@@ -17,7 +17,10 @@ package uk.gov.gchq.palisade.client.java.download;
 
 import org.immutables.value.Value;
 import org.slf4j.*;
+import retrofit2.Retrofit;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import uk.gov.gchq.palisade.client.java.data.DataClient;
 import uk.gov.gchq.palisade.client.java.resource.*;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
@@ -56,7 +59,10 @@ public class DownloadManager {
     private final AtomicInteger activeThreads;
     private final int numThreads;
 
-    private DownloadTracker downloadTracker = new DownloadTracker() {
+    private int numOK = 0;
+    private int numFail = 0;
+
+    private final DownloadTracker downloadTracker = new DownloadTracker() {
         @Override
         public int getAvaliableSlots() {
             return numThreads - activeThreads.intValue();
@@ -74,37 +80,59 @@ public class DownloadManager {
             }
             return ManagerStatus.ACTIVE;
         }
+        @Override
+        public int getNumSuccessful() {
+            return numOK;
+        }
+        @Override
+        public int getNumFailed() {
+            return numFail;
+        }
     };
 
     private DownloadManager(DownloadManagerConfig config) {
         this.config = config;
         this.numThreads = config.getNumThreads();
-        this.queue = new LinkedBlockingQueue<Runnable>(2);
+        this.queue = new LinkedBlockingQueue<>(2);
         this.executor = new ThreadPoolExecutor(numThreads, numThreads, 0L, MILLISECONDS, this.queue);
         this.activeThreads = new AtomicInteger();
         log.debug("Download manager created with thread pool size of {}", numThreads);
     }
 
-    @Subscribe
-    public void schedule(ResourceReadyEvent event) {
+    public void schedule(Resource resource) {
 
-        var bus = config.getEventBus();
-        var token = event.getToken();
-        var resource = event.getResource();
-        var downloader = Downloader.create(b -> b.token(token).resource(resource));
+        var eventBus = config.getEventBus();
+        var token = resource.getToken();
+        var url = resource.getUrl();
+
+        log.debug("Scheduling resource: {}", resource);
+
+        // create a connection to data service
+        var dataClient = new Retrofit.Builder()
+                .addConverterFactory(JacksonConverterFactory.create())
+                .baseUrl(url)
+                .build()
+                .create(DataClient.class);
+
+        var downloader = Downloader.create(b -> b
+                .resource(resource)
+                .eventBus(eventBus)
+                .dataClient(dataClient));
 
         executor.execute(() -> {
             var at = activeThreads.addAndGet(1);
-            log.debug("Number of actice threads = " + at);
-            bus.post(DownloadStartedEvent.of(token));
+            log.debug("Number of actice threads = {}", at);
+            eventBus.post(DownloadStartedEvent.of(token));
             try {
                 downloader.run();
-                bus.post(DownloadCompletedEvent.of(token));
+                numOK++;
+                eventBus.post(DownloadCompletedEvent.of(token));
             } catch (Exception t) {
-                bus.post(DownloadFailedEvent.of(token, t));
+                numFail++;
+                eventBus.post(DownloadFailedEvent.of(token, t));
             } finally {
                 at = activeThreads.decrementAndGet();
-                log.debug("Number of actice threads = " + at);
+                log.debug("Number of actice threads = {}", at);
             }
         });
 

@@ -23,9 +23,9 @@ import org.reflections.scanners.*;
 import org.reflections.util.*;
 
 import uk.gov.gchq.palisade.client.java.data.DataRequest;
-import uk.gov.gchq.palisade.client.java.download.DownloadManagerConfig;
+import uk.gov.gchq.palisade.client.java.download.*;
 import uk.gov.gchq.palisade.client.java.job.JobContext;
-import uk.gov.gchq.palisade.client.java.resource.ResourceClientConfig;
+import uk.gov.gchq.palisade.client.java.resource.*;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -55,6 +55,7 @@ class ImmutablesEqualsTest {
                 JobContext.class,
                 ResourceClientConfig.class,
                 DownloadManagerConfig.class,
+                DownloadConfig.class,
                 DataRequest.class);
 
         // find all generated classes within the provided package that have

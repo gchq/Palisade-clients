@@ -13,8 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.data;
+package uk.gov.gchq.palisade.client.java.job;
 
-public interface DataConnector {
+import uk.gov.gchq.palisade.client.java.ClientException;
+
+public class DeserialiserException extends ClientException {
+
+    public DeserialiserException(String message) {
+        super(message);
+    }
+
+    public DeserialiserException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 
 }

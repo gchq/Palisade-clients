@@ -17,9 +17,9 @@ package uk.gov.gchq.palisade.client.java.job;
 
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 @Value.Immutable
@@ -30,9 +30,19 @@ public interface IJobConfig<E> {
         return func.apply(JobConfig.<E>builder()).build();
     }
 
-    PalisadeRequest getRequest();
+    String getResourceId();
 
-    Deserializer getDeserialiser();
+    String getRequestId();
+
+    String getUserId();
+
+    String getPurpose();
+
+    String getClassname();
+
+    Map<String, String> getProperties();
+
+    Deserializer getDeserializer();
 
     ObjectFactory<E> getObjectFactory();
 

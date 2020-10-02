@@ -18,12 +18,8 @@ package uk.gov.gchq.palisade.client.java.data;
 
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.client.java.request.IRequestId;
-import uk.gov.gchq.palisade.client.java.request.RequestId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
-import uk.gov.gchq.palisade.resource.LeafResource;
 
-import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 @Value.Immutable
@@ -34,21 +30,20 @@ public interface IDataRequest {
         return func.apply(DataRequest.builder()).build();
     }
 
-    /**
-     * this is a unique ID for each individual request made between the
-     * micro-services
-     *
-     * @return
-     */
-    @Value.Derived
-    default RequestId getId() {
-        return IRequestId.create(b -> b.id(UUID.randomUUID().toString()));
-    }
-
-    RequestId getOriginalRequestId(); // this Id is unique per data access request from a user
+//    /**
+//     * this is a unique ID for each individual request made between the
+//     * micro-services
+//     *
+//     * @return
+//     */
+//    @Value.Derived
+//    default RequestId getId() {
+//        return IRequestId.create(b -> b.id(UUID.randomUUID().toString()));
+//    }
 
     String getToken();
 
-    LeafResource getResource();
+    String getLeafResourceId();
+
 
 }

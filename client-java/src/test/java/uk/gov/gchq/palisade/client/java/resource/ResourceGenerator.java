@@ -15,31 +15,31 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import org.immutables.value.Value;
+import java.util.Iterator;
 
-import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
+public class ResourceGenerator implements Iterator<Resource> {
 
-import java.util.Map;
-import java.util.function.UnaryOperator;
+    private final int size;
+    private final String token;
 
-import com.fasterxml.jackson.databind.annotation.*;
+    private int count = 0;
 
-@Value.Immutable
-@ImmutableStyle
-@JsonDeserialize(as = Resource.class)
-@JsonSerialize(as = Resource.class)
-public interface IResource {
-
-    public static Resource create(UnaryOperator<Resource.Builder> func) {
-        return func.apply(Resource.builder()).build();
+    public ResourceGenerator(String token, int size) {
+        this.size = size;
+        this.token = token;
     }
 
-    String getToken();
+    @Override
+    public Resource next() {
+        return IResource.create(b -> b
+            .token(token)
+                .leafResourceId("leaf_resource_" + ++count)
+                .url("http://localhost:8081"));
+    }
 
-    String getLeafResourceId();
-
-    String getUrl();
-
-    Map<String, String> getProperties();
+    @Override
+    public boolean hasNext() {
+        return size == 0 || count < size;
+    }
 
 }

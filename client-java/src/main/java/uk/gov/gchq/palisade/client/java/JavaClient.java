@@ -122,6 +122,8 @@ public class JavaClient implements Client {
         ClientConfig getClientConfig();
     }
 
+    public static final String DEFAULT_BASE_URL = "http://localhost:8081";
+
     private static final Logger log = LoggerFactory.getLogger(JavaClient.class);
     private static final int DEFAULT_NUM_DOWNLOAD_THREADS = 1;
 
@@ -159,7 +161,7 @@ public class JavaClient implements Client {
      */
     static final Client createWith(PalisadeClient pc) {
         // TODO: get url from a property file?
-        return createWith(pc, b -> b.url("http://localhost:8081"));
+        return createWith(pc, b -> b.url(DEFAULT_BASE_URL));
     }
 
     /**
@@ -174,42 +176,45 @@ public class JavaClient implements Client {
      */
     static final Client createWith(PalisadeClient pc, UnaryOperator<ClientConfig.Builder> func) {
 
-        var palisadeConfig = func.apply(ClientConfig.builder()).build();
-
-        var palisadeClient = pc != null
-                ? pc
-                : new PalisadeClient() {
-
-                    PalisadeRetrofitClient prc = new Retrofit.Builder()
-                        .addConverterFactory(JacksonConverterFactory.create())
-                        .baseUrl(palisadeConfig.getUrl())
-                        .build()
-                        .create(PalisadeRetrofitClient.class);
-
-                    @Override
-                    public PalisadeResponse submit(PalisadeRequest request) {
-                        var call = prc.registerDataRequestSync(request);
-                        try {
-                            var serviceResponse = call.execute();
-                            var response = serviceResponse.body();
-                            return response;
-                        } catch (IOException e) {
-                            String msg = "Request to palisade failed";
-                            throw new ClientException(msg, e);
-                        }
-
-                    }
-                };
-
+        var clientConfig = func.apply(ClientConfig.builder()).build();
+        var palisadeClient = pc != null ? pc : createPalisadeClient(clientConfig);
         var objectMapper = ClientUtil.getObjectMapper();
         var stateManager = ClientUtil.getStateManager();
 
         return new JavaClient(
                 createSystemConfig(b -> b
-                        .clientConfig(palisadeConfig)
+                    .clientConfig(clientConfig)
                     .palisadeClient(palisadeClient)
                     .objectMapper(objectMapper)
                     .stateManager(stateManager)));
+
+    }
+
+    private static PalisadeClient createPalisadeClient(ClientConfig palisadeConfig) {
+        return new PalisadeClient() {
+            PalisadeRetrofitClient prc = new Retrofit.Builder()
+                    .addConverterFactory(JacksonConverterFactory.create())
+                    .baseUrl(palisadeConfig.getUrl())
+                    .build()
+                    .create(PalisadeRetrofitClient.class);
+            @Override
+            public PalisadeResponse submit(PalisadeRequest request) {
+                var call = prc.registerDataRequestSync(request);
+                try {
+                    var serviceResponse = call.execute();
+                    if (!serviceResponse.isSuccessful()) {
+                        var url = palisadeConfig.getUrl() + PalisadeRetrofitClient.REGISTER_DATA_REQUEST;
+                        var code = serviceResponse.code();
+                        throw new ClientException(String.format("Request to %s failed with status %s", url, code));
+                    }
+                    var response = serviceResponse.body();
+                    return response;
+                } catch (IOException e) {
+                    String msg = "Request to palisade failed";
+                    throw new ClientException(msg, e);
+                }
+            }
+        };
     }
 
     private JavaClient(SystemConfig systemConfig) {
@@ -218,9 +223,12 @@ public class JavaClient implements Client {
     }
 
     @Override
-    public <E> Job<E> createJob(JobConfig<E> jobConfig) {
+    public <E> Job<E> submit(JobConfig<E> jobConfig) {
 
-        var response = systemConfig.getPalisadeClient().submit(jobConfig.getRequest());
+        var request = ClientUtil.createPalisadeRequest(jobConfig);
+        var response = systemConfig.getPalisadeClient().submit(request);
+
+        assert response != null : "No response back from palisade service";
 
         var token = response.getToken();
         var eventBus = new EventBus("bus:" + token);
@@ -238,11 +246,12 @@ public class JavaClient implements Client {
         eventBus.register(job);
 
         return job;
+
     }
 
     @Override
-    public <E> Job<E> createJob(UnaryOperator<JobConfig.Builder<E>> func) {
-        return createJob(func.apply(JobConfig.builder()).build());
+    public <E> Job<E> submit(UnaryOperator<JobConfig.Builder<E>> func) {
+        return submit(func.apply(JobConfig.builder()).build());
     }
 
     /**
@@ -253,4 +262,5 @@ public class JavaClient implements Client {
     SystemConfig getConfig() {
         return this.systemConfig;
     }
+
 }

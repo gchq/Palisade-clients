@@ -19,11 +19,10 @@ import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.*;
 
 @Value.Immutable
 @ImmutableStyle
@@ -37,10 +36,12 @@ public interface IContext {
 
     public Map<String, Object> getContents();
 
+    @JsonIgnore
     default Map<String, Object> getContentsCopy() {
         return Collections.unmodifiableMap(getContents());
     }
 
+    @JsonIgnore
     default Object get(final String key) {
         return getContents().get(key);
     }

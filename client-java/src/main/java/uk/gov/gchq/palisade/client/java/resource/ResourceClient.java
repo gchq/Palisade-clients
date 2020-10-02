@@ -30,12 +30,8 @@ import java.util.function.UnaryOperator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.EventBus;
 
-import static uk.gov.gchq.palisade.client.java.resource.MessageType.*;
-import static uk.gov.gchq.palisade.client.java.resource.MessageType.SUBSCRIBED;
-import static uk.gov.gchq.palisade.client.java.state.StateType.COMPLETE;
-import static uk.gov.gchq.palisade.client.java.state.StateType.CTS;
-import static uk.gov.gchq.palisade.client.java.state.StateType.RESOURCE;
-import static uk.gov.gchq.palisade.client.java.state.StateType.SUBSCRIBING;
+import static uk.gov.gchq.palisade.client.java.resource.MessageType.SUBSCRIBE;
+import static uk.gov.gchq.palisade.client.java.state.StateType.*;
 
 @ClientEndpoint(
     encoders = {ResourceClient.MessageCode.class},

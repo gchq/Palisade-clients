@@ -13,17 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.data;
+package uk.gov.gchq.palisade.client.java.resource;
 
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.http.*;
-
-public interface DataClient {
-
-    public static final String ENDPOINT_READ_CHUNKED = "/read/chunked";
-
-    @POST(value = ENDPOINT_READ_CHUNKED)
-    Call<ResponseBody> readChunked(@Body final DataRequest request);
-
+public enum ServerStateType {
+    WAITING, RTS, COMPLETE;
 }

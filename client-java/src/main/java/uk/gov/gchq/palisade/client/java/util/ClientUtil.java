@@ -15,9 +15,12 @@
  */
 package uk.gov.gchq.palisade.client.java.util;
 
+import uk.gov.gchq.palisade.client.java.job.JobConfig;
+import uk.gov.gchq.palisade.client.java.request.*;
 import uk.gov.gchq.palisade.client.java.state.StateManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 public abstract class ClientUtil {
@@ -38,7 +41,9 @@ public abstract class ClientUtil {
         private final StateManager stateManager;
 
         private Single() {
-            this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+            this.objectMapper = new ObjectMapper()
+                    .registerModule(new GuavaModule())
+                    .registerModule(new Jdk8Module());
             this.stateManager = new StateManager();
         }
 
@@ -60,6 +65,34 @@ public abstract class ClientUtil {
 
     public static final StateManager getStateManager() {
         return Single.getInstance().stateManager;
+    }
+
+    public static <E> PalisadeRequest createPalisadeRequest(JobConfig<E> jobConfig) {
+
+        assert jobConfig != null : "Need to have a job config in order to create a request";
+
+        var userId = jobConfig.getUserId();
+        var purpose = jobConfig.getPurpose();
+        var className = jobConfig.getClassname();
+        var requestId = jobConfig.getRequestId();
+        var resourceId = jobConfig.getResourceId();
+        var properties = jobConfig.getProperties();
+
+        return PalisadeRequest.builder()
+                .resourceId(resourceId)
+                .userId(UserId.builder()
+                        .id(userId)
+                        .build())
+                .requestId(RequestId.builder()
+                        .id(requestId)
+                        .build())
+                .context(Context.builder()
+                        .className(className)
+                        .purpose(purpose)
+                        .contents(properties)
+                        .build())
+                .build();
+
     }
 
 }

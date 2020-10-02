@@ -20,7 +20,9 @@ import retrofit2.http.*;
 
 public interface PalisadeRetrofitClient {
 
-    @POST(value = "/registerDataRequest")
+    public static final String REGISTER_DATA_REQUEST = "/registerDataRequest";
+
+    @POST(value = REGISTER_DATA_REQUEST)
     @Headers({
         "Content-Type: application/json; charset=utf-8"
     })
