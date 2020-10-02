@@ -28,7 +28,7 @@ class ClientTest {
     @Test
     void testCreate() {
 
-        var client = (JavaClient) JavaClient.create();
+        var client = (JavaClient) Client.create();
 
         var syscfg = client.getConfig();
 

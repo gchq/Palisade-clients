@@ -27,6 +27,7 @@ import java.util.function.UnaryOperator;
  */
 public interface Client {
 
+
     /**
      * Returns a newly constructed {@code Job} using the provided configuration
      * function, which is used to submit a request to the Palisade service
@@ -48,5 +49,26 @@ public interface Client {
      * @return a newly constructed {@code Job} using the provided configuration
      */
     <E> Job<E> submit(JobConfig<E> jobConfig);
+
+    /**
+     * Returns a newly created {@code JavaClient} using all configuration defaults
+     *
+     * @return a newly created using all configuration defaults
+     */
+    public static Client create() {
+        return JavaClient.createWith(null);
+    }
+
+    /**
+     * Returns a newly created {@code JavaClient} using the provided function to
+     * apply the configuration
+     *
+     * @param func The function used to configure the client
+     * @return a newly created {@code JavaClient} using the provided function to
+     *         apply the configuration
+     */
+    public static Client create(UnaryOperator<ClientConfig.Builder> func) {
+        return JavaClient.createWith(null, func);
+    }
 
 }

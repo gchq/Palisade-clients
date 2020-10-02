@@ -36,7 +36,7 @@ import static uk.gov.gchq.palisade.client.java.JavaClient.ISystemConfig.createSy
 /**
  * The type Simple client.
  */
-public class JavaClient implements Client {
+class JavaClient implements Client {
 
     /**
      * This class is the configuration that is passed when creating the
@@ -122,34 +122,6 @@ public class JavaClient implements Client {
         ClientConfig getClientConfig();
     }
 
-    public static final String DEFAULT_BASE_URL = "http://localhost:8081";
-
-    private static final Logger log = LoggerFactory.getLogger(JavaClient.class);
-    private static final int DEFAULT_NUM_DOWNLOAD_THREADS = 1;
-
-    private final SystemConfig systemConfig;
-
-    /**
-     * Returns a newly created {@code JavaClient} using all configuration defaults
-     *
-     * @return a newly created using all configuration defaults
-     */
-    public static final Client create() {
-        return createWith(null);
-    }
-
-    /**
-     * Returns a newly created {@code JavaClient} using the provided function to
-     * apply the configuration
-     *
-     * @param func The function used to configure the client
-     * @return a newly created {@code JavaClient} using the provided function to
-     *         apply the configuration
-     */
-    public static final Client create(UnaryOperator<ClientConfig.Builder> func) {
-        return createWith(null, func);
-    }
-
     /**
      * Returns a newly created {@code JavaClient} using all configuration defaults
      * but using the provided Palisade client which will make calls to the Palisade
@@ -159,9 +131,9 @@ public class JavaClient implements Client {
      *           calls top the Palisade service
      * @return a newly created {@code JavaClient}
      */
-    static final Client createWith(PalisadeClient pc) {
+    static Client createWith(PalisadeClient pc) {
         // TODO: get url from a property file?
-        return createWith(pc, b -> b.url(DEFAULT_BASE_URL));
+        return createWith(pc, b -> b.url(JavaClient.DEFAULT_BASE_URL));
     }
 
     /**
@@ -174,10 +146,10 @@ public class JavaClient implements Client {
      * @param func The function used to configure the client
      * @return a newly created {@code JavaClient}
      */
-    static final Client createWith(PalisadeClient pc, UnaryOperator<ClientConfig.Builder> func) {
+    static Client createWith(PalisadeClient pc, UnaryOperator<ClientConfig.Builder> func) {
 
         var clientConfig = func.apply(ClientConfig.builder()).build();
-        var palisadeClient = pc != null ? pc : createPalisadeClient(clientConfig);
+        var palisadeClient = pc != null ? pc : JavaClient.createPalisadeClient(clientConfig);
         var objectMapper = ClientUtil.getObjectMapper();
         var stateManager = ClientUtil.getStateManager();
 
@@ -190,7 +162,14 @@ public class JavaClient implements Client {
 
     }
 
-    private static PalisadeClient createPalisadeClient(ClientConfig palisadeConfig) {
+    public static final String DEFAULT_BASE_URL = "http://localhost:8081";
+
+    private static final Logger log = LoggerFactory.getLogger(JavaClient.class);
+    private static final int DEFAULT_NUM_DOWNLOAD_THREADS = 1;
+
+    private final SystemConfig systemConfig;
+
+    static PalisadeClient createPalisadeClient(ClientConfig palisadeConfig) {
         return new PalisadeClient() {
             PalisadeRetrofitClient prc = new Retrofit.Builder()
                     .addConverterFactory(JacksonConverterFactory.create())

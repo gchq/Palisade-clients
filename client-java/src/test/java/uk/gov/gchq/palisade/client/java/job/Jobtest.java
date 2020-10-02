@@ -20,7 +20,7 @@ import org.mockserver.client.MockServerClient;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
 
-import uk.gov.gchq.palisade.client.java.JavaClient;
+import uk.gov.gchq.palisade.client.java.Client;
 import uk.gov.gchq.palisade.client.java.request.*;
 import uk.gov.gchq.palisade.client.java.util.ClientUtil;
 
@@ -90,7 +90,7 @@ class Jobtest {
 
         ObjectFactory<Troll> of = Troll::new;
 
-        var client = JavaClient.create();
+        var client = Client.create();
 
         var config = IJobConfig.<Troll>create(b -> b
                 .classname("classname")

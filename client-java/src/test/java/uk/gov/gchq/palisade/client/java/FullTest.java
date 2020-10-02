@@ -125,7 +125,7 @@ class FullTest {
 
         // lets start the ball rolling
 
-        var job = JavaClient.create().submit(config);
+        var job = Client.create().submit(config);
         job.start();
 
         // this is not ideal, but
