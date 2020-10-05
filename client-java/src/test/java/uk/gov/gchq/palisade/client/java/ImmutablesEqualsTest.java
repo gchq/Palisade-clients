@@ -51,7 +51,6 @@ class ImmutablesEqualsTest {
 
         var ignored = List.of(
                 ServerState.class,
-                SystemConfig.class,
                 JobContext.class,
                 ResourceClientConfig.class,
                 DownloadManagerConfig.class,

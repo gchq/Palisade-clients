@@ -17,30 +17,30 @@ package uk.gov.gchq.palisade.client.java;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ClientTest {
 
-    private static final int PORT = 8081;
+    private static final int PORT = 8083;
     private static final String HOST = "localhost";
     private static final String BASE_URL = String.format("http://%s:%s", HOST, PORT);
+    private static final String NUM_THREADS = "2";
 
     @Test
     void testCreate() {
 
-        var client = (JavaClient) Client.create();
+        var client = (JavaClient) Client.create(Map.of(
+                "palisade.client.download.threads", NUM_THREADS,
+                "palisade.client.url", BASE_URL));
 
-        var syscfg = client.getConfig();
+        var context = client.getApplicationContext();
 
-        assertThat(syscfg.getObjectMapper()).isNotNull();
-        assertThat(syscfg.getPalisadeClient()).isNotNull();
-        assertThat(syscfg.getClientConfig()).isNotNull();
-        assertThat(syscfg.getStateManager()).isNotNull();
+        var palisadeConfig = context.getBean(ClientConfig.class);
 
-        var palisadeConfig = syscfg.getClientConfig();
-
-        assertThat(palisadeConfig.getDownloadThreads()).isEqualTo(1);
-        assertThat(palisadeConfig.getUrl()).isEqualTo(BASE_URL);
+        assertThat(palisadeConfig.getUrl()).isEqualTo("http://localhost:8083");
+        assertThat(palisadeConfig.getDownload().getThreads()).isEqualTo(2);
 
     }
 

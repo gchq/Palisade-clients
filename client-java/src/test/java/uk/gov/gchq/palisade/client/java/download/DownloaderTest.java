@@ -15,30 +15,28 @@
  */
 package uk.gov.gchq.palisade.client.java.download;
 
+import io.micronaut.context.annotation.Property;
+import io.micronaut.runtime.server.EmbeddedServer;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.*;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.Header;
 import org.slf4j.Logger;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
-import uk.gov.gchq.palisade.client.java.data.*;
+import uk.gov.gchq.palisade.client.java.data.IDataRequest;
 import uk.gov.gchq.palisade.client.java.job.*;
 import uk.gov.gchq.palisade.client.java.resource.IResource;
+
+import javax.inject.Inject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockserver.matchers.Times.once;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.JsonBody.json;
 
+@MicronautTest
+@Property(name = "palisade.client.url", value = "http://localhost:8081")
+@Property(name = "micronaut.server.port", value = "8081")
 class DownloaderTest {
 
     static class Troll {
@@ -62,18 +60,10 @@ class DownloaderTest {
     private static final String HOST = "localhost";
     private static final String BASE_URL = String.format("http://%s:%s", HOST, PORT);
 
-    private static ClientAndServer mockServer;
     private EventBus eventBus;
 
-    @BeforeAll
-    public static void startServer() {
-        mockServer = ClientAndServer.startClientAndServer(PORT);
-    }
-
-    @AfterAll
-    public static void stopServer() {
-        mockServer.stop();
-    }
+    @Inject
+    EmbeddedServer embeddedServer;
 
     @BeforeEach
     public void setup() {
@@ -87,13 +77,6 @@ class DownloaderTest {
 
         var token = "abcd-1";
 
-        // create a connection to data service
-        var dataClient = new Retrofit.Builder()
-                .addConverterFactory(JacksonConverterFactory.create())
-                .baseUrl(BASE_URL)
-                .build()
-                .create(DataClient.class);
-
         var resource = IResource.create(b -> b
                 .leafResourceId("leaf_resource_id")
                 .token(token)
@@ -101,18 +84,17 @@ class DownloaderTest {
 
         var downloader = Downloader.create(b -> b
                 .eventBus(eventBus)
-                .dataClient(dataClient)
                 .resource(resource));
 
         var dataRequest = IDataRequest.create(b -> b
                 .token(token)
                 .leafResourceId(resource.getLeafResourceId()));
 
-        createExpectationForValidRequest(dataRequest);
+//        createExpectationForValidRequest(dataRequest);
 
         downloader.run();
 
-        assertThat(object).isNotNull().isInstanceOf(String.class).isEqualTo("woohoo");
+        assertThat(object).isNotNull().isInstanceOf(String.class).isEqualTo("OneTwo");
 
     }
 
@@ -124,31 +106,6 @@ class DownloaderTest {
         var is = event.getInputStream();
         this.object = ds.deserialize(is);
         log.debug("Consumed from stream: {}", this.object);
-    }
-
-    private void createExpectationForValidRequest(DataRequest request) throws Exception {
-        new MockServerClient(HOST, PORT)
-            .when(
-                request()
-                    .withMethod("POST")
-                    .withPath(DataClient.ENDPOINT_READ_CHUNKED)
-                    .withHeader("Content-type", "application/json; charset=utf-8")
-                    .withBody(json(request)),
-                once())
-            .respond(
-                response()
-                    .withStatusCode(200)
-                    .withHeaders(
-                        new Header("Content-Type", "application/octet-stream; charset=utf-8"),
-                        new Header("Cache-Control", "public, max-age=86400"))
-                    .withBody("woohoo")
-//          .withDelay(TimeUnit.MILLISECONDS, 500)
-                );
-    }
-
-    private String toJson(Object obj) throws Exception {
-        var om = new ObjectMapper();
-        return om.writeValueAsString(obj);
     }
 
     private Deserializer<String> getTempDS() {

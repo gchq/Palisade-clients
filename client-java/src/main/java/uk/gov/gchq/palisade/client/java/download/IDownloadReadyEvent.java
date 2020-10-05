@@ -17,6 +17,7 @@ package uk.gov.gchq.palisade.client.java.download;
 
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 
 import java.io.InputStream;
@@ -25,6 +26,6 @@ import java.io.InputStream;
 @TupleStyle
 public interface IDownloadReadyEvent {
     String getToken();
-
+    Resource getResource();
     InputStream getInputStream();
 }

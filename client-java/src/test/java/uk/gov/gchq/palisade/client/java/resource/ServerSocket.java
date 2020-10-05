@@ -17,8 +17,6 @@ package uk.gov.gchq.palisade.client.java.resource;
 
 import org.slf4j.*;
 
-import uk.gov.gchq.palisade.client.java.util.ClientUtil;
-
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 
@@ -27,6 +25,7 @@ import java.lang.ref.WeakReference;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 @ServerEndpoint(
         value = "/name",
@@ -36,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ServerSocket {
 
     private static final Logger log = LoggerFactory.getLogger(ServerSocket.class);
-    private static final ObjectMapper objectMapper = ClientUtil.getObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
     private static final int NUM_RESOURCES = 1;
 
     private final ServerStateManager statemanager = new ServerStateManager();
@@ -161,7 +160,7 @@ public class ServerSocket {
 
     private void sendMessage(Session session, Message message) {
         try {
-            var text = ClientUtil.getObjectMapper().writeValueAsString(message);
+            var text = objectMapper.writeValueAsString(message);
             session.getBasicRemote().sendText(text);
             log.debug("Sent: " + message);
         } catch (JsonProcessingException e) {

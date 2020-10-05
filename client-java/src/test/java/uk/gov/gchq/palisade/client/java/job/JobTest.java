@@ -15,14 +15,14 @@
  */
 package uk.gov.gchq.palisade.client.java.job;
 
-import org.junit.jupiter.api.*;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.Header;
+import io.micronaut.context.annotation.Property;
+import io.micronaut.runtime.server.EmbeddedServer;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.java.Client;
-import uk.gov.gchq.palisade.client.java.request.*;
-import uk.gov.gchq.palisade.client.java.util.ClientUtil;
+
+import javax.inject.Inject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -30,12 +30,11 @@ import java.nio.charset.StandardCharsets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockserver.matchers.Times.once;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.JsonBody.json;
 
-class Jobtest {
+@MicronautTest
+@Property(name = "palisade.client.url", value = "http://localhost:8081")
+@Property(name = "micronaut.server.port", value = "8081")
+class JobTest {
 
     static class Troll {
         private String name;
@@ -53,21 +52,9 @@ class Jobtest {
         }
     }
 
-    private static final int PORT = 8081;
-    private static final String HOST = "localhost";
-    private static final String BASE_URL = String.format("http://%s:%s", HOST, PORT);
-
-    private static ClientAndServer mockServer;
-
-    @BeforeAll
-    public static void startServer() {
-        mockServer = ClientAndServer.startClientAndServer(PORT);
-    }
-
-    @AfterAll
-    public static void stopServer() {
-        mockServer.stop();
-    }
+    @Inject Client client;
+    @Inject ObjectMapper objectMapper;
+    @Inject EmbeddedServer embeddedServer;
 
     @Test
     void test_new_job_creation() throws Exception {
@@ -90,8 +77,6 @@ class Jobtest {
 
         ObjectFactory<Troll> of = Troll::new;
 
-        var client = Client.create();
-
         var config = IJobConfig.<Troll>create(b -> b
                 .classname("classname")
                 .deserializer(ds)
@@ -100,10 +85,6 @@ class Jobtest {
                 .requestId("request_id")
                 .resourceId("resource_id")
                 .userId("user_id"));
-
-        var request = ClientUtil.createPalisadeRequest(config);
-
-        createExpectationForValidRequest(request);
 
         var job = client.submit(config);
 
@@ -130,29 +111,4 @@ class Jobtest {
         assertThat(jobConfig).isEqualTo(config);
 
     }
-
-    private void createExpectationForValidRequest(PalisadeRequest request) throws Exception {
-        new MockServerClient(HOST, PORT)
-            .when(
-                request()
-                    .withMethod("POST").withPath("/registerDataRequest")
-                    .withHeader("Content-type", "application/json; charset=utf-8")
-                    .withBody(json(request)),
-                once())
-            .respond(
-                response()
-                    .withStatusCode(200)
-                    .withHeaders(
-                        new Header("Content-Type", "application/json; charset=utf-8"),
-                        new Header("Cache-Control", "public, max-age=86400"))
-                    .withBody(toJson(IPalisadeResponse.create(b -> b.url("ws://localhost:8082/name").token("abcd-1"))))
-//          .withDelay(TimeUnit.MILLISECONDS, 500)
-                );
-    }
-
-    private String toJson(Object obj) throws Exception {
-        var om = new ObjectMapper();
-        return om.writeValueAsString(obj);
-    }
-
 }

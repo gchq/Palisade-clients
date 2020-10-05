@@ -15,14 +15,14 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import uk.gov.gchq.palisade.client.java.util.ClientUtil;
-
 import javax.websocket.*;
 
 import java.io.*;
 import java.lang.reflect.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.TextStream<T> {
 
@@ -31,7 +31,7 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
     private ThreadLocal<ObjectMapper> _mapper = new ThreadLocal<ObjectMapper>() {
         @Override
         protected ObjectMapper initialValue() {
-            return ClientUtil.getObjectMapper();
+            return new ObjectMapper().registerModule(new GuavaModule()).registerModule(new Jdk8Module());
         }
     };
 

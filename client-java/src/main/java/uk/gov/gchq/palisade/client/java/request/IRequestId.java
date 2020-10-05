@@ -24,8 +24,11 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import java.io.Serializable;
 import java.util.function.UnaryOperator;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 @Value.Immutable
 @ImmutableStyle
+@JsonDeserialize(builder = RequestId.Builder.class)
 public interface IRequestId extends Serializable {
 
     public static RequestId create(UnaryOperator<RequestId.Builder> func) {

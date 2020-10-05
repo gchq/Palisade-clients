@@ -15,6 +15,7 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
+import io.micronaut.context.ApplicationContext;
 import org.glassfish.tyrus.server.Server;
 import org.junit.jupiter.api.Test;
 
@@ -26,11 +27,12 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.eventbus.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.java.util.ClientUtil.getObjectMapper;
 
 class ResourceClientTest {
 
@@ -62,13 +64,17 @@ class ResourceClientTest {
         var eb = new EventBus("bus-test");
         eb.register(this);
 
-        var dm = DownloadManager.createDownloadManager(b -> b.id("dlm-test").eventBus(eb));
+        var dm = DownloadManager
+                .createDownloadManager(b -> b
+                        .id("dlm-test")
+                        .eventBus(eb)
+                        .applicationContext(ApplicationContext.run()));
 
         var rc = ResourceClient
                 .createResourceClient(b -> b
                         .token(TOKEN)
                         .eventBus(eb)
-                        .mapper(getObjectMapper().registerModule(new GuavaModule()))
+                        .mapper(new ObjectMapper().registerModule(new GuavaModule()).registerModule(new Jdk8Module()))
                         .downloadTracker(dm.getDownloadTracker()));
 
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();

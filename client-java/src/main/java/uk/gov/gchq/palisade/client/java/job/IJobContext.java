@@ -15,9 +15,9 @@
  */
 package uk.gov.gchq.palisade.client.java.job;
 
+import io.micronaut.context.ApplicationContext;
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.client.java.SystemConfig;
 import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
@@ -33,7 +33,7 @@ public interface IJobContext<E> {
         return func.apply(JobContext.<E>builder()).build();
     }
 
-    SystemConfig getSystemConfig();
+    ApplicationContext getApplicationContext();
 
     JobConfig<E> getJobConfig();
 

@@ -1,0 +1,5 @@
+palisade:
+  client:
+    url: http://localhost:8081
+    downloads:
+      threads: 2

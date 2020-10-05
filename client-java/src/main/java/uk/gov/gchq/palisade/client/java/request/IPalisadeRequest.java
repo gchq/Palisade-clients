@@ -24,12 +24,15 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 /**
  * This class is used to wrap all the information that the user needs to supply
  * to the palisade service to register the data access request.
  */
 @Value.Immutable
 @ImmutableStyle
+@JsonDeserialize(builder = PalisadeRequest.Builder.class)
 public interface IPalisadeRequest extends Serializable {
 
     public static PalisadeRequest create(UnaryOperator<PalisadeRequest.Builder> func) {

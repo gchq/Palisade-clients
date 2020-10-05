@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.data;
+package uk.gov.gchq.palisade.client.java.request;
 
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.http.*;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.annotation.*;
+import io.micronaut.http.client.annotation.Client;
 
-public interface DataClient {
+@Client("${palisade.client.url}")
+public interface PalisadeServiceClient {
 
-    public static final String ENDPOINT_READ_CHUNKED = "/read/chunked";
+    public static final String REGISTER_DATA_REQUEST = "/registerDataRequest";
 
-    @POST(value = ENDPOINT_READ_CHUNKED)
-    Call<ResponseBody> readChunked(@Body final DataRequest request);
+    @Post(REGISTER_DATA_REQUEST)
+    @Header("Content-Type: application/json; charset=utf-8")
+    public HttpResponse<PalisadeResponse> registerDataRequestSync(@Body final PalisadeRequest request);
 
 }

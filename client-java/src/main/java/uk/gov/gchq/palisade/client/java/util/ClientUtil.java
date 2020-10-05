@@ -15,84 +15,55 @@
  */
 package uk.gov.gchq.palisade.client.java.util;
 
-import uk.gov.gchq.palisade.client.java.job.JobConfig;
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.annotation.Factory;
+import io.micronaut.websocket.RxWebSocketClient;
+
+import uk.gov.gchq.palisade.client.java.*;
 import uk.gov.gchq.palisade.client.java.request.*;
 import uk.gov.gchq.palisade.client.java.state.StateManager;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import javax.inject.Singleton;
 
-public abstract class ClientUtil {
+@Factory
+public class ClientUtil {
 
-    /**
-     * This "singleton" relies on the initialization phase of execution within the
-     * Java Virtual Machine (JVM) as specified by the Java Language Specification
-     * (JLS). This implementation is an efficient thread-safe "singleton" cache
-     * without synchronization overhead, and better performing than uncontended
-     * synchronization.
-     *
-     * @author dbell
-     *
-     */
-    public static class Single {
-
-        private final ObjectMapper objectMapper;
-        private final StateManager stateManager;
-
-        private Single() {
-            this.objectMapper = new ObjectMapper()
-                    .registerModule(new GuavaModule())
-                    .registerModule(new Jdk8Module());
-            this.stateManager = new StateManager();
-        }
-
-        private static class LazyHolder {
-            static final Single INSTANCE = new Single();
-        }
-
-        public static Single getInstance() {
-            return LazyHolder.INSTANCE;
-        }
+    public ClientUtil() { // cannot be instantiated
     }
 
-    private ClientUtil() { // cannot be instantiated
+    @Singleton
+    public final StateManager stateManager() {
+        return new StateManager();
     }
 
-    public static final ObjectMapper getObjectMapper() {
-        return Single.getInstance().objectMapper;
+    @Singleton
+    public PalisadeClient createPalisadeClient(ClientConfig clientConfig, PalisadeServiceClient prc) {
+        return new PalisadeClient() {
+            @Override
+            public PalisadeResponse submit(PalisadeRequest request) {
+                var httpResponse = prc.registerDataRequestSync(request);
+                try {
+                    var opt = httpResponse.getBody();
+                    if (!opt.isPresent()) {
+                        var url = clientConfig.getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
+                        var code = httpResponse.code();
+                        throw new ClientException(String.format("Request to %s failed with status %s", url, code));
+                    }
+                    var response = opt.get();
+                    return response;
+                } catch (Exception e) {
+                    String msg = "Request to palisade failed";
+                    throw new ClientException(msg, e);
+                }
+            }
+        };
     }
 
-    public static final StateManager getStateManager() {
-        return Single.getInstance().stateManager;
-    }
-
-    public static <E> PalisadeRequest createPalisadeRequest(JobConfig<E> jobConfig) {
-
-        assert jobConfig != null : "Need to have a job config in order to create a request";
-
-        var userId = jobConfig.getUserId();
-        var purpose = jobConfig.getPurpose();
-        var className = jobConfig.getClassname();
-        var requestId = jobConfig.getRequestId();
-        var resourceId = jobConfig.getResourceId();
-        var properties = jobConfig.getProperties();
-
-        return PalisadeRequest.builder()
-                .resourceId(resourceId)
-                .userId(UserId.builder()
-                        .id(userId)
-                        .build())
-                .requestId(RequestId.builder()
-                        .id(requestId)
-                        .build())
-                .context(Context.builder()
-                        .className(className)
-                        .purpose(purpose)
-                        .contents(properties)
-                        .build())
-                .build();
-
+    @Singleton
+    public Client createClient(
+            @io.micronaut.http.client.annotation.Client("http://localhost:8081") RxWebSocketClient webSocketClient,
+            ApplicationContext context) {
+        return new JavaClient(webSocketClient, context);
     }
 
 }

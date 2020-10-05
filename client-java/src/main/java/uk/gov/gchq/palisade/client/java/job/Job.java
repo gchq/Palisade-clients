@@ -15,8 +15,10 @@
  */
 package uk.gov.gchq.palisade.client.java.job;
 
+import org.reactivestreams.Publisher;
 import org.slf4j.*;
 
+import uk.gov.gchq.palisade.client.java.ClientConfig;
 import uk.gov.gchq.palisade.client.java.download.*;
 import uk.gov.gchq.palisade.client.java.resource.*;
 
@@ -26,6 +28,7 @@ import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.Subscribe;
 
 import static uk.gov.gchq.palisade.client.java.download.DownloadManager.createDownloadManager;
@@ -70,12 +73,14 @@ public class Job<E> {
      *
      * Really not sure how we are going to test this.
      */
-    public void start() {
+    public Publisher<Download> start() {
+
+        var appctx = jobContext.getApplicationContext();
 
         var token = jobContext.getResponse().getToken();
         var eventBus = jobContext.getEventBus();
-        var numThreads = jobContext.getSystemConfig().getClientConfig().getDownloadThreads();
-        var objectMapper = jobContext.getSystemConfig().getObjectMapper();
+        var numThreads = appctx.getBean(ClientConfig.class).getDownload().getThreads();
+        var objectMapper = appctx.getBean(ObjectMapper.class);
 
         /*
          * The DownloadManager orchestrates the download of 1 or more downloads from the
@@ -91,9 +96,11 @@ public class Job<E> {
          */
 
         this.downloadManager = createDownloadManager(b -> b
+                .applicationContext(appctx)
                 .id("dlm:" + token)
-                .eventBus(eventBus)
-                .numThreads(numThreads));
+                .eventBus(eventBus));
+
+        var publisher = downloadManager.subscribe();
 
         /*
          * This tracker just exposes from the download manager what clients need to
@@ -136,6 +143,7 @@ public class Job<E> {
 
         try {
 
+
             var url = getContext().getResponse().getUrl();
             var container = ContainerProvider.getWebSocketContainer();
 
@@ -146,6 +154,8 @@ public class Job<E> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        return publisher;
 
     }
 

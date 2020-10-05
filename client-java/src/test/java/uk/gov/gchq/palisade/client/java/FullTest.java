@@ -15,31 +15,28 @@
  */
 package uk.gov.gchq.palisade.client.java;
 
+import io.micronaut.context.annotation.Property;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.glassfish.tyrus.server.Server;
-import org.junit.jupiter.api.*;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.matchers.Times;
-import org.mockserver.model.Header;
+import org.junit.jupiter.api.Test;
+import org.slf4j.*;
 
-import uk.gov.gchq.palisade.client.java.data.*;
 import uk.gov.gchq.palisade.client.java.job.*;
-import uk.gov.gchq.palisade.client.java.request.*;
 import uk.gov.gchq.palisade.client.java.resource.ServerSocket;
-import uk.gov.gchq.palisade.client.java.util.ClientUtil;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.JsonBody.json;
 
+@MicronautTest
+@Property(name = "palisade.client.url", value = "http://localhost:8081")
+@Property(name = "micronaut.server.port", value = "8081")
 class FullTest {
+
+    private static final Logger log = LoggerFactory.getLogger(FullTest.class);
 
     static class Troll {
         private String name;
@@ -66,17 +63,6 @@ class FullTest {
     private static final String HOST = "localhost";
     private static final String BASE_URL = String.format("http://%s:%s", HOST, HTTP_PORT);
 
-    private static ClientAndServer mockServer;
-
-    @BeforeAll
-    public static void startServer() {
-        mockServer = ClientAndServer.startClientAndServer(HTTP_PORT);
-    }
-
-    @AfterAll
-    public static void stopServer() {
-        mockServer.stop();
-    }
 
     @Test
     void testFull() throws Exception {
@@ -108,16 +94,6 @@ class FullTest {
                 .resourceId("resource_id")
                 .userId("user_id"));
 
-        var request = ClientUtil.createPalisadeRequest(config);
-
-        createExpectationForValidPalisadeRequest(request);
-
-        var dataRequest = IDataRequest.create(b -> b
-                .token(TOKEN)
-                .leafResourceId(LEAF_RESOURCE_ID));
-
-        createExpectationForValidDataRequest(dataRequest);
-
         //
         // lets start the socket server
         var server = new Server(HOST, WS_PORT, "/", Map.of(), ServerSocket.class);
@@ -126,10 +102,30 @@ class FullTest {
         // lets start the ball rolling
 
         var job = Client.create().submit(config);
-        job.start();
+        var publisher = job.start();
+
+        var next = new AtomicInteger(0);
+
+//        publisher.subscribe(new Subscriber<Download>() {
+//
+//            @Override public void onSubscribe(Subscription s) {
+//            }
+//            @Override public void onNext(Download t) {
+//                next.incrementAndGet();
+//                log.debug("next now called {} times", next.intValue());
+//            }
+//            @Override public void onError(Throwable t) {
+//            }
+//            @Override public void onComplete() {
+//            }
+//
+//        });
 
         // this is not ideal, but
         Thread.sleep(2000);
+
+        // TODO: Fix the streaming
+        // assertThat(next).hasValue(1);
 
         var tracker = job.getDownLoadTracker();
 
@@ -138,49 +134,5 @@ class FullTest {
 
     }
 
-    private void createExpectationForValidPalisadeRequest(PalisadeRequest request) throws Exception {
-        new MockServerClient(HOST, HTTP_PORT)
-            .when(
-                request()
-                    .withMethod("POST")
-                    .withPath(PalisadeRetrofitClient.REGISTER_DATA_REQUEST)
-                    .withHeader("Content-type", "application/json; charset=utf-8")
-                    .withBody(json(request)),
-                        Times.unlimited())
-            .respond(
-                response()
-                    .withStatusCode(200)
-                    .withHeaders(
-                        new Header("Content-Type", "application/json; charset=utf-8"),
-                        new Header("Cache-Control", "public, max-age=86400"))
-                    .withBody(toJson(IPalisadeResponse.create(b -> b.url("ws://localhost:8082/name").token("abcd-1"))))
-//          .withDelay(TimeUnit.MILLISECONDS, 500)
-                );
-    }
-
-    private void createExpectationForValidDataRequest(DataRequest request) throws Exception {
-        new MockServerClient(HOST, HTTP_PORT)
-            .when(
-                request()
-                    .withMethod("POST")
-                    .withPath(DataClient.ENDPOINT_READ_CHUNKED)
-                                .withHeader("Content-type", "application/json; charset=utf-8"),
-//                    .withBody(json(request)),
-                        Times.unlimited())
-            .respond(
-                response()
-                    .withStatusCode(200)
-                    .withHeaders(
-                        new Header("Content-Type", "application/octet-stream; charset=utf-8"),
-                        new Header("Cache-Control", "public, max-age=86400"))
-                    .withBody("woohoo")
-//          .withDelay(TimeUnit.MILLISECONDS, 500)
-                );
-    }
-
-    private String toJson(Object obj) throws Exception {
-        var om = new ObjectMapper();
-        return om.writeValueAsString(obj);
-    }
 
 }

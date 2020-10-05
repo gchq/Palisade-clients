@@ -24,8 +24,16 @@
         </layout>
     </appender>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
+
+    <logger name="uk.gov.gchq.palisade" level="DEBUG"/>
+
+<!--
+    <logger name="io.micronaut.discovery" level="TRACE"/>
+    <logger name="io.micronaut.context.env" level="TRACE"/>
+    <logger name="io.micronaut.context.condition" level="TRACE"/>
+ -->
 
 </configuration>

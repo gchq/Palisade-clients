@@ -78,6 +78,18 @@
 
 				<!-- MAIN -->
 
+				<!-- https://mvnrepository.com/artifact/io.micronaut/micronaut-inject-java -->
+				<dependency>
+						<groupId>io.micronaut</groupId>
+						<artifactId>micronaut-inject-java</artifactId>
+						<version>2.1.0</version>
+				</dependency>
+				<dependency>
+		    <groupId>io.micronaut</groupId>
+		    <artifactId>micronaut-http-client</artifactId>
+      <version>2.1.0</version>
+				</dependency>
+
 				<!-- Palisade -->
 
 				<dependency>
@@ -91,20 +103,6 @@
 						<version>${project.version}</version>
 				</dependency>
 
-				<!-- Http Client Websocket Client (Retrofit pulls in Okhttp). Retrofit 
-						lacks websocket (for now). -->
-
-				<dependency>
-						<groupId>com.squareup.retrofit2</groupId>
-						<artifactId>retrofit</artifactId>
-						<version>2.9.0</version>
-						<!--pulls okhttp 3.14.9 -->
-				</dependency>
-				<dependency>
-						<groupId>com.squareup.retrofit2</groupId>
-						<artifactId>converter-jackson</artifactId>
-						<version>2.9.0</version>
-				</dependency>
 				<dependency>
 						<groupId>org.glassfish.tyrus.bundles</groupId>
 						<artifactId>tyrus-standalone-client</artifactId>
@@ -114,12 +112,6 @@
 						<groupId>com.google.guava</groupId>
 						<artifactId>guava</artifactId>
 						<version>29.0-jre</version>
-				</dependency>
-				<!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
-				<dependency>
-						<groupId>org.reflections</groupId>
-						<artifactId>reflections</artifactId>
-						<version>0.9.12</version>
 				</dependency>
 
 				<!-- Other -->
@@ -135,16 +127,27 @@
 						<artifactId>jackson-core</artifactId>
 						<version>2.11.2</version>
 				</dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-guava</artifactId>
-      <version>2.11.2</version>
-<!--       <scope>test</scope>
- -->    </dependency>
+				<dependency>
+						<groupId>com.fasterxml.jackson.datatype</groupId>
+						<artifactId>jackson-datatype-guava</artifactId>
+						<version>2.11.2</version>
+						<!-- <scope>test</scope> -->
+				</dependency>
 
 				<!-- TEST -->
 
-				<!-- JUnit -->
+				<dependency>
+				    <groupId>io.micronaut.test</groupId>
+				    <artifactId>micronaut-test-junit5</artifactId>
+				    <version>2.1.0</version>
+				    <scope>test</scope>
+				</dependency>
+				<dependency>
+				    <groupId>io.micronaut</groupId>
+				    <artifactId>micronaut-http-server-netty</artifactId>
+				    <version>2.1.0</version>
+				    <scope>test</scope>
+				</dependency>				<!-- JUnit -->
 
 				<dependency>
 						<groupId>org.junit.jupiter</groupId>
@@ -162,29 +165,6 @@
 						<groupId>org.junit.jupiter</groupId>
 						<artifactId>junit-jupiter-params</artifactId>
 						<version>${junit5.version}</version>
-						<scope>test</scope>
-				</dependency>
-
-				<!-- MockServer -->
-
-				<dependency>
-						<groupId>org.mock-server</groupId>
-						<artifactId>mockserver-netty</artifactId>
-						<version>5.11.1</version>
-						<scope>test</scope>
-						<exclusions>
-								<exclusion>
-										<groupId>
-            						com.fasterxml.jackson.core
-            				</groupId>
-										<artifactId>jackson-annotations</artifactId>
-								</exclusion>
-						</exclusions>
-				</dependency>
-				<dependency>
-						<groupId>org.mock-server</groupId>
-						<artifactId>mockserver-client-java</artifactId>
-						<version>5.11.1</version>
 						<scope>test</scope>
 				</dependency>
 
@@ -206,7 +186,7 @@
 						<groupId>ch.qos.logback</groupId>
 						<artifactId>logback-classic</artifactId>
 						<version>1.2.3</version>
-						<!-- <scope>test</scope> -->
+						<scope>test</scope>
 				</dependency>
 				<dependency>
 						<groupId>org.glassfish.tyrus</groupId>
@@ -214,13 +194,19 @@
 						<version>1.17</version>
 						<scope>test</scope>
 				</dependency>
-				<!-- https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-container-grizzly-server -->
 				<dependency>
 						<groupId>org.glassfish.tyrus</groupId>
 						<artifactId>tyrus-container-grizzly-server</artifactId>
 						<version>1.17</version>
 						<scope>test</scope>
 				</dependency>
+    <!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.9.12</version>
+    </dependency>
+
 		</dependencies>
 
 </project>

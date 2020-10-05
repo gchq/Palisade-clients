@@ -22,10 +22,12 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @Value.Immutable
 @ImmutableStyle
+@JsonDeserialize(builder = Context.Builder.class)
 public interface IContext {
 
     public static Context create(UnaryOperator<Context.Builder> func) {
@@ -46,7 +48,6 @@ public interface IContext {
         return getContents().get(key);
     }
 
-    @JsonGetter("class")
     @Value.Default
     default String getClassName() {
         return this.getClass().getCanonicalName();

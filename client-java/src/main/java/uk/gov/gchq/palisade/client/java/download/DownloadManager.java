@@ -15,36 +15,22 @@
  */
 package uk.gov.gchq.palisade.client.java.download;
 
-import org.immutables.value.Value;
+import io.reactivex.*;
+import org.reactivestreams.Publisher;
 import org.slf4j.*;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
-import uk.gov.gchq.palisade.client.java.data.DataClient;
+import uk.gov.gchq.palisade.client.java.ClientConfig;
 import uk.gov.gchq.palisade.client.java.resource.*;
-import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
-import com.google.common.eventbus.*;
+import com.google.common.eventbus.Subscribe;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class DownloadManager {
-
-    @Value.Immutable
-    @ImmutableStyle
-    public interface IDownloadManagerConfig {
-        String getId();
-        EventBus getEventBus();
-
-        @Value.Default
-        default int getNumThreads() {
-            return 1;
-        }
-    }
 
     public static DownloadManager createDownloadManager(UnaryOperator<DownloadManagerConfig.Builder> func) {
         var config = func.apply(DownloadManagerConfig.builder()).build();
@@ -54,7 +40,7 @@ public class DownloadManager {
     private static final Logger log = LoggerFactory.getLogger(DownloadManager.class);
 
     private final ThreadPoolExecutor executor;
-    private final LinkedBlockingQueue<Runnable> queue;
+    private final LinkedBlockingQueue<Download> downloads;
     private final DownloadManagerConfig config;
     private final AtomicInteger activeThreads;
     private final int numThreads;
@@ -92,10 +78,10 @@ public class DownloadManager {
 
     private DownloadManager(DownloadManagerConfig config) {
         this.config = config;
-        this.numThreads = config.getNumThreads();
-        this.queue = new LinkedBlockingQueue<>(2);
-        this.executor = new ThreadPoolExecutor(numThreads, numThreads, 0L, MILLISECONDS, this.queue);
+        this.numThreads = config.getApplicationContext().getBean(ClientConfig.class).getDownload().getThreads();
+        this.executor = new ThreadPoolExecutor(numThreads, numThreads, 0L, MILLISECONDS, new LinkedBlockingQueue<>(2));
         this.activeThreads = new AtomicInteger();
+        this.downloads = new LinkedBlockingQueue<>(numThreads);
         log.debug("Download manager created with thread pool size of {}", numThreads);
     }
 
@@ -107,33 +93,13 @@ public class DownloadManager {
 
         log.debug("Scheduling resource: {}", resource);
 
-        // create a connection to data service
-        var dataClient = new Retrofit.Builder()
-                .addConverterFactory(JacksonConverterFactory.create())
-                .baseUrl(url)
-                .build()
-                .create(DataClient.class);
-
-        var downloader = Downloader.create(b -> b
-                .resource(resource)
-                .eventBus(eventBus)
-                .dataClient(dataClient));
-
         executor.execute(() -> {
             var at = activeThreads.addAndGet(1);
             log.debug("Number of actice threads = {}", at);
             eventBus.post(DownloadStartedEvent.of(token));
-            try {
-                downloader.run();
-                numOK++;
-                eventBus.post(DownloadCompletedEvent.of(token));
-            } catch (Exception t) {
-                numFail++;
-                eventBus.post(DownloadFailedEvent.of(token, t));
-            } finally {
-                at = activeThreads.decrementAndGet();
-                log.debug("Number of actice threads = {}", at);
-            }
+            Downloader.create(b -> b.resource(resource).eventBus(eventBus)).run();
+            numOK++;
+            eventBus.post(DownloadCompletedEvent.of(token));
         });
 
     }
@@ -147,13 +113,47 @@ public class DownloadManager {
     }
 
     @Subscribe
-    public void onJobComplete(ResourcesExhaustedEvent event) {
-
-        // we need to shut the executor down
-
-        executor.shutdown();
-
+    public void newStream(DownloadReadyEvent event) {
+        downloads.offer(Download
+                .builder()
+                .token(event.getToken())
+                .stream(event.getInputStream())
+                .resource(event.getResource())
+                .build());
+        log.debug("### New stream added to queue");
     }
 
+    @Subscribe
+    public void onJobComplete(ResourcesExhaustedEvent event) {
+        // add a Download with no input stream to the queue. This will instruct the
+        // stream to terminate
+        downloads.add(Download.builder().token("end").build());
+        executor.shutdown();
+    }
+
+    public Publisher<Download> subscribe() {
+        return Flowable.create(new FlowableOnSubscribe<Download>() {
+            @Override
+            public void subscribe(FlowableEmitter<Download> emitter) throws Exception {
+                var complete = false;
+                while (!complete) {
+                    var download = downloads.take();
+                    if (download.getStream().isEmpty()) {
+                        log.debug("### Flowable complete");
+                        emitter.onComplete();
+                        complete = true;
+                    } else {
+                        try {
+                            log.debug("### Flowable onNext");
+                            emitter.onNext(download);
+                        } catch (Exception e) {
+                            log.debug("### Flowable onError");
+                            emitter.onError(e);
+                        }
+                    }
+                }
+            }
+        }, BackpressureStrategy.ERROR);
+    }
 
 }

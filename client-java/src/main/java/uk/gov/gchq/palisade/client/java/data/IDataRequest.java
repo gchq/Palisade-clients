@@ -22,8 +22,11 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.function.UnaryOperator;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 @Value.Immutable
 @ImmutableStyle
+@JsonDeserialize(builder = DataRequest.Builder.class)
 public interface IDataRequest {
 
     public static <E> DataRequest create(UnaryOperator<DataRequest.Builder> func) {

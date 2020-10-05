@@ -15,17 +15,18 @@
  */
 package uk.gov.gchq.palisade.client.java.download;
 
-import okhttp3.ResponseBody;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.client.RxStreamingHttpClient;
 import org.immutables.value.Value;
 import org.slf4j.*;
-import retrofit2.Response;
 
 import uk.gov.gchq.palisade.client.java.ClientException;
-import uk.gov.gchq.palisade.client.java.data.*;
+import uk.gov.gchq.palisade.client.java.data.IDataRequest;
 import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.io.*;
+import java.net.*;
 import java.util.function.UnaryOperator;
 
 import com.google.common.eventbus.EventBus;
@@ -40,7 +41,6 @@ public class Downloader implements Runnable {
         }
         EventBus getEventBus();
         Resource getResource();
-        DataClient getDataClient();
     }
 
     static Downloader create(UnaryOperator<DownloadConfig.Builder> func) {
@@ -48,7 +48,6 @@ public class Downloader implements Runnable {
     }
 
     private static final Logger log = LoggerFactory.getLogger(Downloader.class);
-
     private final DownloadConfig config;
 
     private Downloader(DownloadConfig config) {
@@ -60,34 +59,44 @@ public class Downloader implements Runnable {
 
         log.debug("Downloader Started");
 
-        var eventBus = config.getEventBus();
         var resource = config.getResource();
-        var dataClient = config.getDataClient();
-
         var token = resource.getToken();
 
-        var dataRequest = IDataRequest.create(b -> b
-                .token(token)
-                .leafResourceId(resource.getLeafResourceId()));
-
-        Response<ResponseBody> response;
+        URL url = null;
         try {
-            response = dataClient.readChunked(dataRequest).execute();
-        } catch (IOException e) {
-            throw new ClientException("Failed to read body", e);
+            url = new URL("http://localhost:8081/name");
+        } catch (MalformedURLException e1) {
+            throw new RuntimeException(e1.getMessage(), e1);
         }
-        var responseBody = response.body();
 
-        try (InputStream is = responseBody.byteStream()) {
+        String str = null;
+
+        try (var client = RxStreamingHttpClient.create(url)) {
+
+            var dataRequest = IDataRequest.create(b -> b
+                    .token(token)
+                    .leafResourceId(resource.getLeafResourceId()));
+
+            var request = HttpRequest
+                    .POST("/read/chunked", dataRequest)
+                    .header("Content-type", "application/json; charset=utf-8");
+
+            var flow = client.retrieve(request);
+            str = flow.blockingFirst();
+
+            log.debug("### GOT: {}", str);
+
+        }
+
+        try (var is = new ByteArrayInputStream(str.getBytes())) {
 
             log.debug("Got bytestream");
 
             // here we should publish a downkload started event. This event will have all
             // the information needed for a deserialiser.
 
-            var event = DownloadReadyEvent.of(token, is);
             try {
-                eventBus.post(event);
+                config.getEventBus().post(DownloadReadyEvent.of(token, resource, is));
             } catch (Exception e) {
                 // TODO: add some error handling here
                 // wrap the this as the code receiving the evtn will consume the input stream
@@ -100,5 +109,6 @@ public class Downloader implements Runnable {
         log.debug("Downloader ended");
 
     }
+
 
 }

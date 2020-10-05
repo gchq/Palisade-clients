@@ -17,16 +17,52 @@ package uk.gov.gchq.palisade.client.java;
 
 import uk.gov.gchq.palisade.client.java.job.*;
 
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * A client is used to submit requests and download resources.
+ * <p>
+ * A Client is the entry point to running jobs against Palisade. To create a
+ * client do the following:
+ * </p>
+ * <pre>{@code
+ * var client = (JavaClient) Client.create(Map.of(
+ *     "palisade.client.download.threads", NUM_THREADS,
+ *     "palisade.client.url", BASE_URL));
+ * }</pre>
+ * <p>
+ * The number of threads is 1 by default. The default base url is
+ * {@code http://localhost:8081}. In order to submit a request to Palisade,
+ * use the following to create a {@code Job} instance:
+ * </p>
+ * <pre>{@code
+ * var config = IJobConfig.<Troll>create(b -> b
+ *     .classname("classname")
+ *     .deserializer(ds)
+ *     .objectFactory(of)
+ *     .purpose("purpose")
+ *     .requestId("request_id")
+ *     .resourceId("resource_id")
+ *     .userId("user_id"));
+ * }</pre>
+ * <p>
+ * At the moment, the deserialiser and object factory is not used. Later the
+ * idea is that the devloper would subscribe to the returned job and provide
+ * a function to be run when an InputStream is emitted by the downloader/manager.
+ * </p>
+ * <p>
+ * To start the job:
+ * </p>
+ * <pre>{@code
+ * job.start() // this is where we need to provide a function
+ * }</pre>
+ *
+ * At the momnent the client just outputs strings to the log
  *
  * @author dbell
  *
  */
 public interface Client {
-
 
     /**
      * Returns a newly constructed {@code Job} using the provided configuration
@@ -63,12 +99,12 @@ public interface Client {
      * Returns a newly created {@code JavaClient} using the provided function to
      * apply the configuration
      *
-     * @param func The function used to configure the client
+     * @param properties The properties to configure the client
      * @return a newly created {@code JavaClient} using the provided function to
      *         apply the configuration
      */
-    public static Client create(UnaryOperator<ClientConfig.Builder> func) {
-        return JavaClient.createWith(null, func);
+    public static Client create(Map<String, String> properties) {
+        return JavaClient.createWith(null, properties);
     }
 
 }
