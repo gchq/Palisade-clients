@@ -93,7 +93,7 @@ public class JavaClient implements Client {
             .eventBus(eventBus) // create here as we could hook in if we wanted to
             .response(palisadeResponse));
 
-        var job = new Job("job:" + token, jobContext);
+        Job job = new DefaultJob("job:" + token, jobContext);
 
         // The services being registered below need to talk to each other as they are
         // loosely coupled.

@@ -47,7 +47,7 @@ class JobTest {
                 .resourceId("resource_id")
                 .userId("user_id"));
 
-        var job = client.submit(config);
+        var job = (DefaultJob) client.submit(config);
 
         assertThat(job).isNotNull();
         assertThat(job.getId()).isEqualTo("job:abcd-1");
