@@ -13,33 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.job;
+package uk.gov.gchq.palisade.client.java.receiver;
 
-import uk.gov.gchq.palisade.client.java.ClientException;
+import java.io.InputStream;
 
 /**
- * A deserialisation error has occured
+ * <p>
+ * A {@code Receiver} is an object that will be provided with an input stream an
+ * process it. Implementations could write the data to a file or simply log the
+ * data.
+ * </p>
  *
  * @author dbell
  * @since 0.5.0
  */
-public class DeserialiserException extends ClientException {
-
-    private static final long serialVersionUID = 1L;
+public interface Receiver {
 
     /**
-     * @see ClientException#ClientException(String)
+     * Process the provided InputStream
+     *
+     * @param receiverContext The context
+     * @param inputStream     the stream to process
+     * @throws ReceiverException if an erro occurs during processing
      */
-    public DeserialiserException(String message) {
-        super(message);
-    }
-
-    /**
-     * @see ClientException#ClientException(String, Throwable)
-     */
-    public DeserialiserException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
+    void process(ReceiverContext receiverContext, InputStream inputStream) throws ReceiverException;
 
 }

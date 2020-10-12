@@ -15,31 +15,30 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import java.util.Iterator;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class ResourceGenerator implements Iterator<Resource> {
+public class ResourceGenerator implements Iterable<Resource> {
 
-    private final int size;
-    private final String token;
+    private static final List<String> filenames = List.of("pi.txt", "Selection_032.png");
 
-    private int count = 0;
+    private final List<Resource> resources;
 
-    public ResourceGenerator(String token, int size) {
-        this.size = size;
-        this.token = token;
+    /**
+     * @param token
+     */
+    public ResourceGenerator(String token) {
+        resources = filenames.stream()
+            .map(fn -> IResource.create(b -> b
+                .token(token)
+                .leafResourceId(fn)
+                .url("http://localhost:8081")))
+            .collect(Collectors.toList());
     }
 
     @Override
-    public Resource next() {
-        return IResource.create(b -> b
-            .token(token)
-                .leafResourceId("leaf_resource_" + ++count)
-                .url("http://localhost:8081"));
-    }
-
-    @Override
-    public boolean hasNext() {
-        return size == 0 || count < size;
+    public Iterator<Resource> iterator() {
+        return resources.iterator();
     }
 
 }

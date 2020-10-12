@@ -15,9 +15,11 @@
  */
 package uk.gov.gchq.palisade.client.java;
 
+import io.micronaut.context.ApplicationContext;
+
 import uk.gov.gchq.palisade.client.java.job.*;
 
-import java.util.Map;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 /**
@@ -60,6 +62,7 @@ import java.util.function.UnaryOperator;
  * At the momnent the client just outputs strings to the log
  *
  * @author dbell
+ * @since 0.5.0
  *
  */
 public interface Client {
@@ -68,23 +71,21 @@ public interface Client {
      * Returns a newly constructed {@code Job} using the provided configuration
      * function, which is used to submit a request to the Palisade service
      *
-     * @param <E>  The type of instance that will eventually be downloaded
      * @param func The function applied to the {@code JobConfig.Builder} which
      *             provided the configuration
      * @return a newly constructed {@code Job} using the provided configuration
      *         function
      */
-    <E> Job<E> submit(UnaryOperator<JobConfig.Builder<E>> func);
+    Job submit(UnaryOperator<JobConfig.Builder> func);
 
     /**
      * Returns a newly constructed {@code Job} using the provided configuration,
      * which is used to submit a request to the Palisade service
      *
-     * @param <E>       The type of instance that will eventually be downloaded
      * @param jobConfig The configuration for the job
      * @return a newly constructed {@code Job} using the provided configuration
      */
-    <E> Job<E> submit(JobConfig<E> jobConfig);
+    Job submit(JobConfig jobConfig);
 
     /**
      * Returns a newly created {@code JavaClient} using all configuration defaults
@@ -92,19 +93,28 @@ public interface Client {
      * @return a newly created using all configuration defaults
      */
     public static Client create() {
-        return JavaClient.createWith(null);
+        return create(Map.of());
     }
 
     /**
-     * Returns a newly created {@code JavaClient} using the provided function to
-     * apply the configuration
+     * Returns a newly created {@code JavaClient} using the provided property
+     * overrides
      *
      * @param properties The properties to configure the client
-     * @return a newly created {@code JavaClient} using the provided function to
-     *         apply the configuration
+     * @return a newly created {@code JavaClient} using the provided property
+     *         overrides
      */
     public static Client create(Map<String, String> properties) {
-        return JavaClient.createWith(null, properties);
+
+        /*
+         * The provided map of properties will be supplied to the application context.
+         * These will then become available for injection via the full ClientConfig
+         * class or individual values.
+         */
+
+        var map = new LinkedHashMap<String, Object>(properties); // need to be string,object!
+        return ApplicationContext.run(map).getBean(Client.class);
+
     }
 
 }

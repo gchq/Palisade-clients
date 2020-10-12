@@ -21,111 +21,120 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 
-import uk.gov.gchq.palisade.client.java.data.IDataRequest;
-import uk.gov.gchq.palisade.client.java.job.*;
+import uk.gov.gchq.palisade.client.java.ClientContext;
+import uk.gov.gchq.palisade.client.java.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.java.resource.IResource;
 
 import javax.inject.Inject;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import com.google.common.eventbus.*;
+import com.google.common.eventbus.EventBus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @MicronautTest
-@Property(name = "palisade.client.url", value = "http://localhost:8081")
-@Property(name = "micronaut.server.port", value = "8081")
+@Property(name = "palisade.client.url", value = DownloaderTest.BASE_URL)
+@Property(name = "micronaut.server.port", value = DownloaderTest.PORT)
 class DownloaderTest {
 
-    static class Troll {
-        private String name;
-        public Troll(String name) {
-            this.name = name;
-        }
-        public Troll() {
-        }
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-    }
-
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(DownloaderTest.class);
-    private static final int PORT = 8083;
-    private static final String HOST = "localhost";
-    private static final String BASE_URL = String.format("http://%s:%s", HOST, PORT);
+
+    static final String PORT = "8083";
+    static final String BASE_URL = "http://localhost:8083";
 
     private EventBus eventBus;
+    private LinkedBlockingQueue<InputStream> queue;
 
     @Inject
     EmbeddedServer embeddedServer;
 
     @BeforeEach
     public void setup() {
+
+        /*
+         * We register this test with the event bus that the downloader will use. Once
+         * the downloader posts the event, this test will catch the result
+         */
+
         this.eventBus = new EventBus();
         this.eventBus.register(this);
-        this.object = null;
+        this.queue = new LinkedBlockingQueue<InputStream>(1);
+
     }
 
     @Test
     void test_download() throws Exception {
 
         var token = "abcd-1";
+        var filename = "Selection_032.png";
+        var resource = IResource.create(b -> b.leafResourceId(filename).token(token).url(BASE_URL));
 
-        var resource = IResource.create(b -> b
-                .leafResourceId("leaf_resource_id")
-                .token(token)
-                .url(BASE_URL));
+        var appctx = embeddedServer.getApplicationContext();
+        ClientContext clientCtx = new ClientContext() {
+            @Override public <T> T get(Class<T> type) {
+                return appctx.getBean(type);
+            }
+        };
 
         var downloader = Downloader.create(b -> b
-                .eventBus(eventBus)
-                .resource(resource));
-
-        var dataRequest = IDataRequest.create(b -> b
-                .token(token)
-                .leafResourceId(resource.getLeafResourceId()));
-
-//        createExpectationForValidRequest(dataRequest);
+            .clientContext(clientCtx)
+            .receiverSupplier(() -> new FileReceiver())
+            .eventBus(eventBus)
+            .resource(resource));
 
         downloader.run();
 
-        assertThat(object).isNotNull().isInstanceOf(String.class).isEqualTo("OneTwo");
+        var actual_is = new FileInputStream(new File("/tmp/pal-" + token + "-" + filename));
+        var expected_is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
+
+        assertThat(actual_is).isNotNull();
+        assertThat(expected_is).isNotNull();
+
+        // var o = getTempDS().deserialize(actual_is);
+        // assertThat(o).isNotNull().isInstanceOf(String.class).isEqualTo(asString(filename));
+
+        assertThat(isEqual(actual_is, expected_is)).isTrue();
 
     }
 
-    private Object object;
+    private static boolean isEqual(InputStream i1, InputStream i2) throws IOException {
 
-    @Subscribe
-    public void onDownloadReady(DownloadReadyEvent event) {
-        var ds = getTempDS();
-        var is = event.getInputStream();
-        this.object = ds.deserialize(is);
-        log.debug("Consumed from stream: {}", this.object);
-    }
+        ReadableByteChannel ch1 = Channels.newChannel(i1);
+        ReadableByteChannel ch2 = Channels.newChannel(i2);
 
-    private Deserializer<String> getTempDS() {
+        ByteBuffer buf1 = ByteBuffer.allocateDirect(1024);
+        ByteBuffer buf2 = ByteBuffer.allocateDirect(1024);
 
-        return stream -> {
-            var bufferSize = 1024;
-            var buffer = new char[bufferSize];
-            var out = new StringBuilder();
-            var in = new InputStreamReader(stream, StandardCharsets.UTF_8);
-            int charsRead;
-            try {
-                while ((charsRead = in.read(buffer, 0, buffer.length)) > 0) {
-                    out.append(buffer, 0, charsRead);
-                }
-            } catch (IOException ioe) {
-                throw new DeserialiserException("Failed to read stream", ioe);
+        try {
+            while (true) {
+
+                int n1 = ch1.read(buf1);
+                int n2 = ch2.read(buf2);
+
+                if (n1 == -1 || n2 == -1)
+                    return n1 == n2;
+
+                buf1.flip();
+                buf2.flip();
+
+                for (int i = 0; i < Math.min(n1, n2); i++)
+                    if (buf1.get() != buf2.get())
+                        return false;
+
+                buf1.compact();
+                buf2.compact();
             }
-            return out.toString();
-        };
 
+        } finally {
+            if (i1 != null)
+                i1.close();
+            if (i2 != null)
+                i2.close();
+        }
     }
 
 }

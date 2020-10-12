@@ -17,11 +17,54 @@ package uk.gov.gchq.palisade.client.java.download;
 
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 
+/**
+ * <p>
+ * A {@code DownloadFailedEvent} is posted to the event bus if a download has
+ * failed. This can occur if the Data Service request fails.
+ * </p>
+ * <p>
+ * Note that the {@code DownloadFailedEvent} class is generated at compile time.
+ * The generated class does not use a builder but uses "Tuple Style". For
+ * example, an instance can be generated in the following way.
+ *
+ * <pre>
+ * {
+ *     &#64;code
+ *     var event = DownloadEventFailed.of("token", resource, throwable);
+ * }
+ * </pre>
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @TupleStyle
 public interface IDownloadFailedEvent {
+
+    /**
+     * Returns the token to which the download belongs
+     *
+     * @return the token to which the download belongs
+     */
     String getToken();
+
+    /**
+     * Returns the failed download resource
+     *
+     * @return the failed download resource
+     */
+    Resource getResource();
+
+    /**
+     * Returns the throwable that caused this event
+     *
+     * @return the throwable that caused this event
+     */
     Throwable getThrowble();
+
 }

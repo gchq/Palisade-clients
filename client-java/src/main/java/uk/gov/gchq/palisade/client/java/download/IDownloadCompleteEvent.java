@@ -13,26 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.state;
+package uk.gov.gchq.palisade.client.java.download;
 
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 
 /**
  * <p>
- * A {@code StateChangeEvent} is posted to the event bus when a any state has
- * been changed.
+ * A {@code DownloadReadyEvent} is posted to the event bus after a successful
+ * response from the Data Service. At the time of posting, the actual download
+ * has not started yet. This event contains the input stream to be cosumed whhen
+ * downloading starts.
  * </p>
  * <p>
- * Note that the {@code DownloadFailedEvent} class is generated at compile time.
+ * Note that the {@code DownloadReadyEvent} class is generated at compile time.
  * The generated class does not use a builder but uses "Tuple Style". For
  * example, an instance can be generated in the following way.
  *
  * <pre>
- * {
- *     &#64;code
- *     var event = StateChangeEvent.of("token", stateType);
+ * {@code
+ *     var event = DownloadReadyEvent.of("token", resource, inputStream);
  * }
  * </pre>
  * </p>
@@ -43,19 +45,20 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
  */
 @Value.Immutable
 @TupleStyle
-public interface IStateChangeEvent {
+public interface IDownloadCompleteEvent {
 
     /**
-     * Returns the token
+     * Returns the token to which this event is associated
      *
-     * @return the token
+     * @return the token to which this event is associated
      */
     String getToken();
 
     /**
-     * Returns the new state
+     * Returns the resource to be downloaded
      *
-     * @return the new state
+     * @return the resource to be downloaded
      */
-    StateType getState();
+    Resource getResource();
+
 }

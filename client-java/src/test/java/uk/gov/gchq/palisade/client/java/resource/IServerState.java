@@ -22,7 +22,7 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import javax.websocket.Session;
 
 import java.lang.ref.WeakReference;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 @Value.Immutable
@@ -35,7 +35,7 @@ public interface IServerState {
 
     String getToken();
 
-    ResourceGenerator getResourceGenerator();
+    Iterator<Resource> getResources();
 
     WeakReference<Session> getSessionReference();
 

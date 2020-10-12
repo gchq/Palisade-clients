@@ -24,10 +24,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
+/**
+ * <p>
+ * This class is the base class of more concrete implementations to
+ * serialise/deserialise objects to and from text streams. This class is used by
+ * the web socket to translate strings to/from objects.
+ * </p>
+ * <p>
+ * When {@code #init(EndpointConfig)} is called, the type generic type is
+ * retrieved from the superclass
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @param <T> The type of object to be serialised to and deserialised from
+ */
 public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.TextStream<T> {
 
+    /**
+     * The type
+     */
     private Class<T> _type;
 
+    /**
+     * Store the object mapper in each thread
+     */
     private ThreadLocal<ObjectMapper> _mapper = new ThreadLocal<ObjectMapper>() {
         @Override
         protected ObjectMapper initialValue() {
@@ -39,11 +60,11 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
     @Override
     public void init(EndpointConfig endpointConfig) {
         ParameterizedType thisClass = (ParameterizedType) this.getClass().getGenericSuperclass();
-        Type T = thisClass.getActualTypeArguments()[0];
-        if (T instanceof Class) {
-            _type = (Class<T>) T;
-        } else if (T instanceof ParameterizedType) {
-            _type = (Class<T>) ((ParameterizedType) T).getRawType();
+        Type typeT = thisClass.getActualTypeArguments()[0];
+        if (typeT instanceof Class) {
+            _type = (Class<T>) typeT;
+        } else if (typeT instanceof ParameterizedType) {
+            _type = (Class<T>) ((ParameterizedType) typeT).getRawType();
         }
     }
 

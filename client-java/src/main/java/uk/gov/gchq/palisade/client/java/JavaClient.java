@@ -15,7 +15,6 @@
  */
 package uk.gov.gchq.palisade.client.java;
 
-import io.micronaut.context.ApplicationContext;
 import io.micronaut.websocket.RxWebSocketClient;
 import org.slf4j.*;
 
@@ -23,93 +22,109 @@ import uk.gov.gchq.palisade.client.java.job.*;
 import uk.gov.gchq.palisade.client.java.request.*;
 import uk.gov.gchq.palisade.client.java.state.StateManager;
 
-import java.util.*;
 import java.util.function.UnaryOperator;
 
 import com.google.common.eventbus.EventBus;
 
 /**
- * The type Simple client.
+ * <p>
+ * The main client implementation.
+ * </p>
+ * <p>
+ * Note that this class should only be created via the static {@code create}
+ * methods on the {@link Client} interface. For tests it can be injected into a
+ * test class annotated with {@code @MicronautTest} as it is configured for
+ * dependency injection. This makes testing much easier.
+ *
+ * @author dbell
+ * @since 0.5.0
  */
 public class JavaClient implements Client {
 
-    /**
-     * Returns a newly created {@code JavaClient} using all configuration defaults
-     * but using the provided Palisade client which will make calls to the Palisade
-     * service.
-     *
-     * @param pc The {@code PalisadeClient} implementation to be used when maing
-     *           calls top the Palisade service
-     * @return a newly created {@code JavaClient}
-     */
-    static Client createWith(PalisadeClient pc) {
-        return createWith(pc, Map.of());
-    }
-
-    /**
-     * Returns a newly created {@code JavaClient} using the provided function to
-     * apply the configuration and using the provided Palisade client which will
-     * make calls to the Palisade service.
-     *
-     * @param pc   The {@code PalisadeClient} implementation to be used when maing
-     *             calls top the Palisade service
-     * @param func The function used to configure the client
-     * @return a newly created {@code JavaClient}
-     */
-    static Client createWith(PalisadeClient pc, Map<String, String> properties) {
-        var map = new LinkedHashMap<String, Object>(properties);
-        return ApplicationContext.run(map).getBean(Client.class);
-    }
-
     private static final Logger log = LoggerFactory.getLogger(JavaClient.class);
-    private final ApplicationContext context;
+
+    private final ClientContext clientContext;
+
     @SuppressWarnings("unused")
     private final RxWebSocketClient webSocketClient; // NOT used yet
 
-    public JavaClient(RxWebSocketClient webSocketClient, ApplicationContext context) {
-        this.context = context;
+    /**
+     * Create a new JavaClient injected with required services. The main injection
+     * is the actual ApplicationContext that is performing the injection. Same as
+     * Guice, Micronaut can inject itself, which is cool.
+     *
+     * @param webSocketClient This is to be used later instead of Tyrus
+     * @param clientCcontext  The {@code ApplicationContext} doing the injecting
+     */
+    public JavaClient(RxWebSocketClient webSocketClient, ClientContext clientCcontext) {
+        this.clientContext = clientCcontext;
         this.webSocketClient = webSocketClient;
     }
 
     @Override
-    public <E> Job<E> submit(JobConfig<E> jobConfig) {
+    public Job submit(JobConfig jobConfig) {
 
-        var request = createRequest(jobConfig);
-        var palisadeService = context.getBean(PalisadeClient.class);
+        log.debug("Job configuration submitted: {}", jobConfig);
 
-        var response = palisadeService.submit(request);
+        var palisadeRequest = createRequest(jobConfig); // actual instance sent to palisade Service
+        var palisadeService = clientContext.get(PalisadeClient.class); // the actual http client is wrapped
 
-        assert response != null : "No response back from palisade service";
+        log.debug("Submitting request to Palisade....");
 
-        var token = response.getToken();
-        var eventBus = new EventBus("bus:" + token);
-        var stateManager = context.getBean(StateManager.class);
+        var palisadeResponse = palisadeService.submit(palisadeRequest);
 
-        var jobContext = IJobContext.<E>createJobContext(b -> b
-                .applicationContext(context)
-                .jobConfig(jobConfig)
-                .eventBus(eventBus) // create here as we could hook in if we wanted to
-                .response(response));
+        log.debug("Got response from Palisade: {}", palisadeResponse);
 
-        var job = new Job<>("job:" + token, jobContext);
+        assert palisadeResponse != null : "No response back from palisade service";
+
+        var token = palisadeResponse.getToken();
+        var eventBus = new EventBus("bus:" + token); // each job gets its own event bus (name is good for debbugging)
+        var stateManager = clientContext.get(StateManager.class);
+
+        // we'll wrap Micronaut's ApplicationConfig as we do nor want to expose this to
+        // the client later on.
+
+        // The JobContext contains everything that is unique for this job plus the
+        // application context used to look up extra services that may be need
+
+        var jobContext = IJobContext.createJobContext(b -> b
+            .clientContext(clientContext)
+            .jobConfig(jobConfig)
+            .eventBus(eventBus) // create here as we could hook in if we wanted to
+            .response(palisadeResponse));
+
+        var job = new Job("job:" + token, jobContext);
+
+        // The services being registered below need to talk to each other as they are
+        // loosely coupled.
 
         eventBus.register(stateManager);
         eventBus.register(job);
+
+        log.debug("Job created for token: {}", token);
 
         return job;
 
     }
 
     @Override
-    public <E> Job<E> submit(UnaryOperator<JobConfig.Builder<E>> func) {
+    public Job submit(UnaryOperator<JobConfig.Builder> func) {
         return submit(func.apply(JobConfig.builder()).build());
     }
 
-    ApplicationContext getApplicationContext() {
-        return this.context;
+    /**
+     * Returns the {@code ApplicationContext} that was used to create this client.
+     * The context is used to retrieve other services that the client relies on,
+     * e.g. the {@code StateManager}.
+     *
+     * @return the {@code ApplicationContext} that was used to create this client.
+     * @see "https://docs.micronaut.io/latest/api/io/micronaut/context/ApplicationContext.html"
+     */
+    ClientContext getClientContext() {
+        return this.clientContext;
     }
 
-    private <E> PalisadeRequest createRequest(JobConfig<E> jobConfig) {
+    private PalisadeRequest createRequest(JobConfig jobConfig) {
 
         var userId = jobConfig.getUserId();
         var purpose = jobConfig.getPurpose();
@@ -118,7 +133,7 @@ public class JavaClient implements Client {
         var resourceId = jobConfig.getResourceId();
         var properties = jobConfig.getProperties();
 
-        return PalisadeRequest.builder()
+        var req = PalisadeRequest.builder()
                 .resourceId(resourceId)
                 .userId(UserId.builder()
                         .id(userId)
@@ -132,6 +147,10 @@ public class JavaClient implements Client {
                         .contents(properties)
                         .build())
                 .build();
+
+        log.debug("new palisade request crteated from job config: {}", req);
+
+        return req;
 
     }
 }

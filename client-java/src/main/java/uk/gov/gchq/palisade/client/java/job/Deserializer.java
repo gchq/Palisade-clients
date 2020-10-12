@@ -17,10 +17,29 @@ package uk.gov.gchq.palisade.client.java.job;
 
 import java.io.InputStream;
 
+/**
+ * A deserialiser
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @param <E> The type
+ */
 public interface Deserializer<E> {
 
+    /**
+     * Returns an instance of {@code E} from the provide {@code InputStream}
+     *
+     * @param inputStream The source
+     * @return an instance of {@code E} from the provide {@code InputStream}
+     */
     E deserialize(InputStream inputStream);
 
+    /**
+     * Returns an instance of {@code E} from the provide byte array
+     *
+     * @param bytea The source
+     * @return an instance of {@code E} from the provide byte array
+     */
     default E deserialize(byte[] bytea) {
         return deserialize(bytea);
     }

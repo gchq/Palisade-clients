@@ -15,6 +15,12 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
+/**
+ * The type of {@link Message}
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
 public enum MessageType {
 
     /**

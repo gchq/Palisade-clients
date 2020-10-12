@@ -19,35 +19,71 @@ import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
-import java.util.*;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+/**
+ * <p>
+ * This is the context instance which is part of a {@link PalisadeRequest}
+ * </p>
+ * <p>
+ * Note that the {@link Context} class is created at compile time. The way in
+ * which the class is created is determined by the {@link ImmutableStyle}. This
+ * class is also compatible with Jackson.
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @ImmutableStyle
 @JsonDeserialize(builder = Context.Builder.class)
 public interface IContext {
 
+    /**
+     * Helper method to create a {@link Context} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
     public static Context create(UnaryOperator<Context.Builder> func) {
         return func.apply(Context.builder()).build();
     }
 
+    /**
+     * Returns the purpose of this request
+     *
+     * @return the purpose of this request
+     */
     public String getPurpose();
 
+    /**
+     * Returns the contents (properties)
+     *
+     * @return the contents (properties)
+     */
     public Map<String, Object> getContents();
 
-    @JsonIgnore
-    default Map<String, Object> getContentsCopy() {
-        return Collections.unmodifiableMap(getContents());
-    }
-
+    /**
+     * Returns a property for the provided key or null if not found
+     *
+     * @param key The key of the value to find
+     * @return a property for the provided key or null if not found
+     */
     @JsonIgnore
     default Object get(final String key) {
         return getContents().get(key);
     }
 
+    /**
+     * Returns the class name or the canonical classname of this instance if not set
+     *
+     * @return the class name or the canonical classname of this instance if not set
+     */
     @Value.Default
     default String getClassName() {
         return this.getClass().getCanonicalName();

@@ -25,17 +25,39 @@ import uk.gov.gchq.palisade.client.java.state.StateManager;
 
 import javax.inject.Singleton;
 
+/**
+ * This is the factory for any services that are injected via the DI framework.
+ * This configuration is used when a new {@code ApplicationContext} is created.
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
 @Factory
-public class ClientUtil {
+public class DIFactory {
 
-    public ClientUtil() { // cannot be instantiated
+    /**
+     * Creates a new factory
+     */
+    public DIFactory() { // cannot be instantiated
     }
 
+    /**
+     * Returns the one and only {@link StateManager} instance
+     *
+     * @return the one and only {@link StateManager} instance
+     */
     @Singleton
     public final StateManager stateManager() {
         return new StateManager();
     }
 
+    /**
+     * Returns the one and only {@link PalisadeClient} instance.
+     *
+     * @param clientConfig The client configuration (needed for service url)
+     * @param prc          The {@link PalisadeServiceClient} to be wrapped
+     * @return the one and only {@link PalisadeClient} instance.
+     */
     @Singleton
     public PalisadeClient createPalisadeClient(ClientConfig clientConfig, PalisadeServiceClient prc) {
         return new PalisadeClient() {
@@ -45,7 +67,7 @@ public class ClientUtil {
                 try {
                     var opt = httpResponse.getBody();
                     if (!opt.isPresent()) {
-                        var url = clientConfig.getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
+                        var url = clientConfig.getClient().getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
                         var code = httpResponse.code();
                         throw new ClientException(String.format("Request to %s failed with status %s", url, code));
                     }
@@ -60,9 +82,27 @@ public class ClientUtil {
     }
 
     @Singleton
+    public ClientContext createClientContext(ApplicationContext context) {
+        return new ClientContext() {
+            @Override
+            public <T> T get(Class<T> type) {
+                return context.getBean(type);
+            }
+        };
+    }
+
+    /**
+     * Returns the client
+     *
+     * @param webSocketClient not used yet as we are still using Tyrus
+     * @param context         The {@code ApplicationContext} that is performing the
+     *                        injection
+     * @return the client
+     */
+    @Singleton
     public Client createClient(
             @io.micronaut.http.client.annotation.Client("http://localhost:8081") RxWebSocketClient webSocketClient,
-            ApplicationContext context) {
+        ClientContext context) {
         return new JavaClient(webSocketClient, context);
     }
 

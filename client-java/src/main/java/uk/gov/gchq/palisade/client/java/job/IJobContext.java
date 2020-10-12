@@ -15,9 +15,9 @@
  */
 package uk.gov.gchq.palisade.client.java.job;
 
-import io.micronaut.context.ApplicationContext;
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
@@ -25,20 +25,71 @@ import java.util.function.UnaryOperator;
 
 import com.google.common.eventbus.EventBus;
 
+/**
+ * <p>
+ * An instance of {@code JobConfig} is passed during the creation of a new Job.
+ * </p>
+ * <p>
+ * Note that the {@code JobConfig} class is created at compile time. The way in
+ * which the class is created is determined by the {@link ImmutableStyle}.
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @ImmutableStyle
-public interface IJobContext<E> {
+public interface IJobContext {
 
-    public static <E> JobContext<E> createJobContext(UnaryOperator<JobContext.Builder<E>> func) {
-        return func.apply(JobContext.<E>builder()).build();
+    /**
+     * Helper method to create a {@code JobConfig} using a builder function which
+     * negates the need to use {@code builder()} and {@code build()} methods:
+     *
+     * <pre>
+     * {@code
+     * var jobctx =
+     *     createJobContext(b -> b
+     *         .applicationContext(appctx)
+     *         .jobConfig(jobConfig)
+     *         .eventBus(eventBus)
+     *         .response(response));
+     * }
+     * </pre>
+     *
+     * @param func The builder function
+     * @return a newly created data request instance
+     */
+    public static JobContext createJobContext(UnaryOperator<JobContext.Builder> func) {
+        return func.apply(JobContext.builder()).build();
     }
 
-    ApplicationContext getApplicationContext();
+    /**
+     * Returns the client context
+     *
+     * @return the client context
+     */
+    ClientContext getClientContext();
 
-    JobConfig<E> getJobConfig();
+    /**
+     * Returns the job configuration that the user provided
+     *
+     * @return the job configuration that the user provided
+     */
+    JobConfig getJobConfig();
 
+    /**
+     * Returns the event bus to be used for registration and posting of events
+     *
+     * @return the event bus to be used for registration and posting of events
+     */
     EventBus getEventBus();
 
+    /**
+     * Returns the response that was returned from the Palisade Service
+     *
+     * @return the response that was returned from the Palisade Service
+     */
     PalisadeResponse getResponse();
 
 }

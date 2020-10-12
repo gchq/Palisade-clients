@@ -17,8 +17,23 @@ package uk.gov.gchq.palisade.client.java.state;
 
 import uk.gov.gchq.palisade.client.java.ClientException;
 
+/**
+ * A {@code StateException} is thrown when any error occurs when retrieving or
+ * updating states for a job (token). This could occur if a state is requested
+ * for a token that does not exist.
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
 public class StateException extends ClientException {
 
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Creates a new {@code StateException} with the provided message
+     *
+     * @param message The message
+     */
     public StateException(String message) {
         super(message);
     }

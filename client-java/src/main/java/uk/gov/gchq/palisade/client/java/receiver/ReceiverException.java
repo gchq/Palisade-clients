@@ -13,50 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java;
+package uk.gov.gchq.palisade.client.java.receiver;
 
 /**
- * Root class of client exceptions
+ * Thrown when an inputstream receiver fails to complete
  *
  * @author dbell
  * @since 0.5.0
  *
  */
-public class ClientException extends RuntimeException {
+public class ReceiverException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * @see RuntimeException#RuntimeException()
+     * @see Exception#Exception()
      */
-    public ClientException() {
+    public ReceiverException() {
     }
 
     /**
-     * @see RuntimeException#RuntimeException(String)
+     * @see Exception#Exception(String)
      */
-    public ClientException(String message) {
+    public ReceiverException(String message) {
         super(message);
     }
 
     /**
-     * @see RuntimeException#RuntimeException(Throwable)
+     * @see Exception#Exception(Throwable)
      */
-    public ClientException(Throwable cause) {
+    public ReceiverException(Throwable cause) {
         super(cause);
     }
 
     /**
-     * @see RuntimeException#RuntimeException(String, Throwable)
+     * @see Exception#Exception(String, Throwable)
      */
-    public ClientException(String message, Throwable cause) {
+    public ReceiverException(String message, Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * @see RuntimeException#RuntimeException(String, Throwable, boolean, boolean)
+     * @see Exception#Exception(String, Throwable, boolean, boolean)
      */
-    public ClientException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public ReceiverException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

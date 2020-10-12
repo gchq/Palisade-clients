@@ -20,6 +20,13 @@ import org.immutables.value.Value.Style.ImplementationVisibility;
 
 import java.lang.annotation.*;
 
+/**
+ * A style annotation that can be used on interfaces annotated via the Immutable
+ * library to alter how the creation process is performed.
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
 @Target({ElementType.PACKAGE, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS) // Make it class retention for incremental compilation
 @Value.Style(

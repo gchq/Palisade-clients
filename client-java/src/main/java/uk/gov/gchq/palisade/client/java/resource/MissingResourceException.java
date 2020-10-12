@@ -17,17 +17,35 @@ package uk.gov.gchq.palisade.client.java.resource;
 
 import uk.gov.gchq.palisade.client.java.ClientException;
 
+/**
+ * An instance of this class is thrown if the body of a reource message is not
+ * set by the server. This should be very rare.
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
 public class MissingResourceException extends ClientException {
 
     private static final long serialVersionUID = 6617992103641504671L;
 
     private final Message resourceMessage;
 
+    /**
+     * Creates a new {@code MissingResourceException} with the provided
+     * {@link Message}
+     *
+     * @param resourceMessage The offending message
+     */
     public MissingResourceException(Message resourceMessage) {
         super("Recieved a message with a missing resource. Message was: " + resourceMessage);
         this.resourceMessage = resourceMessage;
     }
 
+    /**
+     * Returns the message that caused this error
+     *
+     * @return the message that caused this error
+     */
     public Message getResourceMessage() {
         return this.resourceMessage;
     }

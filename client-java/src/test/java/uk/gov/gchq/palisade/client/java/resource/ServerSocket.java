@@ -86,14 +86,14 @@ public class ServerSocket {
         var sessionRef = new WeakReference<Session>(session);
 
         var newState = oldState.isPresent()
-                ? oldState.get().change(b -> b
-                        .sessionReference(sessionRef)
-                        .currentState(ServerStateType.WAITING))
-                : IServerState.create(b -> b
-                        .token(token)
-                        .sessionReference(sessionRef)
-                        .resourceGenerator(new ResourceGenerator(token, NUM_RESOURCES))
-                        .currentState(ServerStateType.WAITING));
+            ? oldState.get().change(b -> b
+                .sessionReference(sessionRef)
+                .currentState(ServerStateType.WAITING))
+            : IServerState.create(b -> b
+                .token(token)
+                .sessionReference(sessionRef)
+                .resources(new ResourceGenerator(token).iterator())
+                .currentState(ServerStateType.WAITING));
 
         statemanager.set(newState);
 
@@ -104,7 +104,7 @@ public class ServerSocket {
         // The code below will later be in some other thread that will be reading a
         // queue
 
-        if (newState.getResourceGenerator().hasNext()) {
+        if (newState.getResources().hasNext()) {
             var rts = IMessage.create(b -> b.type(MessageType.RTS).token(token));
             sendMessage(session, rts);
             statemanager.set(statemanager.get(token).change(b -> b.currentState(ServerStateType.RTS)));
@@ -126,7 +126,7 @@ public class ServerSocket {
         }
 
         // get the next resource
-        var resource = oldState.getResourceGenerator().next();
+        var resource = oldState.getResources().next();
 
         var msg = IMessage.create(b -> b.type(MessageType.RESOURCE).token(token)
                 .putHeader("test", "test response message").body(resource));
@@ -146,7 +146,7 @@ public class ServerSocket {
         // The code below will later be in some other thread that will be reading a
         // queue
 
-        if (newState.getResourceGenerator().hasNext()) {
+        if (newState.getResources().hasNext()) {
             var rts = IMessage.create(b -> b.type(MessageType.RTS).token(token));
             sendMessage(session, rts);
             statemanager.set(statemanager.get(token).change(b -> b.currentState(ServerStateType.RTS)));

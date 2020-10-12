@@ -17,29 +17,75 @@ package uk.gov.gchq.palisade.client.java.state;
 
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.java.request.UserId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.function.UnaryOperator;
 
+/**
+ * <p>
+ * A {@code State} object is reflects the current state of a job
+ * </p>
+ * <p>
+ * Note that the {@link UserId} class is created at compile time. The way in
+ * which the class is created is determined by the {@link ImmutableStyle}. This
+ * class is also compatible with Jackson.
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see StateManager
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @ImmutableStyle
 public interface IState {
 
+    /**
+     * Helper method to create a {@link State} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
     public static <E> State create(UnaryOperator<State.Builder> func) {
         return func.apply(State.builder()).build();
     }
 
+    /**
+     * Returns the token
+     *
+     * @return the token
+     */
     String getToken();
 
+    /**
+     * Returns the current state or {@link StateType#WAITING} if not set
+     *
+     * @return the current state or {@link StateType#WAITING} if not set
+     */
     @Value.Default()
     default StateType getCurrentState() {
         return StateType.WAITING;
     }
 
+    /**
+     * Returns a new {@code State} using this current state as a base and modified
+     * by using the provide builder function
+     *
+     * @param func The builder function
+     * @return a new {@code State} using this current state as a base and modified
+     *         by using the provide builder function
+     */
     default State from(UnaryOperator<State.Builder> func) {
         return func.apply(State.builder().from(this)).build();
     }
 
+    /**
+     * Returns true if this state matches the provided {@link StateType}
+     *
+     * @param expectedState The expected state type
+     * @return true if this state matches the provided {@link StateType}
+     */
     default boolean isAt(StateType expectedState) {
         return expectedState == getCurrentState();
     }

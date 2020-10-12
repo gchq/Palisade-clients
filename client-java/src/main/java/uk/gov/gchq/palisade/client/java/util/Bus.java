@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.download;
+package uk.gov.gchq.palisade.client.java.util;
 
-import org.immutables.value.Value;
+/**
+ * Posts an event to all registered subscribers.
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
+public interface Bus {
 
-import uk.gov.gchq.palisade.client.java.util.TupleStyle;
+    /**
+     * Posts an event to all registered subscribers. This method will return
+     * successfully after the event has been posted to all subscribers, and
+     * regardless of any exceptions thrown by subscribers.
+     *
+     * @param event the {@code event} to be published
+     */
+    void post(Object event);
 
-@Value.Immutable
-@TupleStyle
-public interface IDownloadCompletedEvent {
-    String getToken();
 }

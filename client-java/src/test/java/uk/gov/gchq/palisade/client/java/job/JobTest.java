@@ -20,37 +20,18 @@ import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
-import uk.gov.gchq.palisade.client.java.Client;
+import uk.gov.gchq.palisade.client.java.*;
 
 import javax.inject.Inject;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @MicronautTest
-@Property(name = "palisade.client.url", value = "http://localhost:8081")
+@Property(name = ClientConfig.Client.URL_PROPERTY, value = "http://localhost:8081")
 @Property(name = "micronaut.server.port", value = "8081")
 class JobTest {
-
-    static class Troll {
-        private String name;
-        public Troll(String name) {
-            this.name = name;
-        }
-        public Troll() {
-        }
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-    }
 
     @Inject Client client;
     @Inject ObjectMapper objectMapper;
@@ -59,28 +40,8 @@ class JobTest {
     @Test
     void test_new_job_creation() throws Exception {
 
-        Deserializer<Troll> ds = stream -> {
-            var bufferSize = 1024;
-            var buffer = new char[bufferSize];
-            var out = new StringBuilder();
-            var in = new InputStreamReader(stream, StandardCharsets.UTF_8);
-            int charsRead;
-            try {
-                while ((charsRead = in.read(buffer, 0, buffer.length)) > 0) {
-                    out.append(buffer, 0, charsRead);
-                }
-            } catch (IOException ioe) {
-                throw new DeserialiserException("Failed to read stream", ioe);
-            }
-            return new Troll(out.toString());
-        };
-
-        ObjectFactory<Troll> of = Troll::new;
-
-        var config = IJobConfig.<Troll>create(b -> b
+        var config = IJobConfig.create(b -> b
                 .classname("classname")
-                .deserializer(ds)
-                .objectFactory(of)
                 .purpose("purpose")
                 .requestId("request_id")
                 .resourceId("resource_id")
@@ -100,6 +61,10 @@ class JobTest {
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isEqualTo("abcd-1");
         assertThat(response.getUrl()).isEqualTo("ws://localhost:8082/name");
+
+//        assertThat(response)
+//            .hasToken("abcd-1")
+//            .hasUrl("ws://localhost:8082/name");
 
         var bus = jobContext.getEventBus();
 

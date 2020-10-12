@@ -15,8 +15,20 @@
  */
 package uk.gov.gchq.palisade.client.java.request;
 
+/**
+ * Instances of this class wrap the generated palisade service client
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
 public interface PalisadeClient {
 
+    /**
+     * Submit the provided request to Palisade
+     *
+     * @param request The request to submit
+     * @return the response
+     */
     public PalisadeResponse submit(final PalisadeRequest request);
 
 }

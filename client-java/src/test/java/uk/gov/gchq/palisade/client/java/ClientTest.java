@@ -32,15 +32,15 @@ class ClientTest {
     void testCreate() {
 
         var client = (JavaClient) Client.create(Map.of(
-                "palisade.client.download.threads", NUM_THREADS,
-                "palisade.client.url", BASE_URL));
+            ClientConfig.Client.URL_PROPERTY, BASE_URL,
+            ClientConfig.Download.THREADS_PROPERTY, NUM_THREADS));
 
-        var context = client.getApplicationContext();
+        var context = client.getClientContext();
 
-        var palisadeConfig = context.getBean(ClientConfig.class);
+        var clientConfig = context.get(ClientConfig.class);
 
-        assertThat(palisadeConfig.getUrl()).isEqualTo("http://localhost:8083");
-        assertThat(palisadeConfig.getDownload().getThreads()).isEqualTo(2);
+        assertThat(clientConfig.getClient().getUrl()).isEqualTo("http://localhost:8083");
+        assertThat(clientConfig.getDownload().getThreads()).isEqualTo(2);
 
     }
 

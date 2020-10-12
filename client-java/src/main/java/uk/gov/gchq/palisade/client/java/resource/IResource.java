@@ -17,6 +17,7 @@ package uk.gov.gchq.palisade.client.java.resource;
 
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.java.request.UserId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.Map;
@@ -24,22 +25,67 @@ import java.util.function.UnaryOperator;
 
 import com.fasterxml.jackson.databind.annotation.*;
 
+/**
+ * <p>
+ * A {@code Resource} object is received in a {@code Message} of type
+ * {@link MessageType#RESOURCE} after it has sent a message of type
+ * {@link MessageType#CTS}.
+ * </p>
+ * <p>
+ * Note that the {@link UserId} class is created at compile time. The way in
+ * which the class is created is determined by the {@link ImmutableStyle}. This
+ * class is also compatible with Jackson.
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see ResourceClient
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @ImmutableStyle
 @JsonDeserialize(as = Resource.class)
 @JsonSerialize(as = Resource.class)
 public interface IResource {
 
+    /**
+     * Helper method to create a {@link Resource} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
     public static Resource create(UnaryOperator<Resource.Builder> func) {
         return func.apply(Resource.builder()).build();
     }
 
+    /**
+     * Returns the token to which this resource is associated with
+     *
+     * @return the token to which this resource is associated with
+     */
     String getToken();
 
+    /**
+     * Returns the leaf resource id which is to be downloaded
+     *
+     * @return the leaf resource id which is to be downloaded
+     */
     String getLeafResourceId();
 
+    /**
+     * Return the url of the download service
+     *
+     * @return the url of the download service
+     */
     String getUrl();
 
+    /**
+     * Returns any extra properties for this resource or an empty map if there are
+     * none
+     *
+     * @return any extra properties for this resource or an empty map if there are
+     *         none
+     */
     Map<String, String> getProperties();
 
 }

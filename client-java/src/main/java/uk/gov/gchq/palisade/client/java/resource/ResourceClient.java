@@ -33,24 +33,78 @@ import com.google.common.eventbus.EventBus;
 import static uk.gov.gchq.palisade.client.java.resource.MessageType.SUBSCRIBE;
 import static uk.gov.gchq.palisade.client.java.state.StateType.*;
 
+/**
+ * The {@code ResourceClient} class represents a websocket endpoint. It handles
+ * the communication to the Filtered Resource Service to negotiate the resources
+ * that are available for download. This class uses the standard implementation
+ * of websockets in Java
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
 @ClientEndpoint(
     encoders = {ResourceClient.MessageCode.class},
     decoders = {ResourceClient.MessageCode.class}
 )
 public class ResourceClient {
 
+    /**
+     * The configuration for the client resource
+     *
+     * @author dbell
+     * @since 0.5.0
+     */
     @Value.Immutable
     @ImmutableStyle
     public interface IResourceClientConfig {
+
+        /**
+         * Returns the token
+         *
+         * @return the token
+         */
         String getToken();
+
+        /**
+         * Returns the event bus used to post events
+         *
+         * @return the event bus used to post events
+         */
         EventBus getEventBus();
+
+        /**
+         * returns the object mapper to use when marshalling messages
+         *
+         * @return the object mapper to use when marshalling messages
+         */
         ObjectMapper getMapper();
+
+        /**
+         * Returns the download tracker that the resource client will use to see if any
+         * download slots are available.
+         *
+         * @return the download tracker that the resource client will use to see if any
+         *         download slots are available.
+         */
         DownloadTracker getDownloadTracker();
     }
 
+    /**
+     * An implementation of a {@link JSONCoder} for type of {@link Message}
+     *
+     * @author dbell
+     * @since 0.5.0
+     */
     public static class MessageCode extends JSONCoder<Message> { // empty
     }
 
+    /**
+     * Helper method to create a {@link ResourceClientConfig} using a builder
+     * function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
     public static ResourceClient createResourceClient(UnaryOperator<ResourceClientConfig.Builder> func) {
         return new ResourceClient(func.apply(ResourceClientConfig.builder()).build());
     }
@@ -63,6 +117,13 @@ public class ResourceClient {
         this.config = config;
     }
 
+    /**
+     * Handle the WebSocket open event. As soon as the session is opened, a
+     * SUBSCRIBE message is sent to the server.
+     *
+     * @param session        The websocket session
+     * @param endpointConfig The endpoint configuration
+     */
     @OnOpen
     public void onOpen(Session session, EndpointConfig endpointConfig) {
         log.debug("Session {} opened", session.getId());
@@ -72,14 +133,24 @@ public class ResourceClient {
         post(StateChangeEvent.of(token, SUBSCRIBING));
     }
 
+    /**
+     * Handle the WebSocket close event. Upon close the stored session is nulled.
+     *
+     * @param session     The websocket session
+     * @param closeReason The reason for closing the session
+     */
     @OnClose
-    public void onClose(Session session, CloseReason reason) {
+    public void onClose(Session session, CloseReason closeReason) {
         log.debug("Session {} closed with code {} because {}",
-                session.getId(), reason.getCloseCode(), reason.getReasonPhrase());
+            session.getId(), closeReason.getCloseCode(), closeReason.getReasonPhrase());
         this.session = null;
     }
 
-
+    /**
+     * Handle the WebSocket message event.
+     *
+     * @param message The message received
+     */
     @OnMessage
     public void onMessage(Message message) {
 

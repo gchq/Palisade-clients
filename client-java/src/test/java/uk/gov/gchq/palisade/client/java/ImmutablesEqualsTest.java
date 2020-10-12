@@ -22,7 +22,6 @@ import org.reflections.Reflections;
 import org.reflections.scanners.*;
 import org.reflections.util.*;
 
-import uk.gov.gchq.palisade.client.java.data.DataRequest;
 import uk.gov.gchq.palisade.client.java.download.*;
 import uk.gov.gchq.palisade.client.java.job.JobContext;
 import uk.gov.gchq.palisade.client.java.resource.*;

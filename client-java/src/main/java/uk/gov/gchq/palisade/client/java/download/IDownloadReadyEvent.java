@@ -22,10 +22,51 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 
 import java.io.InputStream;
 
+/**
+ * <p>
+ * A {@code DownloadReadyEvent} is posted to the event bus after a successful
+ * response from the Data Service. At the time of posting, the actual download
+ * has not started yet. This event contains the input stream to be cosumed whhen
+ * downloading starts.
+ * </p>
+ * <p>
+ * Note that the {@code DownloadReadyEvent} class is generated at compile time.
+ * The generated class does not use a builder but uses "Tuple Style". For
+ * example, an instance can be generated in the following way.
+ *
+ * <pre>
+ * {@code
+ *     var event = DownloadReadyEvent.of("token", resource, inputStream);
+ * }
+ * </pre>
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @TupleStyle
 public interface IDownloadReadyEvent {
+
+    /**
+     * Returns the token to which this event is associated
+     *
+     * @return the token to which this event is associated
+     */
     String getToken();
+
+    /**
+     * Returns the resource to be downloaded
+     *
+     * @return the resource to be downloaded
+     */
     Resource getResource();
+
+    /**
+     * Returns the input stream
+     *
+     * @return the input stream
+     */
     InputStream getInputStream();
 }

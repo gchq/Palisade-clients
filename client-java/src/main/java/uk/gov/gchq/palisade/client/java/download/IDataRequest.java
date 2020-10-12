@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.gchq.palisade.client.java.data;
+package uk.gov.gchq.palisade.client.java.download;
 
 import org.immutables.value.Value;
 
@@ -22,13 +22,37 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.function.UnaryOperator;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.*;
 
+/**
+ * <p>
+ * An instance of a {@code DataRequest} represents a request to the data service
+ * in order to initiate a download.
+ * </p>
+ * <p>
+ * Note that the {@code DataRequest} class is created at compile time. The way
+ * in which the class is created is determined by the {@link ImmutableStyle}.
+ * The {@code JsonDeserialize} so that Jackson can use the generated builder
+ * upon deserialisation.
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @ImmutableStyle
-@JsonDeserialize(builder = DataRequest.Builder.class)
+@JsonDeserialize(as = DataRequest.class)
+@JsonSerialize(as = DataRequest.class)
 public interface IDataRequest {
 
+    /**
+     * Helper method to create a {@code DataRequest} using a builder function
+     *
+     * @param <E>  The return type of the request
+     * @param func The builder function
+     * @return a newly created data request instance
+     */
     public static <E> DataRequest create(UnaryOperator<DataRequest.Builder> func) {
         return func.apply(DataRequest.builder()).build();
     }
@@ -44,8 +68,18 @@ public interface IDataRequest {
 //        return IRequestId.create(b -> b.id(UUID.randomUUID().toString()));
 //    }
 
+    /**
+     * Returns the token
+     *
+     * @return the token
+     */
     String getToken();
 
+    /**
+     * Returns the leaf resource to be downloaded
+     *
+     * @return the leaf resource to be downloaded
+     */
     String getLeafResourceId();
 
 

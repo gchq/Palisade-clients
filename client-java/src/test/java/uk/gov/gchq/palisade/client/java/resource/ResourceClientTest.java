@@ -19,7 +19,9 @@ import io.micronaut.context.ApplicationContext;
 import org.glassfish.tyrus.server.Server;
 import org.junit.jupiter.api.Test;
 
+import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.download.DownloadManager;
+import uk.gov.gchq.palisade.client.java.receiver.LoggingReceiver;
 
 import javax.websocket.*;
 
@@ -48,7 +50,7 @@ class ResourceClientTest {
             server.start();
             startClient();
             awaitEvents();
-            assertThat(eventCount).isEqualTo(1);
+            assertThat(eventCount).isEqualTo(2);
         } finally {
             server.stop();
         }
@@ -62,20 +64,24 @@ class ResourceClientTest {
     private ResourceClient startClient() throws Exception {
 
         var eb = new EventBus("bus-test");
+
         eb.register(this);
 
+        var appCtx = ApplicationContext.run();
+
         var dm = DownloadManager
-                .createDownloadManager(b -> b
-                        .id("dlm-test")
-                        .eventBus(eb)
-                        .applicationContext(ApplicationContext.run()));
+            .createDownloadManager(b -> b
+                .id("dlm-test")
+                .eventBus(eb)
+                .receiverSupplier(() -> new LoggingReceiver())
+                .clientContext(appCtx.getBean(ClientContext.class)));
 
         var rc = ResourceClient
-                .createResourceClient(b -> b
-                        .token(TOKEN)
-                        .eventBus(eb)
-                        .mapper(new ObjectMapper().registerModule(new GuavaModule()).registerModule(new Jdk8Module()))
-                        .downloadTracker(dm.getDownloadTracker()));
+            .createResourceClient(b -> b
+                .token(TOKEN)
+                .eventBus(eb)
+                .mapper(new ObjectMapper().registerModule(new GuavaModule()).registerModule(new Jdk8Module()))
+                .downloadTracker(dm.getDownloadTracker()));
 
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         container.connectToServer(rc, new URI("ws://localhost:8081/name"));

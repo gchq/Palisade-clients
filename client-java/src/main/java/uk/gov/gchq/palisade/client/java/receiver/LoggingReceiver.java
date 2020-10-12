@@ -13,8 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.factory;
+package uk.gov.gchq.palisade.client.java.receiver;
 
-public interface ObjectFactory {
+import org.slf4j.*;
 
-}
+import java.io.InputStream;
+
+/**
+ * A receiver that saves an input stream to a file
+ *
+ * @author dbell
+ * @since 0.5.0
+ */
+public class LoggingReceiver implements Receiver {
+
+    private static final Logger log = LoggerFactory.getLogger(LoggingReceiver.class);
+
+    /**
+     * Create a new file reviver
+     */
+    public LoggingReceiver() { // empty
+    }
+
+    @Override
+    public void process(ReceiverContext receiverContext, InputStream is) {
+
+        log.debug("Received: {}", receiverContext);
+
+    }
+
+
+  }

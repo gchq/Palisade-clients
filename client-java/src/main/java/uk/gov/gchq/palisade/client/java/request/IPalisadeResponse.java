@@ -24,23 +24,55 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import java.io.Serializable;
 import java.util.function.UnaryOperator;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.*;
 
+/**
+ * <p>
+ * An instance of {@code PalisadeResponse} is returned after a successful
+ * request to the Palisade Service. This object contains the url and the token
+ * which is to be used to contact the Filtered Resource Service and wait for
+ * resources to become available.
+ * </p>
+ * <p>
+ * Note that the {@code PalisadeResponse} class is created at compile time. The
+ * way in which the class is created is determined by the
+ * {@link ImmutableStyle}. This class is also compatible with Jackson.
+ * </p>
+ *
+ * @author dbell
+ * @since 0.5.0
+ * @see "https://immutables.github.io/style.html"
+ */
 @Value.Immutable
 @ImmutableStyle
-@JsonDeserialize(builder = PalisadeResponse.Builder.class)
+@JsonDeserialize(as = PalisadeResponse.class)
+@JsonSerialize(as = PalisadeResponse.class)
 public interface IPalisadeResponse extends Serializable {
 
+    /**
+     * Helper method to create a {@code PalisadeResponse} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created data request instance
+     */
     public static PalisadeResponse create(UnaryOperator<PalisadeResponse.Builder> func) {
         return func.apply(PalisadeResponse.builder()).build();
     }
 
-    public static PalisadeResponse of(String url) {
-        return create(rid -> rid.url(url));
-    }
-
+    /**
+     * Returns the url of the websocket endpoint to contact when waiting for
+     * resources
+     *
+     * @return the url of the websocket endpoint to contact when waiting for
+     *         resources
+     */
     public String getUrl();
 
+    /**
+     * Returns the unique token representing this request/response pair
+     *
+     * @return the unique token representing this request/response pair
+     */
     public String getToken();
 
 }
