@@ -1,0 +1,44 @@
+client
+  connects to server
+server
+  sends CONNECTED
+client
+  sends SUBSCRIBE with token
+server
+  associates websocket context with token
+  sends SUBSCRIBED
+client
+  waits
+server
+  reads resource from topic
+  retrieves websocket session via token
+  sends RTS and waits
+client
+  sends CTS and waits
+server
+  sends resource
+client
+  sends RESOURCE_ACK
+  starts reading from data service
+server
+  reads resource from topic
+  retrieves websocket session via token
+  sends RTS and waits
+client
+  receives RTS
+  waits as it's busy
+  sends RESOURCE_COMP once download complete
+  sends CTS
+
+process continues
+  
+  Notes
+    Each client connection must have a simple state machine on the server which keeps track of what is going on
+    The client could be multi-threaded and download multiple resouces in parallel. the CTS would be sent in this case
+      when there is an empty thread in its pool (i think).
+
+    How does the server know when there are no more reources?
+    When there are no more resources, server sends COMPLETE and client sends DISCONNECT (i think).
+    What if a resource is read on the server and there is no associated websocket session?
+    While the client waits, should there be a heartbeat?
+    With a ready to send, should the server send statistics, like how many are left etc?
