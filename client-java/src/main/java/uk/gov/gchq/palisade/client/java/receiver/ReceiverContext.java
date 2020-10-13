@@ -22,7 +22,6 @@ import uk.gov.gchq.palisade.client.java.resource.Resource;
  * Instances of this class are passed to a receiver.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  */
 public interface ReceiverContext {

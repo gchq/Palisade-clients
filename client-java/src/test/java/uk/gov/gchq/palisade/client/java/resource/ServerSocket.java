@@ -15,17 +15,21 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import org.slf4j.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.websocket.*;
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 @ServerEndpoint(
         value = "/name",
@@ -34,40 +38,40 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
         )
 public class ServerSocket {
 
-    private static final Logger log = LoggerFactory.getLogger(ServerSocket.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+    private static final Logger LOG = LoggerFactory.getLogger(ServerSocket.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new Jdk8Module());
     private static final int NUM_RESOURCES = 1;
 
     private final ServerStateManager statemanager = new ServerStateManager();
 
     @OnOpen
-    public void onOpen(Session s) {
+    public void onOpen(final Session s) {
         System.out.println("onOpen::" + s.getId());
     }
 
     @OnClose
-    public void onClose(Session s) {
+    public void onClose(final Session s) {
         System.out.println("onClose::" + s.getId());
     }
 
     @OnMessage
-    public void onMessage(Message inmsg, Session session) {
-        log.debug("Recd: {}", inmsg);
+    public void onMessage(final Message inmsg, final Session session) {
+        LOG.debug("Recd: {}", inmsg);
         switch (inmsg.getType()) {
             case SUBSCRIBE: onSubscribe(session, inmsg); break;
             case CTS:       onCTS(session, inmsg);       break;
             default:
-                log.warn("Unknown message type: {}", inmsg.getType());
+                LOG.warn("Unknown message type: {}", inmsg.getType());
                 break;
         }
     }
 
     @OnError
-    public void onError(Throwable t) throws Throwable {
+    public void onError(final Throwable t) throws Throwable {
         System.out.println("onError::" + t.getMessage());
     }
 
-    private void onSubscribe(Session session, Message message) {
+    private void onSubscribe(final Session session, final Message message) {
 
         var token = message.getToken();
 
@@ -83,7 +87,7 @@ public class ServerSocket {
 
         // create a weak reference for the session as we should not get in the way of it
         // being reclaimed
-        var sessionRef = new WeakReference<Session>(session);
+        var sessionRef = new WeakReference<>(session);
 
         var newState = oldState.isPresent()
             ? oldState.get().change(b -> b
@@ -112,7 +116,7 @@ public class ServerSocket {
 
     }
 
-    private void onCTS(Session session, Message message) {
+    private void onCTS(final Session session, final Message message) {
 
         var token = message.getToken();
 
@@ -158,11 +162,11 @@ public class ServerSocket {
 
     }
 
-    private void sendMessage(Session session, Message message) {
+    private void sendMessage(final Session session, final Message message) {
         try {
-            var text = objectMapper.writeValueAsString(message);
+            var text = OBJECT_MAPPER.writeValueAsString(message);
             session.getBasicRemote().sendText(text);
-            log.debug("Sent: " + message);
+            LOG.debug("Sent: " + message);
         } catch (JsonProcessingException e) {
             // TODO: handle this
             e.printStackTrace();

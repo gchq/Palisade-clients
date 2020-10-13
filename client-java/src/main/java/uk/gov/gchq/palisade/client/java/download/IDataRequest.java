@@ -16,13 +16,13 @@
 
 package uk.gov.gchq.palisade.client.java.download;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.databind.annotation.*;
 
 /**
  * <p>
@@ -36,7 +36,6 @@ import com.fasterxml.jackson.databind.annotation.*;
  * upon deserialisation.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
@@ -49,11 +48,10 @@ public interface IDataRequest {
     /**
      * Helper method to create a {@code DataRequest} using a builder function
      *
-     * @param <E>  The return type of the request
      * @param func The builder function
      * @return a newly created data request instance
      */
-    public static <E> DataRequest create(UnaryOperator<DataRequest.Builder> func) {
+    static DataRequest create(final UnaryOperator<DataRequest.Builder> func) {
         return func.apply(DataRequest.builder()).build();
     }
 

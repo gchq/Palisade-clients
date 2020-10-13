@@ -15,6 +15,7 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.event.ApplicationEventListener;
@@ -22,21 +23,25 @@ import io.micronaut.runtime.event.annotation.EventListener;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.glassfish.tyrus.server.Server;
-import org.junit.jupiter.api.*;
-import org.slf4j.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.java.*;
+import uk.gov.gchq.palisade.client.java.ClientConfig;
+import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
 import uk.gov.gchq.palisade.client.java.util.Bus;
 
 import javax.inject.Inject;
-import javax.websocket.*;
+import javax.websocket.ContainerProvider;
+import javax.websocket.WebSocketContainer;
 
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,12 +93,12 @@ class ResourceClientTest implements ApplicationEventListener<ResourceReadyEvent>
         assertThat(eventCount).isEqualTo(2);
     }
 
-    private static final Logger log = LoggerFactory.getLogger(ResourceClientTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceClientTest.class);
 
     @Override
     @EventListener
-    public void onApplicationEvent(ResourceReadyEvent resourceReadyEvent) {
-        log.debug("EVENT");
+    public void onApplicationEvent(final ResourceReadyEvent resourceReadyEvent) {
+        LOG.debug("EVENT");
         eventCount++;
     }
 

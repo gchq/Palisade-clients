@@ -15,14 +15,16 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerStateManager {
 
-    private static final Logger log = LoggerFactory.getLogger(ServerStateManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServerStateManager.class);
 
     // Redis?
     Map<String, ServerState> states = new ConcurrentHashMap<>(0);
@@ -31,22 +33,22 @@ public class ServerStateManager {
         // TODO Auto-generated constructor stub
     }
 
-    public ServerStateManager set(ServerState state) {
+    public ServerStateManager set(final ServerState state) {
         // TODO: test previous and current state
         this.states.put(state.getToken(), state);
-        log.debug("New state: " + state);
+        LOG.debug("New state: " + state);
         return this;
     }
 
-    public ServerState get(String token) {
+    public ServerState get(final String token) {
         return find(token).orElseThrow(() -> new RuntimeException("Failed to find state for token: " + token));
     }
 
-    public Optional<ServerState> find(String token) {
+    public Optional<ServerState> find(final String token) {
         return Optional.ofNullable(states.get(token));
     }
 
-    public void remove(String token) {
+    public void remove(final String token) {
         states.remove(token);
     }
 

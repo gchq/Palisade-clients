@@ -15,20 +15,23 @@
  */
 package uk.gov.gchq.palisade.client.java.job;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.glassfish.tyrus.server.Server;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import uk.gov.gchq.palisade.client.java.*;
+import uk.gov.gchq.palisade.client.java.Client;
+import uk.gov.gchq.palisade.client.java.ClientConfig;
+import uk.gov.gchq.palisade.client.java.JavaClient;
 import uk.gov.gchq.palisade.client.java.resource.ServerSocket;
 
 import javax.inject.Inject;
 
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

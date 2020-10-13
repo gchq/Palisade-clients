@@ -13,32 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.download;
+package uk.gov.gchq.palisade.client.java.util;
 
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream;
-
-import java.io.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.List;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
- * @author dbell
+ *
  *
  */
 class ByteBufferInputStreamTest {
 
     private ByteBufferInputStream is;
-    /**
-     * @throws java.lang.Exception
-     */
+
     @BeforeEach
     void setUp() throws Exception {
 
@@ -57,16 +53,6 @@ class ByteBufferInputStreamTest {
         is = new ByteBufferInputStream(flowable);
     }
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @AfterEach
-    void tearDown() throws Exception {
-    }
-
-    /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
-     */
     @Test
     void test_read_bytearray_4_chars() throws Exception {
         var ba = new byte[4];
@@ -75,10 +61,6 @@ class ByteBufferInputStreamTest {
         assertThat(new String(ba)).isEqualTo("abcd");
     }
 
-    /**
-     * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
-     */
     @Test
     void test_read_bytearray_8_chars() throws Exception {
         var ba = new byte[8];
@@ -87,10 +69,6 @@ class ByteBufferInputStreamTest {
         assertThat(new String(ba)).isEqualTo("abcdefgh");
     }
 
-    /**
-     * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
-     */
     @Test
     void test_read_bytearray_30_chars() throws Exception {
         var ba = new byte[30];
@@ -99,10 +77,6 @@ class ByteBufferInputStreamTest {
         assertThat(new String(ba, 0, read)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
 
-    /**
-     * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
-     */
     @Test
     void test_read_bytearray_26_chars() throws Exception {
         var ba = new byte[30];
@@ -111,10 +85,6 @@ class ByteBufferInputStreamTest {
         assertThat(new String(ba, 0, read)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
 
-
-    /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read(byte[], int, int)}.
-     */
     @Test
     void test_read_bytearray_with_offset_and_length_of_4() throws Exception {
         var ba = "11111111".getBytes();
@@ -124,10 +94,6 @@ class ByteBufferInputStreamTest {
 
     }
 
-    /**
-     * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read(byte[], int, int)}.
-     */
     @Test
     void test_read_bytearray_with_offset_and_length_of_30() throws Exception {
         var ba = "111111111111111111111111111111".getBytes();
@@ -137,10 +103,6 @@ class ByteBufferInputStreamTest {
 
     }
 
-    /**
-     * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#skip(long)}.
-     */
     @Test
     void test_skip_single_buffer() throws Exception {
         long skipped = is.skip(2);
@@ -151,10 +113,6 @@ class ByteBufferInputStreamTest {
         assertThat(new String(ba, 0, ba.length)).isEqualTo("cd");
     }
 
-    /**
-     * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#skip(long)}.
-     */
     @Test
     void test_skip_across_buffers() throws Exception {
         long skipped = is.skip(2);
@@ -165,54 +123,35 @@ class ByteBufferInputStreamTest {
         assertThat(new String(ba, 0, ba.length)).isEqualTo("cdef");
     }
 
-    /**
-     * Test method for
-     */
     @Test
     void test_read_all() throws Exception {
-//        var ba = is.readAllBytes();
-//        assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
+        var ba = is.readAllBytes();
+        assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
 
-    /**
-     * Test method for
-     */
     @Test
     void test_read_n_bytes() throws Exception {
         var ba = is.readNBytes(13);
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklm");
     }
 
-    /**
-     * Test method for
-     */
     @Test
     void test_read_n_bytes_all() throws Exception {
         var ba = is.readNBytes(26);
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
 
-    /**
-     * Test method for
-     */
     @Test
     void test_read_n_bytes_all_extra() throws Exception {
         var ba = is.readNBytes(27);
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
 
-    /**
-     * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#available()}.
-     */
     @Test
     void testAvailable() throws Exception {
         assertThat(is.available()).isEqualTo(4);
     }
 
-    /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#close()}.
-     */
     @Test
     void testClose() throws Exception {
         is.close();
@@ -223,30 +162,14 @@ class ByteBufferInputStreamTest {
     }
 
 
-    /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#reset()}.
-     */
     @Test
     void testReset() {
         assertThatExceptionOfType(IOException.class).isThrownBy(() -> is.reset());
     }
 
-    /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#markSupported()}.
-     */
     @Test
     void testMarkSupported() {
         assertThat(is.markSupported()).isEqualTo(false);
     }
 
-    public String consume(InputStream i) throws IOException {
-        StringBuilder textBuilder = new StringBuilder();
-        try (Reader reader = new BufferedReader(new InputStreamReader(i, Charset.forName(UTF_8.name())))) {
-            int c = 0;
-            while ((c = reader.read()) != -1) {
-                textBuilder.append((char) c);
-            }
-        }
-        return textBuilder.toString();
-    }
 }

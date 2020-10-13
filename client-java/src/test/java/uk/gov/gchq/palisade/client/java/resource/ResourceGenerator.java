@@ -15,20 +15,23 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ResourceGenerator implements Iterable<Resource> {
 
-    private static final List<String> filenames = List.of("pi.txt", "Selection_032.png");
+    private static final List<String> FILENAMES = List.of("pi.txt", "Selection_032.png");
 
     private final List<Resource> resources;
 
     /**
-     * @param token
+     * Creates a new resource generator for the provide {@code token}
+     *
+     * @param token The token
      */
-    public ResourceGenerator(String token) {
-        resources = filenames.stream()
+    public ResourceGenerator(final String token) {
+        resources = FILENAMES.stream()
             .map(fn -> IResource.create(b -> b
                 .token(token)
                 .leafResourceId(fn)

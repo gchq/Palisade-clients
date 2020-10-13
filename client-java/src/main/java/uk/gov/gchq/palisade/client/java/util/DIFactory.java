@@ -19,9 +19,15 @@ import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.event.ApplicationEventPublisher;
 
-import uk.gov.gchq.palisade.client.java.*;
-import uk.gov.gchq.palisade.client.java.download.*;
-import uk.gov.gchq.palisade.client.java.request.*;
+import uk.gov.gchq.palisade.client.java.ClientConfig;
+import uk.gov.gchq.palisade.client.java.ClientContext;
+import uk.gov.gchq.palisade.client.java.ClientException;
+import uk.gov.gchq.palisade.client.java.download.DownloadManager;
+import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
+import uk.gov.gchq.palisade.client.java.request.PalisadeClient;
+import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
+import uk.gov.gchq.palisade.client.java.request.PalisadeServiceClient;
 
 import javax.inject.Singleton;
 
@@ -29,7 +35,6 @@ import javax.inject.Singleton;
  * This is the factory for any services that are injected via the DI framework.
  * This configuration is used when a new {@code ApplicationContext} is created.
  *
- * @author dbell
  * @since 0.5.0
  */
 @Factory
@@ -49,10 +54,10 @@ public class DIFactory {
      * @return the one and only {@link PalisadeClient} instance.
      */
     @Singleton
-    public PalisadeClient createPalisadeClient(ClientConfig clientConfig, PalisadeServiceClient prc) {
+    public PalisadeClient createPalisadeClient(final ClientConfig clientConfig, final PalisadeServiceClient prc) {
         return new PalisadeClient() {
             @Override
-            public PalisadeResponse submit(PalisadeRequest request) {
+            public PalisadeResponse submit(final PalisadeRequest request) {
                 var httpResponse = prc.registerDataRequestSync(request);
                 try {
                     var opt = httpResponse.getBody();
@@ -80,10 +85,10 @@ public class DIFactory {
      *         {@code ApplicationContext} and methods which are not needed.
      */
     @Singleton
-    public ClientContext createClientContext(ApplicationContext applicationContext) {
+    public ClientContext createClientContext(final ApplicationContext applicationContext) {
         return new ClientContext() {
             @Override
-            public <T> T get(Class<T> type) {
+            public <T> T get(final Class<T> type) {
                 return applicationContext.getBean(type);
             }
         };
@@ -96,7 +101,7 @@ public class DIFactory {
      * @return a download tracker used to provide availability of download slots
      */
     @Singleton
-    public DownloadTracker createDownloadTracker(DownloadManager downloadManager) {
+    public DownloadTracker createDownloadTracker(final DownloadManager downloadManager) {
         return downloadManager.getDownloadTracker();
     }
 
@@ -109,7 +114,7 @@ public class DIFactory {
      *         {@code ApplicationEventPublisher}
      */
     @Singleton
-    public Bus createEventBus(ApplicationEventPublisher applicationEventPublisher) {
+    public Bus createEventBus(final ApplicationEventPublisher applicationEventPublisher) {
         return (event) -> applicationEventPublisher.publishEventAsync(event);
     }
 

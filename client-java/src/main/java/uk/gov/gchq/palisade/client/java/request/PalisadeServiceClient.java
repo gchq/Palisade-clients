@@ -15,8 +15,12 @@
  */
 package uk.gov.gchq.palisade.client.java.request;
 
-import io.micronaut.http.*;
-import io.micronaut.http.annotation.*;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Consumes;
+import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.client.annotation.Client;
 
 /**
@@ -37,7 +41,6 @@ import io.micronaut.http.client.annotation.Client;
  * }
  * </pre>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://docs.micronaut.io/latest/guide/index.html#clientAnnotation"
  */
@@ -47,7 +50,7 @@ public interface PalisadeServiceClient {
     /**
      * The endpoint
      */
-    public static final String REGISTER_DATA_REQUEST = "/registerDataRequest";
+    String REGISTER_DATA_REQUEST = "/registerDataRequest";
 
     /**
      * Submits a request to the palisade service and returns the response. The
@@ -59,7 +62,6 @@ public interface PalisadeServiceClient {
      */
     @Post(REGISTER_DATA_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public HttpResponse<PalisadeResponse> registerDataRequestSync(@Body final PalisadeRequest request);
+    @Produces(MediaType.APPLICATION_JSON) HttpResponse<PalisadeResponse> registerDataRequestSync(@Body final PalisadeRequest request);
 
 }

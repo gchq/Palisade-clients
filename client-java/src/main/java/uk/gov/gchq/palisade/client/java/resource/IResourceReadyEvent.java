@@ -31,12 +31,12 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
  * </p>
  *
  * <pre>
- * {@code
+ * {
+ *     &#64;code
  *     var event = ResourceReadyEvent.of("token", resource);
  * }
  * </pre>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */

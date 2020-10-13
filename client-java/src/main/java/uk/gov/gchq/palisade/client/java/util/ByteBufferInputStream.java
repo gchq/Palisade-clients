@@ -1,10 +1,27 @@
+/*
+ * Copyright 2020 Crown Copyright
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package uk.gov.gchq.palisade.client.java.util;
 
 import io.reactivex.Flowable;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Objects;
 
 import static java.lang.System.arraycopy;
 
@@ -14,15 +31,13 @@ import static java.lang.System.arraycopy;
  * The only IOException should come if the InputStream has been closed. All
  * other IOException should not occur because all the data is local. Data reads
  * on an exhausted ByteBuffer returns a -1.
- *
- * @author dbell
  */
 public class ByteBufferInputStream extends InputStream {
 
     private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
     private static final String CLOSED_STREAM_MSG = "tried to access to closed stream";
 
-    private Flowable<ByteBuffer> flowable;
+    private final Flowable<ByteBuffer> flowable;
     private Iterable<ByteBuffer> iterable;
     private Iterator<ByteBuffer> iterator;
 
@@ -36,7 +51,7 @@ public class ByteBufferInputStream extends InputStream {
      * @param flowable The {@code Flowable} of bytebuffers to be consumed by this
      *                 {@code InputStream}
      */
-    public ByteBufferInputStream(Flowable<ByteBuffer> flowable) {
+    public ByteBufferInputStream(final Flowable<ByteBuffer> flowable) {
         this.flowable = flowable;
     }
 
@@ -46,7 +61,7 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public byte[] readNBytes(int len) throws IOException {
+    public byte[] readNBytes(final int len) throws IOException {
         var bytes1 = new byte[len];
         var actual = read(bytes1);
         if (actual < len) {
@@ -58,7 +73,7 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public int readNBytes(byte[] b, int off, int len) throws IOException {
+    public int readNBytes(final byte[] b, final int off, final int len) throws IOException {
         return read(b, off, len);
     }
 
@@ -76,12 +91,12 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte ba[]) throws IOException {
+    public int read(final byte[] ba) throws IOException {
         return read(ba, 0, ba.length);
     }
 
     @Override
-    public int read(byte b[], int off, int len) throws IOException {
+    public int read(final byte[] b, final int off, final int len) throws IOException {
 
         if (closed) {
             throw new IOException(CLOSED_STREAM_MSG);
@@ -130,7 +145,7 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(final long n) throws IOException {
 
         if (closed) {
             throw new IOException("tried to access to closed stream");
@@ -181,7 +196,7 @@ public class ByteBufferInputStream extends InputStream {
      * Marking is not supported, so this method is a no-op
      */
     @Override
-    public synchronized void mark(int readlimit) {
+    public synchronized void mark(final int readlimit) {
         /* noop */ }
 
     /**

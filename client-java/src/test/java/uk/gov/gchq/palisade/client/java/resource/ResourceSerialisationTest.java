@@ -15,12 +15,12 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import org.junit.jupiter.api.*;
-
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

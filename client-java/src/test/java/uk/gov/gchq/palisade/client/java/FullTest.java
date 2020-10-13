@@ -18,15 +18,21 @@ package uk.gov.gchq.palisade.client.java;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.glassfish.tyrus.server.Server;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.java.job.IJobConfig;
 import uk.gov.gchq.palisade.client.java.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.java.resource.ServerSocket;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,19 +81,19 @@ class FullTest {
          * "src/test/resources" and the download file is in "/tmp"
          */
 
-        var expected_is = Thread.currentThread().getContextClassLoader().getResourceAsStream("pi.txt");
-        var actual_is = new FileInputStream(new File("/tmp/pal-abcd-1-pi.txt"));
+        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("pi.txt");
+        var actual = new FileInputStream(new File("/tmp/pal-abcd-1-pi.txt"));
 
-        assertThat(isEqual(actual_is, expected_is)).isTrue();
+        assertThat(isEqual(actual, expected)).isTrue();
 
-        expected_is = Thread.currentThread().getContextClassLoader().getResourceAsStream("Selection_032.png");
-        actual_is = new FileInputStream(new File("/tmp/pal-abcd-1-Selection_032.png"));
+        expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("Selection_032.png");
+        actual = new FileInputStream(new File("/tmp/pal-abcd-1-Selection_032.png"));
 
-        assertThat(isEqual(actual_is, expected_is)).isTrue();
+        assertThat(isEqual(actual, expected)).isTrue();
 
     }
 
-    private static boolean isEqual(InputStream i1, InputStream i2) throws IOException {
+    private static boolean isEqual(final InputStream i1, final InputStream i2) throws IOException {
 
         ReadableByteChannel ch1 = Channels.newChannel(i1);
         ReadableByteChannel ch2 = Channels.newChannel(i2);
@@ -101,25 +107,30 @@ class FullTest {
                 int n1 = ch1.read(buf1);
                 int n2 = ch2.read(buf2);
 
-                if (n1 == -1 || n2 == -1)
+                if (n1 == -1 || n2 == -1) {
                     return n1 == n2;
+                }
 
                 buf1.flip();
                 buf2.flip();
 
-                for (int i = 0; i < Math.min(n1, n2); i++)
-                    if (buf1.get() != buf2.get())
+                for (int i = 0; i < Math.min(n1, n2); i++) {
+                    if (buf1.get() != buf2.get()) {
                         return false;
+                    }
+                }
 
                 buf1.compact();
                 buf2.compact();
             }
 
         } finally {
-            if (i1 != null)
+            if (i1 != null) {
                 i1.close();
-            if (i2 != null)
+            }
+            if (i2 != null) {
                 i2.close();
+            }
         }
     }
 

@@ -20,4 +20,5 @@
 <!-- Exclude any checks on the TestObj as it is autogeneated by Avro  -->
 <suppressions>
     <suppress files="TestObj.java" checks=".*"/>
+    <suppress files="[/\\]target[/\\]" checks=".*" />
 </suppressions>

@@ -15,13 +15,20 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import javax.websocket.*;
-
-import java.io.*;
-import java.lang.reflect.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+
+import javax.websocket.DecodeException;
+import javax.websocket.Decoder;
+import javax.websocket.EncodeException;
+import javax.websocket.Encoder;
+import javax.websocket.EndpointConfig;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * <p>
@@ -34,21 +41,20 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * retrieved from the superclass
  * </p>
  *
- * @author dbell
- * @since 0.5.0
  * @param <T> The type of object to be serialised to and deserialised from
+ * @since 0.5.0
  */
 public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.TextStream<T> {
 
     /**
      * The type
      */
-    private Class<T> _type;
+    private Class<T> type;
 
     /**
      * Store the object mapper in each thread
      */
-    private ThreadLocal<ObjectMapper> _mapper = new ThreadLocal<ObjectMapper>() {
+    private final ThreadLocal<ObjectMapper> mapper = new ThreadLocal<>() {
         @Override
         protected ObjectMapper initialValue() {
             return new ObjectMapper().registerModule(new Jdk8Module());
@@ -57,24 +63,24 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
 
     @SuppressWarnings("unchecked")
     @Override
-    public void init(EndpointConfig endpointConfig) {
+    public void init(final EndpointConfig endpointConfig) {
         ParameterizedType thisClass = (ParameterizedType) this.getClass().getGenericSuperclass();
         Type typeT = thisClass.getActualTypeArguments()[0];
         if (typeT instanceof Class) {
-            _type = (Class<T>) typeT;
+            type = (Class<T>) typeT;
         } else if (typeT instanceof ParameterizedType) {
-            _type = (Class<T>) ((ParameterizedType) typeT).getRawType();
+            type = (Class<T>) ((ParameterizedType) typeT).getRawType();
         }
     }
 
     @Override
-    public void encode(T object, Writer writer) throws EncodeException, IOException {
-        _mapper.get().writeValue(writer, object);
+    public void encode(final T object, final Writer writer) throws EncodeException, IOException {
+        mapper.get().writeValue(writer, object);
     }
 
     @Override
-    public T decode(Reader reader) throws DecodeException, IOException {
-        return _mapper.get().readValue(reader, _type);
+    public T decode(final Reader reader) throws DecodeException, IOException {
+        return mapper.get().readValue(reader, type);
     }
 
     @Override

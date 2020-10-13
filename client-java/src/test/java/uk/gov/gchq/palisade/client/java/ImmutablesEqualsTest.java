@@ -15,12 +15,16 @@
  */
 package uk.gov.gchq.palisade.client.java;
 
-import nl.jqno.equalsverifier.*;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.reflections.Reflections;
-import org.reflections.scanners.*;
-import org.reflections.util.*;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import uk.gov.gchq.palisade.client.java.download.DataRequest;
 import uk.gov.gchq.palisade.client.java.job.JobContext;
@@ -35,7 +39,7 @@ class ImmutablesEqualsTest {
 
     @ParameterizedTest(name = "Test equals contract")
     @MethodSource("provideClassesForEqualsTest")
-    void testEqualsContract(Class<?> cls) {
+    void testEqualsContract(final Class<?> cls) {
         EqualsVerifier
             .forClass(cls)
             .suppress(Warning.INHERITED_DIRECTLY_FROM_OBJECT)

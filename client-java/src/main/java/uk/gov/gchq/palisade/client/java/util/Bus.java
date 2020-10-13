@@ -18,7 +18,6 @@ package uk.gov.gchq.palisade.client.java.util;
 /**
  * Posts an event to all registered subscribers.
  *
- * @author dbell
  * @since 0.5.0
  */
 public interface Bus {

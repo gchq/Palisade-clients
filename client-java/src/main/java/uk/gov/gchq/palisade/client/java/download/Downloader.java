@@ -19,16 +19,20 @@ import io.micronaut.core.io.buffer.ByteBuffer;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.RxStreamingHttpClient;
 import io.reactivex.schedulers.Schedulers;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.java.ClientContext;
-import uk.gov.gchq.palisade.client.java.receiver.*;
+import uk.gov.gchq.palisade.client.java.receiver.Receiver;
+import uk.gov.gchq.palisade.client.java.receiver.ReceiverContext;
 import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream;
 
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import static io.micronaut.http.MediaType.*;
+import static io.micronaut.http.MediaType.APPLICATION_JSON_TYPE;
+import static io.micronaut.http.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 
 /**
  * <p>
@@ -50,27 +54,27 @@ import static io.micronaut.http.MediaType.*;
  * This class does not listen to any events
  * </p>
  *
- * @author dbell
- * @since 0.5.0
  * @see DownloadManager
+ * @since 0.5.0
  */
 public class Downloader implements Runnable {
 
 
-    private static final Logger log = LoggerFactory.getLogger(Downloader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Downloader.class);
 
-    private Resource resource;
-    private Receiver receiver;
-    private ClientContext clientContext;
+    private final Resource resource;
+    private final Receiver receiver;
+    private final ClientContext clientContext;
 
     /**
      * Creates a new {@code Downloader} from the provided configuration
      *
-     * @param clientContext
-     * @param resource
-     * @param receiver
+     * @param clientContext The client context providing access to objects in its
+     *                      registry (e.g. ObjectMapper)
+     * @param resource      The resource to be downloaded
+     * @param receiver      The receiver to which the data stream should be passed
      */
-    public Downloader(ClientContext clientContext, Resource resource, Receiver receiver) {
+    public Downloader(final ClientContext clientContext, final Resource resource, final Receiver receiver) {
         this.clientContext = clientContext;
         this.resource = resource;
         this.receiver = receiver;
@@ -79,7 +83,7 @@ public class Downloader implements Runnable {
     @Override
     public void run() {
 
-        log.debug("Downloader Started");
+        LOG.debug("Downloader Started");
 
         var token = resource.getToken();
 
@@ -102,24 +106,26 @@ public class Downloader implements Runnable {
                 .contentType(APPLICATION_JSON_TYPE)
                 .accept(APPLICATION_OCTET_STREAM_TYPE);
 
-            log.debug("Making request to: {}, ", url);
+            LOG.debug("Making request to: {}, ", url);
 
             var flowable = client
                 .dataStream(request)
                 .<java.nio.ByteBuffer>map(ByteBuffer::asNioBuffer)
                 .observeOn(Schedulers.io());
 
-            log.debug("Flowable returned from request");
+            LOG.debug("Flowable returned from request");
 
             // instead of posting the flowable in an event, we should get hole of a
             // "Receiver" from the DownloadConfig
 
             var receiverContext = new ReceiverContext() {
+
                 @Override public Resource getResource() {
                     return resource;
                 }
+
                 @Override
-                public <T> T get(Class<T> type) {
+                public <T> T get(final Class<T> type) {
                     return clientContext.get(type);
                 }
             };
@@ -138,12 +144,12 @@ public class Downloader implements Runnable {
 
             clientContext.post(event);
 
-            log.debug("posted event: {}, ", event);
+            LOG.debug("posted event: {}, ", event);
 
         } finally { // empty
         }
 
-        log.debug("Downloader ended");
+        LOG.debug("Downloader ended");
 
     }
 

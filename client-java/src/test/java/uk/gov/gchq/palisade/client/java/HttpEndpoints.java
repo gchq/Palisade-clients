@@ -15,23 +15,29 @@
  */
 package uk.gov.gchq.palisade.client.java;
 
-import io.micronaut.http.*;
-import io.micronaut.http.annotation.*;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Consumes;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.server.types.files.StreamedFile;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.java.download.DataRequest;
-import uk.gov.gchq.palisade.client.java.request.*;
+import uk.gov.gchq.palisade.client.java.request.IPalisadeResponse;
+import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 
 /**
  * A controller containing our test endpoints
- *
- * @author dbell
  */
 @Controller()
 public class HttpEndpoints {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpEndpoints.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpEndpoints.class);
 
     /**
      * Returns a test response from the provide test request
@@ -42,7 +48,7 @@ public class HttpEndpoints {
     @Post("/registerDataRequest")
     @Produces(MediaType.APPLICATION_JSON)
     public HttpResponse<PalisadeResponse> handleDataRequest(@Body final PalisadeRequest request) {
-        log.debug("### Test endpoint {} received body: {}", "/registerDataRequest", request);
+        LOG.debug("### Test endpoint {} received body: {}", "/registerDataRequest", request);
         return HttpResponse
             .ok(IPalisadeResponse.create(b -> b
                 .url("ws://localhost:8082/name")
@@ -60,7 +66,7 @@ public class HttpEndpoints {
 //    @Consumes(MediaType.APPLICATION_JSON)
 //    @Produces(MediaType.APPLICATION_OCTET_STREAM)
 //    public HttpResponse<byte[]> getTest(@Body final DataRequest request) {
-//        log.debug("### Test endpoint {} contected, with body: {}", "/read/chunked", request);
+//        LOG.debug("### Test endpoint {} contected, with body: {}", "/read/chunked", request);
 //        var reply = "OneTwo";
 //         var is = new ByteArrayInputStream(reply.getBytes(StandardCharsets.UTF_8));
 //         var octet_stream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
@@ -82,13 +88,13 @@ public class HttpEndpoints {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public HttpResponse<StreamedFile> getTest(@Body final DataRequest request) {
 
-        log.debug("### Test endpoint {} received body: {}", "/read/chunked", request);
+        LOG.debug("### Test endpoint {} received body: {}", "/read/chunked", request);
 
-        var octet_stream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+        var octetStream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
 
         var filename = request.getLeafResourceId(); // using this as a file name to load a file for streaming
 
-        log.debug("### Trying to load: {}", filename);
+        LOG.debug("### Trying to load: {}", filename);
 
         var is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
 
@@ -96,11 +102,11 @@ public class HttpEndpoints {
 //            return HttpResponse.badRequest();
 //        }
 
-        var sf = new StreamedFile(is, octet_stream);
+        var sf = new StreamedFile(is, octetStream);
 
         return HttpResponse
             .ok(sf)
-            .contentType(octet_stream)
+            .contentType(octetStream)
             .header("Content-Disposition", filename);
     }
 

@@ -23,7 +23,6 @@ import java.io.InputStream;
  * process. Implementations could write to a file or simply log the data.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  */
 public interface Receiver {

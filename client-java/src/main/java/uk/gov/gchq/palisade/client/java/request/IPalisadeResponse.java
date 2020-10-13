@@ -17,14 +17,14 @@
 package uk.gov.gchq.palisade.client.java.request;
 
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.io.Serializable;
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.databind.annotation.*;
 
 /**
  * <p>
@@ -39,7 +39,6 @@ import com.fasterxml.jackson.databind.annotation.*;
  * {@link ImmutableStyle}. This class is also compatible with Jackson.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
@@ -55,7 +54,7 @@ public interface IPalisadeResponse extends Serializable {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    public static PalisadeResponse create(UnaryOperator<PalisadeResponse.Builder> func) {
+    static PalisadeResponse create(final UnaryOperator<PalisadeResponse.Builder> func) {
         return func.apply(PalisadeResponse.builder()).build();
     }
 
@@ -66,13 +65,13 @@ public interface IPalisadeResponse extends Serializable {
      * @return the url of the websocket endpoint to contact when waiting for
      *         resources
      */
-    public String getUrl();
+    String getUrl();
 
     /**
      * Returns the unique token representing this request/response pair
      *
      * @return the unique token representing this request/response pair
      */
-    public String getToken();
+    String getToken();
 
 }

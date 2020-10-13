@@ -15,7 +15,8 @@
  */
 package uk.gov.gchq.palisade.client.java.receiver;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 
@@ -24,13 +25,12 @@ import java.io.InputStream;
 /**
  * A receiver that saves an input stream to a file
  *
- * @author dbell
  * @since 0.5.0
  */
 @Singleton
 public class LoggingReceiver implements Receiver {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggingReceiver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoggingReceiver.class);
 
     /**
      * Create a new file reviver
@@ -39,11 +39,10 @@ public class LoggingReceiver implements Receiver {
     }
 
     @Override
-    public void process(ReceiverContext receiverContext, InputStream is) {
+    public void process(final ReceiverContext receiverContext, final InputStream is) {
 
-        log.debug("Received: {}", receiverContext);
+        LOG.debug("Received: {}", receiverContext);
 
     }
 
-
-  }
+}

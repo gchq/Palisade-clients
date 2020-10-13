@@ -31,7 +31,6 @@ import java.util.function.UnaryOperator;
  * which the class is created is determined by the {@link ImmutableStyle}.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
@@ -55,7 +54,7 @@ public interface IJobContext {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    public static JobContext createJobContext(UnaryOperator<JobContext.Builder> func) {
+    static JobContext createJobContext(final UnaryOperator<JobContext.Builder> func) {
         return func.apply(JobContext.builder()).build();
     }
 

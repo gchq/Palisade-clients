@@ -17,14 +17,13 @@
 package uk.gov.gchq.palisade.client.java.request;
 
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.io.Serializable;
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * <p>
@@ -36,7 +35,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * class is also compatible with Jackson.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
@@ -51,7 +49,7 @@ public interface IRequestId extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    public static RequestId create(UnaryOperator<RequestId.Builder> func) {
+    static RequestId create(final UnaryOperator<RequestId.Builder> func) {
         return func.apply(RequestId.builder()).build();
     }
 
@@ -61,7 +59,7 @@ public interface IRequestId extends Serializable {
      * @param requestId The request id
      * @return a newly created {@code RequestId}
      */
-    public static RequestId of(String requestId) {
+    static RequestId of(final String requestId) {
         return create(rid -> rid.id(requestId));
     }
 
@@ -70,6 +68,6 @@ public interface IRequestId extends Serializable {
      *
      * @return the request id
      */
-    public String getId();
+    String getId();
 
 }

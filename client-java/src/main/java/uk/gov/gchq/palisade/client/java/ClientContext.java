@@ -20,7 +20,6 @@ import io.micronaut.context.event.ApplicationEventPublisher;
 import uk.gov.gchq.palisade.client.java.util.Bus;
 
 /**
- * @author dbell
  * @since 0.5.0
  */
 public interface ClientContext extends Bus {
@@ -47,7 +46,7 @@ public interface ClientContext extends Bus {
      * Posts the provided application {@code event}
      */
     @Override
-    default void post(Object event) {
+    default void post(final Object event) {
         get(ApplicationEventPublisher.class).publishEvent(event);
     }
 

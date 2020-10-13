@@ -15,15 +15,16 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.request.UserId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.databind.annotation.*;
 
 /**
  * <p>
@@ -36,7 +37,6 @@ import com.fasterxml.jackson.databind.annotation.*;
  * class is also compatible with Jackson.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see ResourceClient
  * @see "https://immutables.github.io/style.html"
@@ -53,7 +53,7 @@ public interface IMessage {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    public static <E> Message create(UnaryOperator<Message.Builder> func) {
+    static Message create(final UnaryOperator<Message.Builder> func) {
         return func.apply(Message.builder()).build();
     }
 

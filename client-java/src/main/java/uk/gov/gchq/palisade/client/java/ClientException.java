@@ -18,9 +18,7 @@ package uk.gov.gchq.palisade.client.java;
 /**
  * Root class of client exceptions
  *
- * @author dbell
  * @since 0.5.0
- *
  */
 public class ClientException extends RuntimeException {
 
@@ -40,7 +38,7 @@ public class ClientException extends RuntimeException {
      * @param message The message
      * @see RuntimeException#RuntimeException(String)
      */
-    public ClientException(String message) {
+    public ClientException(final String message) {
         super(message);
     }
 
@@ -50,7 +48,7 @@ public class ClientException extends RuntimeException {
      * @param cause The cause
      * @see RuntimeException#RuntimeException(Throwable)
      */
-    public ClientException(Throwable cause) {
+    public ClientException(final Throwable cause) {
         super(cause);
     }
 
@@ -61,7 +59,7 @@ public class ClientException extends RuntimeException {
      * @param cause   The cause
      * @see RuntimeException#RuntimeException(String, Throwable)
      */
-    public ClientException(String message, Throwable cause) {
+    public ClientException(final String message, final Throwable cause) {
         super(message, cause);
     }
 

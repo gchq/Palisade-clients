@@ -17,11 +17,13 @@ package uk.gov.gchq.palisade.client.java.job;
 
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.client.java.receiver.*;
+import uk.gov.gchq.palisade.client.java.receiver.LoggingReceiver;
+import uk.gov.gchq.palisade.client.java.receiver.Receiver;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.Map;
-import java.util.function.*;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * <p>
@@ -33,7 +35,6 @@ import java.util.function.*;
  * which the class is created is determined by the {@link ImmutableStyle}.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
@@ -47,7 +48,7 @@ public interface IJobConfig {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    public static JobConfig create(UnaryOperator<JobConfig.Builder> func) {
+    static JobConfig create(final UnaryOperator<JobConfig.Builder> func) {
         return func.apply(JobConfig.builder()).build();
     }
 

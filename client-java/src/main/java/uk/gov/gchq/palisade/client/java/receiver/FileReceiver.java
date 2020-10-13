@@ -17,13 +17,15 @@ package uk.gov.gchq.palisade.client.java.receiver;
 
 import javax.inject.Singleton;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * A receiver that saves an input stream to a file
  *
- * @author dbell
  * @since 0.5.0
  */
 @Singleton
@@ -36,7 +38,7 @@ public class FileReceiver implements Receiver {
     }
 
     @Override
-    public void process(ReceiverContext receiverContext, InputStream inputStream) {
+    public void process(final ReceiverContext receiverContext, final InputStream inputStream) {
 
         var resource = receiverContext.getResource();
 
@@ -54,7 +56,7 @@ public class FileReceiver implements Receiver {
 
     }
 
-    private void write(InputStream initialStream, String filename) throws IOException {
+    private void write(final InputStream initialStream, final String filename) throws IOException {
         try (initialStream) {
             var file = new File(filename);
             Files.copy(initialStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);

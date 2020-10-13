@@ -22,14 +22,15 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import javax.websocket.Session;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @Value.Immutable
 @ImmutableStyle
 public interface IServerState {
 
-    public static <E> ServerState create(UnaryOperator<ServerState.Builder> func) {
+    static <E> ServerState create(final UnaryOperator<ServerState.Builder> func) {
         return func.apply(ServerState.builder()).build();
     }
 
@@ -48,11 +49,11 @@ public interface IServerState {
         return ServerStateType.WAITING;
     }
 
-    default ServerState change(UnaryOperator<ServerState.Builder> func) {
+    default ServerState change(final UnaryOperator<ServerState.Builder> func) {
         return func.apply(ServerState.builder().from(this)).build();
     }
 
-    default boolean isAt(ServerStateType expectedState) {
+    default boolean isAt(final ServerStateType expectedState) {
         return expectedState == getCurrentState();
     }
 

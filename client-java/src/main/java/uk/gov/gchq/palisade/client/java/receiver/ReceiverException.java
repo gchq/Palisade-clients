@@ -18,9 +18,7 @@ package uk.gov.gchq.palisade.client.java.receiver;
 /**
  * Thrown when an inputstream receiver fails to complete
  *
- * @author dbell
  * @since 0.5.0
- *
  */
 public class ReceiverException extends Exception {
 
@@ -40,7 +38,7 @@ public class ReceiverException extends Exception {
      * @param message The message
      * @see RuntimeException#RuntimeException(String)
      */
-    public ReceiverException(String message) {
+    public ReceiverException(final String message) {
         super(message);
     }
 
@@ -50,7 +48,7 @@ public class ReceiverException extends Exception {
      * @param cause The cause
      * @see RuntimeException#RuntimeException(Throwable)
      */
-    public ReceiverException(Throwable cause) {
+    public ReceiverException(final Throwable cause) {
         super(cause);
     }
 
@@ -61,7 +59,7 @@ public class ReceiverException extends Exception {
      * @param cause   The cause
      * @see RuntimeException#RuntimeException(String, Throwable)
      */
-    public ReceiverException(String message, Throwable cause) {
+    public ReceiverException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

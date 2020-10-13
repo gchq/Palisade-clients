@@ -21,7 +21,6 @@ package uk.gov.gchq.palisade.client.java.download;
  * the server. If there are no more slots available, then the client will wait
  * until there is before send a CTS.
  *
- * @author dbell
  * @since 0.5.0
  */
 public interface DownloadTracker {
@@ -29,10 +28,9 @@ public interface DownloadTracker {
     /**
      * The current status of the download manager
      *
-     * @author dbell
      * @since 0.5.0
      */
-    public enum ManagerStatus {
+    enum ManagerStatus {
         /**
          * Currently downloading and/or has slots available
          */

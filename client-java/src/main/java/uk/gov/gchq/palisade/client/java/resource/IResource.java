@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.request.UserId;
@@ -22,8 +24,6 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.Map;
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.databind.annotation.*;
 
 /**
  * <p>
@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.annotation.*;
  * class is also compatible with Jackson.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see ResourceClient
  * @see "https://immutables.github.io/style.html"
@@ -54,7 +53,7 @@ public interface IResource {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    public static Resource create(UnaryOperator<Resource.Builder> func) {
+    static Resource create(final UnaryOperator<Resource.Builder> func) {
         return func.apply(Resource.builder()).build();
     }
 

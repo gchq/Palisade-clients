@@ -15,15 +15,14 @@
  */
 package uk.gov.gchq.palisade.client.java.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.Map;
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * <p>
@@ -35,7 +34,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * class is also compatible with Jackson.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
@@ -50,7 +48,7 @@ public interface IContext {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    public static Context create(UnaryOperator<Context.Builder> func) {
+    static Context create(final UnaryOperator<Context.Builder> func) {
         return func.apply(Context.builder()).build();
     }
 
@@ -59,14 +57,14 @@ public interface IContext {
      *
      * @return the purpose of this request
      */
-    public String getPurpose();
+    String getPurpose();
 
     /**
      * Returns the contents (properties)
      *
      * @return the contents (properties)
      */
-    public Map<String, Object> getContents();
+    Map<String, Object> getContents();
 
     /**
      * Returns a property for the provided key or null if not found

@@ -15,23 +15,34 @@
  */
 package uk.gov.gchq.palisade.client.java;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.runtime.event.annotation.EventListener;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.java.download.*;
-import uk.gov.gchq.palisade.client.java.job.*;
-import uk.gov.gchq.palisade.client.java.request.*;
-import uk.gov.gchq.palisade.client.java.resource.*;
+import uk.gov.gchq.palisade.client.java.download.DownloadFailedEvent;
+import uk.gov.gchq.palisade.client.java.download.DownloadManager;
+import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
+import uk.gov.gchq.palisade.client.java.job.JobConfig;
+import uk.gov.gchq.palisade.client.java.job.JobContext;
+import uk.gov.gchq.palisade.client.java.request.Context;
+import uk.gov.gchq.palisade.client.java.request.PalisadeClient;
+import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.java.request.RequestId;
+import uk.gov.gchq.palisade.client.java.request.UserId;
+import uk.gov.gchq.palisade.client.java.resource.ResourceClient;
+import uk.gov.gchq.palisade.client.java.resource.ResourceReadyEvent;
+import uk.gov.gchq.palisade.client.java.resource.ResourcesExhaustedEvent;
 import uk.gov.gchq.palisade.client.java.util.Bus;
 
 import javax.inject.Singleton;
 import javax.websocket.ContainerProvider;
 
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static uk.gov.gchq.palisade.client.java.job.IJobContext.createJobContext;
 
@@ -45,13 +56,12 @@ import static uk.gov.gchq.palisade.client.java.job.IJobContext.createJobContext;
  * test class annotated with {@code @MicronautTest} as it is configured for
  * dependency injection. This makes testing much easier.
  *
- * @author dbell
  * @since 0.5.0
  */
 @Singleton
 public class JavaClient implements Client {
 
-    private static final Logger log = LoggerFactory.getLogger(JavaClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JavaClient.class);
     private static final String EVENT_CAUGHT = "Caught event: {}";
 
     private final ClientContext clientContext;
@@ -64,55 +74,55 @@ public class JavaClient implements Client {
      *
      * @param clientCcontext  The {@code ApplicationContext} doing the injecting
      */
-    public JavaClient(ClientContext clientCcontext) {
+    public JavaClient(final ClientContext clientCcontext) {
         this.clientContext = Objects.requireNonNull(clientCcontext);
     }
 
     @Override
-    public Result submit(UnaryOperator<JobConfig.Builder> func) {
+    public Result submit(final UnaryOperator<JobConfig.Builder> func) {
         return submit(func.apply(JobConfig.builder()).build());
     }
 
     @Override
-    public Result submit(JobConfig jobConfig) {
+    public Result submit(final JobConfig jobConfig) {
 
-        log.debug("Job configuration submitted: {}", jobConfig);
+        LOG.debug("Job configuration submitted: {}", jobConfig);
 
-        var palisadeRequest = createRequest(jobConfig); // actual instance sent to palisade Service
-        var palisadeService = clientContext.get(PalisadeClient.class); // the actual http client is wrapped
+        final var palisadeRequest = createRequest(jobConfig); // actual instance sent to palisade Service
+        final var palisadeService = clientContext.get(PalisadeClient.class); // the actual http client is wrapped
 
-        log.debug("Submitting request to Palisade....");
+        LOG.debug("Submitting request to Palisade....");
 
-        var palisadeResponse = palisadeService.submit(palisadeRequest);
+        final var palisadeResponse = palisadeService.submit(palisadeRequest);
 
         assert palisadeResponse != null : "No response back from palisade service";
 
-        log.debug("Got response from Palisade: {}", palisadeResponse);
+        LOG.debug("Got response from Palisade: {}", palisadeResponse);
 
-        var token = palisadeResponse.getToken();
+        final var token = palisadeResponse.getToken();
 
-        var jobContext = createJobContext(b -> b
+        final var jobContext = createJobContext(b -> b
             .jobConfig(jobConfig)
             .response(palisadeResponse));
 
         jobs.put(token, jobContext);
 
-        var resourceClient = new ResourceClient(
+        final var resourceClient = new ResourceClient(
             token,
             clientContext.get(Bus.class),
             clientContext.get(ObjectMapper.class),
             clientContext.get(DownloadTracker.class));
 
         try {
-            var url = palisadeResponse.getUrl();
-            var container = ContainerProvider.getWebSocketContainer();
+            final var url = palisadeResponse.getUrl();
+            final var container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(resourceClient, new URI(url)); // this start communication
-            log.debug("Job [{}] started", token);
-        } catch (Exception e) {
+            LOG.debug("Job [{}] started", token);
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
 
-        log.debug("Job created for token: {}", token);
+        LOG.debug("Job created for token: {}", token);
 
         return new Result() {
             // empty for the moment
@@ -127,7 +137,7 @@ public class JavaClient implements Client {
      * @param event The event to be handled
      */
     @EventListener
-    public void onScheduleDownload(ResourceReadyEvent event) {
+    public void onScheduleDownload(final ResourceReadyEvent event) {
         var resource = event.getResource();
         var jobContext = getJobContext(resource.getToken());
         var receiver = jobContext.getJobConfig().getReceiverSupplier().get();
@@ -140,9 +150,9 @@ public class JavaClient implements Client {
      * @param event The event to be handled
      */
     @EventListener
-    public void onFailedDownload(DownloadFailedEvent event) {
-        log.debug(EVENT_CAUGHT, event);
-        log.debug("Download failed", event.getThrowble());
+    public void onFailedDownload(final DownloadFailedEvent event) {
+        LOG.debug(EVENT_CAUGHT, event);
+        LOG.debug("Download failed", event.getThrowble());
     }
 
     /**
@@ -151,8 +161,8 @@ public class JavaClient implements Client {
      * @param event to be handled
      */
     @EventListener
-    public void onNoMoreDownloads(ResourcesExhaustedEvent event) {
-        log.debug(EVENT_CAUGHT, event);
+    public void onNoMoreDownloads(final ResourcesExhaustedEvent event) {
+        LOG.debug(EVENT_CAUGHT, event);
     }
 
     /**
@@ -161,7 +171,7 @@ public class JavaClient implements Client {
      * @param token The token whose job context is to be returned
      * @return the job context for the provided token, or null if not found
      */
-    public JobContext getJobContext(String token) {
+    public JobContext getJobContext(final String token) {
         return jobs.get(token);
     }
 
@@ -177,7 +187,7 @@ public class JavaClient implements Client {
         return this.clientContext;
     }
 
-    private PalisadeRequest createRequest(JobConfig jobConfig) {
+    private PalisadeRequest createRequest(final JobConfig jobConfig) {
 
         var userId = jobConfig.getUserId();
         var purpose = jobConfig.getPurpose();
@@ -201,7 +211,7 @@ public class JavaClient implements Client {
                         .build())
                 .build();
 
-        log.debug("new palisade request crteated from job config: {}", req);
+        LOG.debug("new palisade request crteated from job config: {}", req);
 
         return req;
 

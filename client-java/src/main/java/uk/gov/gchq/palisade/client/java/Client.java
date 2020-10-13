@@ -19,7 +19,8 @@ import io.micronaut.context.ApplicationContext;
 
 import uk.gov.gchq.palisade.client.java.job.JobConfig;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
@@ -27,43 +28,30 @@ import java.util.function.UnaryOperator;
  * A Client is the entry point to running jobs against Palisade. To create a
  * client do the following:
  * </p>
- * <pre>{@code
- * var client = (JavaClient) Client.create(Map.of(
- *     "palisade.client.download.threads", NUM_THREADS,
- *     "palisade.client.url", BASE_URL));
- * }</pre>
+ * <pre>
+ * {@code
+ *     var client = (JavaClient) Client.create(Map.of(
+ *         "palisade.client.download.threads", NUM_THREADS,
+ *         "palisade.client.url", BASE_URL));
+ * }
+ * </pre>
  * <p>
  * The number of threads is 1 by default. The default base url is
- * {@code http://localhost:8081}. In order to submit a request to Palisade,
- * use the following to create a {@code Job} instance:
+ * {@code http://localhost:8081}. In order to submit a request to Palisade, use
+ * the following to submit a request:
  * </p>
- * <pre>{@code
- * var config = IJobConfig.<Troll>create(b -> b
- *     .classname("classname")
- *     .deserializer(ds)
- *     .objectFactory(of)
- *     .purpose("purpose")
- *     .requestId("request_id")
- *     .resourceId("resource_id")
- *     .userId("user_id"));
- * }</pre>
- * <p>
- * At the moment, the deserialiser and object factory is not used. Later the
- * idea is that the devloper would subscribe to the returned job and provide
- * a function to be run when an InputStream is emitted by the downloader/manager.
- * </p>
- * <p>
- * To start the job:
- * </p>
- * <pre>{@code
- * job.start() // this is where we need to provide a function
- * }</pre>
+ * <pre>
+ * {@code
+ *     var result = client.submit(b -> b
+ *         .classname("classname")
+ *         .purpose("purpose")
+ *         .requestId("request_id")
+ *         .resourceId("resource_id")
+ *         .userId("user_id"));
+ * }
+ * </pre>
  *
- * At the momnent the client just outputs strings to the log
- *
- * @author dbell
  * @since 0.5.0
- *
  */
 public interface Client {
 
@@ -92,7 +80,7 @@ public interface Client {
      *
      * @return a newly created using all configuration defaults
      */
-    public static Client create() {
+    static Client create() {
         return create(Map.of());
     }
 
@@ -104,7 +92,7 @@ public interface Client {
      * @return a newly created {@code JavaClient} using the provided property
      *         overrides
      */
-    public static Client create(Map<String, String> properties) {
+    static Client create(final Map<String, String> properties) {
 
         /*
          * The provided map of properties will be supplied to the application context.
@@ -112,7 +100,7 @@ public interface Client {
          * class or individual values.
          */
 
-        var map = new LinkedHashMap<String, Object>(properties); // need to be string,object!
+        final var map = new LinkedHashMap<String, Object>(properties); // need to be string,object!
         return ApplicationContext.run(map).getBean(Client.class);
 
     }

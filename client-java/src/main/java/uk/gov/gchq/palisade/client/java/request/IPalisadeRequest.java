@@ -16,6 +16,7 @@
 
 package uk.gov.gchq.palisade.client.java.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
@@ -23,8 +24,6 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * <p>
@@ -38,7 +37,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * {@link ImmutableStyle}. This class is also compatible with Jackson.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
@@ -53,7 +51,7 @@ public interface IPalisadeRequest extends Serializable {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    public static PalisadeRequest create(UnaryOperator<PalisadeRequest.Builder> func) {
+    static PalisadeRequest create(final UnaryOperator<PalisadeRequest.Builder> func) {
         return func.apply(PalisadeRequest.builder()).build();
     }
 
@@ -62,34 +60,34 @@ public interface IPalisadeRequest extends Serializable {
      *
      * @return the resource id
      */
-    public String getResourceId();
+    String getResourceId();
 
     /**
      * Returns the user id
      *
      * @return the user id
      */
-    public UserId getUserId();
+    UserId getUserId();
 
     /**
      * Returns the context
      *
      * @return the context
      */
-    public Context getContext();
+    Context getContext();
 
     /**
      * Returns the request id
      *
      * @return the request id
      */
-    public RequestId getRequestId();
+    RequestId getRequestId();
 
     /**
      * Returns the original request id
      *
      * @return the original request id
      */
-    public Optional<RequestId> getOriginalRequestId();
+    Optional<RequestId> getOriginalRequestId();
 
 }

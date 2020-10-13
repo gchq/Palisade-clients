@@ -34,9 +34,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
  * <li><b>palisade.client.download.threads</b> - The number of download threads
  * </ul>
  *
- * @author dbell
  * @since 0.5.0
- *
  */
 @ConfigurationProperties("palisade")
 public class ClientConfig {
@@ -59,7 +57,7 @@ public class ClientConfig {
      *
      * @param client the client configuration section to set
      */
-    public void setClient(Client client) {
+    public void setClient(final Client client) {
         this.client = client;
     }
 
@@ -77,14 +75,13 @@ public class ClientConfig {
      *
      * @param download the download section to set
      */
-    public void setDownload(Download download) {
+    public void setDownload(final Download download) {
         this.download = download;
     }
 
     /**
      * Properties effecting downloads
      *
-     * @author dbell
      * @since 0.5.0
      */
     @ConfigurationProperties("download")
@@ -116,7 +113,7 @@ public class ClientConfig {
          * @param threads The number of download threads
          * @see #THREADS_PROPERTY
          */
-        public void setThreads(int threads) {
+        public void setThreads(final int threads) {
             this.threads = threads;
         }
 
@@ -134,7 +131,7 @@ public class ClientConfig {
          *
          * @param path The path where downloads should be created
          */
-        public void setPath(String path) {
+        public void setPath(final String path) {
             this.path = path;
         }
     }
@@ -142,7 +139,6 @@ public class ClientConfig {
     /**
      * Properties effecting access to the Palisade service
      *
-     * @author dbell
      * @since 0.5.0
      */
     @ConfigurationProperties("client")
@@ -171,7 +167,7 @@ public class ClientConfig {
          * @param url The base url
          * @see #URL_PROPERTY
          */
-        public void setUrl(String url) {
+        public void setUrl(final String url) {
             this.url = url;
         }
 

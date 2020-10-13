@@ -21,7 +21,6 @@ import uk.gov.gchq.palisade.client.java.ClientException;
  * An instance of this class is thrown if the body of a reource message is not
  * set by the server. This should be very rare.
  *
- * @author dbell
  * @since 0.5.0
  */
 public class MissingResourceException extends ClientException {
@@ -36,7 +35,7 @@ public class MissingResourceException extends ClientException {
      *
      * @param resourceMessage The offending message
      */
-    public MissingResourceException(Message resourceMessage) {
+    public MissingResourceException(final Message resourceMessage) {
         super("Recieved a message with a missing resource. Message was: " + resourceMessage);
         this.resourceMessage = resourceMessage;
     }

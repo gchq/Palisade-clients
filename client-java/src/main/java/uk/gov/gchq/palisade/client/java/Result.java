@@ -18,7 +18,6 @@ package uk.gov.gchq.palisade.client.java;
 /**
  * A future result is returned from the client upon submitting a job
  *
- * @author dbell
  * @since 0.5.0
  */
 public interface Result {

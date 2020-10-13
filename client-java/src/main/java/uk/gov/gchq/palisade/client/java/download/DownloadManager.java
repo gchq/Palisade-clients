@@ -15,15 +15,18 @@
  */
 package uk.gov.gchq.palisade.client.java.download;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.java.*;
+import uk.gov.gchq.palisade.client.java.ClientConfig;
+import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.receiver.Receiver;
 import uk.gov.gchq.palisade.client.java.resource.Resource;
 
 import javax.inject.Singleton;
 
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -32,28 +35,30 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * This class manages multiple downloads from the Palisade Data Service.
  * </p>
  *
- * @author dbell
  * @since 0.5.0
  */
 @Singleton
 public class DownloadManager {
 
-    private static final Logger log = LoggerFactory.getLogger(DownloadManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DownloadManager.class);
 
     private final ThreadPoolExecutor executor;
     private final ClientContext clientContext;
 
 
     private final DownloadTracker downloadTracker = new DownloadTracker() {
+
         @Override
         public int getAvaliableSlots() {
             return executor.getMaximumPoolSize() - executor.getActiveCount();
         }
+
         @Override
         public boolean hasAvailableSlots() {
-            log.debug("free slots: {}", getAvaliableSlots());
+            LOG.debug("free slots: {}", getAvaliableSlots());
             return getAvaliableSlots() > 0;
         }
+
         @Override
         public ManagerStatus getStatus() {
             if (executor.isTerminating()) {
@@ -66,14 +71,17 @@ public class DownloadManager {
     };
 
     /**
-     * @param clientContext
+     * Create a new DownloadManager with the the provided {@code ClientContext}
+     *
+     * @param clientContext The client context providing access to underlying
+     *                      objects
      */
-    public DownloadManager(ClientContext clientContext) {
+    public DownloadManager(final ClientContext clientContext) {
         assert clientContext != null : "Must provide the client context";
         this.clientContext = clientContext;
         var numThreads = clientContext.get(ClientConfig.class).getDownload().getThreads();
         this.executor = new ThreadPoolExecutor(1, numThreads, 2000L, MILLISECONDS, new LinkedBlockingQueue<>(2));
-        log.debug("### Download manager created with thread pool size of {}", numThreads);
+        LOG.debug("### Download manager created with thread pool size of {}", numThreads);
     }
 
     /**
@@ -82,8 +90,8 @@ public class DownloadManager {
      * @param resource The resource describing the data to be downloaded.
      * @param receiver The receiver to process the data stream
      */
-    public void schedule(Resource resource, Receiver receiver) {
-        log.debug("### Scheduling resource: {}", resource);
+    public void schedule(final Resource resource, final Receiver receiver) {
+        LOG.debug("### Scheduling resource: {}", resource);
         var downloader = new Downloader(clientContext, resource, receiver);
         executor.execute(downloader);
     }

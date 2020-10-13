@@ -29,13 +29,14 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
  * The generated class does not use a builder but uses "Tuple Style". For
  * example, an instance can be generated in the following way.
  * </p>
+ *
  * <pre>
- * {@code
+ * {
+ *     &#64;code
  *     var event = ResourceReadyEvent.of("token", resource);
  * }
  * </pre>
  *
- * @author dbell
  * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
  */
