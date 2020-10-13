@@ -115,7 +115,7 @@ public class JavaClient implements Client {
         log.debug("Job created for token: {}", token);
 
         return new Result() {
-
+            // empty for the moment
         };
 
     }
@@ -155,6 +155,12 @@ public class JavaClient implements Client {
         log.debug(EVENT_CAUGHT, event);
     }
 
+    /**
+     * Returns the job context for the provided token, or null if not found
+     *
+     * @param token The token whose job context is to be returned
+     * @return the job context for the provided token, or null if not found
+     */
     public JobContext getJobContext(String token) {
         return jobs.get(token);
     }

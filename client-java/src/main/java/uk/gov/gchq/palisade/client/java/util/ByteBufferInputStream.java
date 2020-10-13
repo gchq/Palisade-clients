@@ -202,13 +202,15 @@ public class ByteBufferInputStream extends InputStream {
         return false;
     }
 
-    private ByteBuffer buffer() throws IOException {
+    private ByteBuffer buffer() {
         if (iterator == null) {
             this.iterable = flowable.blockingIterable();
             this.iterator = iterable.iterator();
         }
         if (buff == null || buff.remaining() == 0) {
             if (buff != null) {
+                // TODO: This is where we should be releasing the buffers memory allocation, but
+                // there does not seem to be a way to do so.
             }
             if (iterator.hasNext()) {
                 buff = iterator.next();

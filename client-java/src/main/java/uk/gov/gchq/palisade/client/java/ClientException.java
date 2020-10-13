@@ -27,12 +27,17 @@ public class ClientException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Creates a new instance
+     *
      * @see RuntimeException#RuntimeException()
      */
     public ClientException() {
     }
 
     /**
+     * Creates a new instance with the provided {@code message}
+     *
+     * @param message The message
      * @see RuntimeException#RuntimeException(String)
      */
     public ClientException(String message) {
@@ -40,6 +45,9 @@ public class ClientException extends RuntimeException {
     }
 
     /**
+     * Creates a new instance with the provided {@code cause}
+     *
+     * @param cause The cause
      * @see RuntimeException#RuntimeException(Throwable)
      */
     public ClientException(Throwable cause) {
@@ -47,17 +55,14 @@ public class ClientException extends RuntimeException {
     }
 
     /**
+     * Creates a new instance with the provided {@code message} and {@code cause}
+     *
+     * @param message The message
+     * @param cause   The cause
      * @see RuntimeException#RuntimeException(String, Throwable)
      */
     public ClientException(String message, Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * @see RuntimeException#RuntimeException(String, Throwable, boolean, boolean)
-     */
-    public ClientException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
     }
 
 }

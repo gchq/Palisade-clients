@@ -39,13 +39,13 @@ import static io.micronaut.http.MediaType.*;
  * </p>
  * <p>
  * Events thrown by instances of this class:
+ * </p>
  * <ul>
  * <li><b>DownloadReadyEvent</b> - When a HTTP request has been successfully
  * made and the inputstream is ready to be consumed</li>
  * <li><b>DownloadCompletedEvent</b> - When a download completes and is
  * processed successfully</li>
  * </ul>
- * </p>
  * <p>
  * This class does not listen to any events
  * </p>

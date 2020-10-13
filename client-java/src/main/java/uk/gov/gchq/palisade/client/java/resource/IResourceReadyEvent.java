@@ -28,14 +28,13 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
  * Note that the {@code DownloadFailedEvent} class is generated at compile time.
  * The generated class does not use a builder but uses "Tuple Style". For
  * example, an instance can be generated in the following way.
+ * </p>
  *
  * <pre>
- * {
- *     &#64;code
+ * {@code
  *     var event = ResourceReadyEvent.of("token", resource);
  * }
  * </pre>
- * </p>
  *
  * @author dbell
  * @since 0.5.0

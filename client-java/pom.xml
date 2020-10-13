@@ -20,11 +20,16 @@
 
 		<modelVersion>4.0.0</modelVersion>
 
-		<groupId>uk.gov.gchq.palisade</groupId>
+    <parent>
+        <groupId>uk.gov.gchq.palisade</groupId>
+        <artifactId>clients</artifactId>
+        <version>0.5.0-${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
 		<artifactId>client-java</artifactId>
-		<version>0.5.0-${revision}</version>
 		<name>clients</name>
-		<description>Client code for Spring boot</description>
+		<description>Java standalone client</description>
 		<url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
 
 		<properties>
@@ -41,26 +46,6 @@
 				<project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
 
 				<!-- Plugins -->
-				<compiler.plugin.version>3.8.0</compiler.plugin.version>
-				<maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
-				<javadoc.plugin.version>3.2.0</javadoc.plugin.version>
-				<checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
-				<depends.maven.version>3.1.1</depends.maven.version>
-
-				<!-- Testing properties -->
-				<surefire.plugin.version>2.22.1</surefire.plugin.version>
-				<failsafe.version>2.22.1</failsafe.version>
-
-				<!-- Dependencies -->
-				<slf4j.api.version>1.7.25</slf4j.api.version>
-				<slf4j.simple.version>1.7.25</slf4j.simple.version>
-
-				<!-- Sonar -->
-				<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-				<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-				<sonar.jacoco.xmlReportPaths>${project.basedir}/../target/site/jacoco/jacoco.xml</sonar.jacoco.xmlReportPaths>
-				<sonar.language>java</sonar.language>
-
 				<junit5.version>5.7.0</junit5.version>
 
 		</properties>
@@ -139,12 +124,12 @@
 				<dependency>
 						<groupId>uk.gov.gchq.palisade</groupId>
 						<artifactId>common</artifactId>
-						<version>${project.version}</version>
+						<version>0.5.0-${common.revision}</version>
 				</dependency>
 				<dependency>
 						<groupId>uk.gov.gchq.palisade</groupId>
 						<artifactId>readers-common</artifactId>
-						<version>${project.version}</version>
+						<version>0.5.0-${common.revision}</version>
 				</dependency>
 
 				<dependency>

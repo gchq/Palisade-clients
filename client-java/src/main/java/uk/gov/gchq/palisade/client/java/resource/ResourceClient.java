@@ -129,7 +129,7 @@ public class ResourceClient {
         }
     }
 
-    private void handleSubscribed(String token) {
+    private void handleSubscribed(String token) { // empty
     }
 
     private void handleAck(String token) { // noop

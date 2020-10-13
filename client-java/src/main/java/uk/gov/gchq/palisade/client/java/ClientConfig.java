@@ -28,13 +28,11 @@ import io.micronaut.context.annotation.ConfigurationProperties;
  * <p>
  * The current recognised parameters are:
  * </p>
- * <p>
  * <ul>
  * <li><b>palisade.client.url</b> - The initial url which will be used to
  * connect to the Palisade service in order to submit the request</li>
  * <li><b>palisade.client.download.threads</b> - The number of download threads
  * </ul>
- * </p>
  *
  * @author dbell
  * @since 0.5.0
@@ -122,10 +120,20 @@ public class ClientConfig {
             this.threads = threads;
         }
 
+        /**
+         * Returns the path where downloads should be created
+         *
+         * @return the path where downloads should be created
+         */
         public String getPath() {
             return this.path;
         }
 
+        /**
+         * Sets the path where downloads should be created
+         *
+         * @param path The path where downloads should be created
+         */
         public void setPath(String path) {
             this.path = path;
         }
