@@ -31,8 +31,7 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
  * example, an instance can be generated in the following way.
  *
  * <pre>
- * {
- *     &#64;code
+ * {@code
  *     var event = DownloadEventFailed.of("token", resource, throwable);
  * }
  * </pre>
@@ -45,13 +44,6 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 @Value.Immutable
 @TupleStyle
 public interface IDownloadFailedEvent {
-
-    /**
-     * Returns the token to which the download belongs
-     *
-     * @return the token to which the download belongs
-     */
-    String getToken();
 
     /**
      * Returns the failed download resource

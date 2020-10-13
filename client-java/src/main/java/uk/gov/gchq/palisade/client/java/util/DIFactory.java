@@ -17,11 +17,11 @@ package uk.gov.gchq.palisade.client.java.util;
 
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Factory;
-import io.micronaut.websocket.RxWebSocketClient;
+import io.micronaut.context.event.ApplicationEventPublisher;
 
 import uk.gov.gchq.palisade.client.java.*;
+import uk.gov.gchq.palisade.client.java.download.*;
 import uk.gov.gchq.palisade.client.java.request.*;
-import uk.gov.gchq.palisade.client.java.state.StateManager;
 
 import javax.inject.Singleton;
 
@@ -39,16 +39,6 @@ public class DIFactory {
      * Creates a new factory
      */
     public DIFactory() { // cannot be instantiated
-    }
-
-    /**
-     * Returns the one and only {@link StateManager} instance
-     *
-     * @return the one and only {@link StateManager} instance
-     */
-    @Singleton
-    public final StateManager stateManager() {
-        return new StateManager();
     }
 
     /**
@@ -81,29 +71,46 @@ public class DIFactory {
         };
     }
 
+    /**
+     * Returns a {@code ClientContext} which wraps Micronaut's
+     * {@code ApplicationContext} and methods which are not needed.
+     *
+     * @param applicationContext The context to be wrapped
+     * @return a {@code ClientContext} which wraps Micronaut's
+     *         {@code ApplicationContext} and methods which are not needed.
+     */
     @Singleton
-    public ClientContext createClientContext(ApplicationContext context) {
+    public ClientContext createClientContext(ApplicationContext applicationContext) {
         return new ClientContext() {
             @Override
             public <T> T get(Class<T> type) {
-                return context.getBean(type);
+                return applicationContext.getBean(type);
             }
         };
     }
 
     /**
-     * Returns the client
+     * Returns a download tracker used to provide availability of download slots
      *
-     * @param webSocketClient not used yet as we are still using Tyrus
-     * @param context         The {@code ApplicationContext} that is performing the
-     *                        injection
-     * @return the client
+     * @param downloadManager The download manager being tracked
+     * @return a download tracker used to provide availability of download slots
      */
     @Singleton
-    public Client createClient(
-            @io.micronaut.http.client.annotation.Client("http://localhost:8081") RxWebSocketClient webSocketClient,
-        ClientContext context) {
-        return new JavaClient(webSocketClient, context);
+    public DownloadTracker createDownloadTracker(DownloadManager downloadManager) {
+        return downloadManager.getDownloadTracker();
+    }
+
+    /**
+     * Returns a {@code Bus} instance which wraps Micronaut's
+     * {@code ApplicationEventPublisher}
+     *
+     * @param applicationEventPublisher the publisher being wrapped
+     * @return a {@code Bus} instance which wraps Micronaut's
+     *         {@code ApplicationEventPublisher}
+     */
+    @Singleton
+    public Bus createEventBus(ApplicationEventPublisher applicationEventPublisher) {
+        return (event) -> applicationEventPublisher.publishEventAsync(event);
     }
 
 }

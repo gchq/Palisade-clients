@@ -17,13 +17,13 @@ package uk.gov.gchq.palisade.client.java.download;
 
 import org.slf4j.*;
 
-import uk.gov.gchq.palisade.client.java.ClientConfig;
-import uk.gov.gchq.palisade.client.java.resource.*;
+import uk.gov.gchq.palisade.client.java.*;
+import uk.gov.gchq.palisade.client.java.receiver.Receiver;
+import uk.gov.gchq.palisade.client.java.resource.Resource;
+
+import javax.inject.Singleton;
 
 import java.util.concurrent.*;
-import java.util.function.UnaryOperator;
-
-import com.google.common.eventbus.Subscribe;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -31,56 +31,27 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * <p>
  * This class manages multiple downloads from the Palisade Data Service.
  * </p>
- * <p>
- * Events consumed by instances of this class:
- * </p>
- * <p>
- * <strong>None</strong>
- * <p>
- * Events consumed by instances of this class:
- * <ul>
- * <li><strong>DownloadReadyEvent</strong> - When a new download's inputstream
- * is ready to be consumed</li>
- * <li><strong>ResourcesExhaustedEvent</strong> - When there are no more
- * resources available to be downloaded</li>
- * </ul>
- * </p>
- * <p>
- * This class does not listen to any events
- * </p>
  *
  * @author dbell
  * @since 0.5.0
  */
+@Singleton
 public class DownloadManager {
-
-    /**
-     * Creates and returns a new download manager using the provided configuration
-     * builder function
-     *
-     * @param func The builder function providing the configuration
-     * @return a new download manager using the provided configuration builder
-     *         function
-     */
-    public static DownloadManager createDownloadManager(UnaryOperator<DownloadManagerConfig.Builder> func) {
-        var config = func.apply(DownloadManagerConfig.builder()).build();
-        return new DownloadManager(config);
-    }
 
     private static final Logger log = LoggerFactory.getLogger(DownloadManager.class);
 
-    private final int numThreads;
     private final ThreadPoolExecutor executor;
-    private final DownloadManagerConfig config;
+    private final ClientContext clientContext;
 
 
     private final DownloadTracker downloadTracker = new DownloadTracker() {
         @Override
         public int getAvaliableSlots() {
-            return numThreads - executor.getActiveCount();
+            return executor.getMaximumPoolSize() - executor.getActiveCount();
         }
         @Override
         public boolean hasAvailableSlots() {
+            log.debug("free slots: {}", getAvaliableSlots());
             return getAvaliableSlots() > 0;
         }
         @Override
@@ -94,11 +65,14 @@ public class DownloadManager {
         }
     };
 
-    private DownloadManager(DownloadManagerConfig config) {
-        assert config != null : "Must provide a configuration";
-        this.config = config;
-        this.numThreads = config.getClientContext().get(ClientConfig.class).getDownload().getThreads();
-        this.executor = new ThreadPoolExecutor(numThreads, numThreads, 2000L, MILLISECONDS, new LinkedBlockingQueue<>(2));
+    /**
+     * @param clientContext
+     */
+    public DownloadManager(ClientContext clientContext) {
+        assert clientContext != null : "Must provide the client context";
+        this.clientContext = clientContext;
+        var numThreads = clientContext.get(ClientConfig.class).getDownload().getThreads();
+        this.executor = new ThreadPoolExecutor(1, numThreads, 2000L, MILLISECONDS, new LinkedBlockingQueue<>(2));
         log.debug("### Download manager created with thread pool size of {}", numThreads);
     }
 
@@ -106,24 +80,12 @@ public class DownloadManager {
      * Schedule the provided resource for download
      *
      * @param resource The resource describing the data to be downloaded.
+     * @param receiver The receiver to process the data stream
      */
-    public void schedule(Resource resource) {
+    public void schedule(Resource resource, Receiver receiver) {
         log.debug("### Scheduling resource: {}", resource);
-        var downloader = Downloader.create(b -> b
-            .clientContext(config.getClientContext())
-            .resource(resource)
-            .eventBus(config.getEventBus())
-            .receiverSupplier(config.getReceiverSupplier()));
+        var downloader = new Downloader(clientContext, resource, receiver);
         executor.execute(downloader);
-    }
-
-    /**
-     * Returns the id of this download manager
-     *
-     * @return the id of this download manager
-     */
-    public String getId() {
-        return config.getId();
     }
 
     /**
@@ -135,33 +97,5 @@ public class DownloadManager {
         return this.downloadTracker;
     }
 
-    /**
-     * Handle the job complete event by shutting down the executor. This method will
-     * block for a small amount of time for the executors to complete before
-     * shutting down, or if the timeout occurs, it is forced to quit. Once the
-     * executor has terminated, an end of queue flag is added to the queue to
-     * signify that the stream should complete once all other queued downloads have
-     * been emitted.
-     *
-     * @param event The event to handle
-     */
-    @Subscribe
-    public void handleJobComplete(ResourcesExhaustedEvent event) {
-        // add a Download with no input stream to the queue. This will instruct the
-        // stream to terminate
-        executor.shutdown();
-        try {
-            executor.awaitTermination(2, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            // something musty be really stuck
-        } finally {
-            if (executor.isTerminating()) {
-                // we've given it enough time, so halt it
-                @SuppressWarnings("unused")
-                var tasks = executor.shutdownNow();
-                // TODO: we should do something with these tasks that were not executed.
-            }
-        }
-    }
 
 }

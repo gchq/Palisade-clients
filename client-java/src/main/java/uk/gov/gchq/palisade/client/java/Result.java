@@ -13,33 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.java.job;
-
-import uk.gov.gchq.palisade.client.java.ClientException;
+package uk.gov.gchq.palisade.client.java;
 
 /**
- * A deserialisation error has occured
+ * A future result is returned from the client upon submitting a job
  *
  * @author dbell
  * @since 0.5.0
  */
-public class DeserialiserException extends ClientException {
+public interface Result {
 
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * @see ClientException#ClientException(String)
+    /*
+     * This class will in the future provide access to the actuial configuration and
+     * the resource requested. It will also contain a future that will signal the
+     * completion of all processing for the job.
+     *
+     * Information provided will be information about each downloaded resource and
+     * the path to the file if there is one. This couls also contain possible timing
+     * metrics, file size etc.
      */
-    public DeserialiserException(String message) {
-        super(message);
-    }
-
-    /**
-     * @see ClientException#ClientException(String, Throwable)
-     */
-    public DeserialiserException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 
 }

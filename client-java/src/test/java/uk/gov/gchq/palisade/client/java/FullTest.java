@@ -18,7 +18,7 @@ package uk.gov.gchq.palisade.client.java;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.glassfish.tyrus.server.Server;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import uk.gov.gchq.palisade.client.java.job.IJobConfig;
 import uk.gov.gchq.palisade.client.java.receiver.FileReceiver;
@@ -40,6 +40,18 @@ class FullTest {
     private static final int WS_PORT = 8082;
     private static final String WS_HOST = "localhost";
 
+    private Server server;
+
+    @BeforeEach
+    void setup() throws Exception {
+        server = new Server(WS_HOST, WS_PORT, "/", Map.of(), ServerSocket.class);
+        server.start();
+    }
+
+    @AfterEach
+    void tearDown() {
+        server.stop();
+    }
 
     @Test
     void testFull() throws Exception {
@@ -52,16 +64,9 @@ class FullTest {
             .userId("user_id")
             .receiverSupplier(() -> new FileReceiver()));
 
-        //
-        // lets start the socket server
-        var server = new Server(WS_HOST, WS_PORT, "/", Map.of(), ServerSocket.class);
-        server.start();
-
         // lets start the ball rolling
 
-        var job = Client.create().submit(config);
-        job.start();
-
+        var result = Client.create().submit(config);
 
         Thread.sleep(3000);
 

@@ -1,4 +1,4 @@
-package uk.gov.gchq.palisade.client.java.download;
+package uk.gov.gchq.palisade.client.java.util;
 
 import io.reactivex.Flowable;
 

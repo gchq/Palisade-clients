@@ -17,7 +17,7 @@ package uk.gov.gchq.palisade.client.java;
 
 import io.micronaut.context.ApplicationContext;
 
-import uk.gov.gchq.palisade.client.java.job.*;
+import uk.gov.gchq.palisade.client.java.job.JobConfig;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
@@ -76,7 +76,7 @@ public interface Client {
      * @return a newly constructed {@code Job} using the provided configuration
      *         function
      */
-    Job submit(UnaryOperator<JobConfig.Builder> func);
+    Result submit(UnaryOperator<JobConfig.Builder> func);
 
     /**
      * Returns a newly constructed {@code Job} using the provided configuration,
@@ -85,7 +85,7 @@ public interface Client {
      * @param jobConfig The configuration for the job
      * @return a newly constructed {@code Job} using the provided configuration
      */
-    Job submit(JobConfig jobConfig);
+    Result submit(JobConfig jobConfig);
 
     /**
      * Returns a newly created {@code JavaClient} using all configuration defaults

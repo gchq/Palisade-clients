@@ -19,9 +19,8 @@ import java.io.InputStream;
 
 /**
  * <p>
- * A {@code Receiver} is an object that will be provided with an input stream an
- * process it. Implementations could write the data to a file or simply log the
- * data.
+ * A {@code Receiver} is an object that will be provided with an input stream to
+ * process. Implementations could write to a file or simply log the data.
  * </p>
  *
  * @author dbell

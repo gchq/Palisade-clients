@@ -17,8 +17,6 @@ package uk.gov.gchq.palisade.client.java.receiver;
 
 import uk.gov.gchq.palisade.client.java.resource.Resource;
 
-import com.google.common.eventbus.EventBus;
-
 /**
  * <p>
  * Instances of this class are passed to a receiver.
@@ -28,13 +26,6 @@ import com.google.common.eventbus.EventBus;
  * @since 0.5.0
  */
 public interface ReceiverContext {
-
-    /**
-     * Returns an instance of the event bus for this job
-     *
-     * @return an instance of the event bus for this job
-     */
-    EventBus getEventBus();
 
     /**
      * Returns the resource that is being received

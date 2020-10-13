@@ -16,22 +16,19 @@
 package uk.gov.gchq.palisade.client.java.download;
 
 import io.micronaut.core.io.buffer.ByteBuffer;
-import io.micronaut.http.*;
+import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.RxStreamingHttpClient;
 import io.reactivex.schedulers.Schedulers;
-import org.immutables.value.Value;
 import org.slf4j.*;
 
 import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.receiver.*;
 import uk.gov.gchq.palisade.client.java.resource.Resource;
-import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
+import uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream;
 
 import java.net.*;
-import java.util.Objects;
-import java.util.function.*;
 
-import com.google.common.eventbus.EventBus;
+import static io.micronaut.http.MediaType.*;
 
 /**
  * <p>
@@ -45,8 +42,8 @@ import com.google.common.eventbus.EventBus;
  * <ul>
  * <li><b>DownloadReadyEvent</b> - When a HTTP request has been successfully
  * made and the inputstream is ready to be consumed</li>
- * <li><b>DownloadFailedEvent</b> - When an error occurs either during the
- * request, or posting to the event bus</li>
+ * <li><b>DownloadCompletedEvent</b> - When a download completes and is
+ * processed successfully</li>
  * </ul>
  * </p>
  * <p>
@@ -59,79 +56,24 @@ import com.google.common.eventbus.EventBus;
  */
 public class Downloader implements Runnable {
 
-    /**
-     * The configuration object used when configuring a {@code Downloader}
-     *
-     * @author dbell
-     * @since 0.5.0
-     *
-     */
-    @Value.Immutable
-    @ImmutableStyle
-    public interface IDownloadConfig {
-
-        /**
-         * Helper method that uses a function to create a new instance
-         *
-         * @param func The builder function
-         * @return a newly created {@code DownloadConfig}
-         */
-        public static DownloadConfig create(UnaryOperator<DownloadConfig.Builder> func) {
-            return func.apply(DownloadConfig.builder()).build();
-        }
-
-        /**
-         * Returns the event bus onto which the {@code Downloader} will publish download
-         * events
-         *
-         * @return the event bus onto which the {@code Downloader} will publish download
-         *         events
-         */
-        EventBus getEventBus();
-
-        /**
-         * Returns the details of the resource to be downloaded
-         *
-         * @return the details of the resource to be downloaded
-         */
-        Resource getResource();
-
-        /**
-         * Returns the factory that we will use to create the reciever instance
-         *
-         * @return the factory that we will use to create the reciever instance
-         */
-        Supplier<Receiver> getReceiverSupplier();
-
-        /**
-         * @return
-         */
-        ClientContext getClientContext();
-
-    }
-
-    /**
-     * Returns a newly created {@code Downloader} instance configured via the
-     * provided builder function
-     *
-     * @param func The function used to configure the returned instance
-     * @return a newly created {@code Downloader} instance configured via the
-     *         provided builder function
-     */
-    static Downloader create(UnaryOperator<DownloadConfig.Builder> func) {
-        return new Downloader(func.apply(DownloadConfig.builder()).build());
-    }
 
     private static final Logger log = LoggerFactory.getLogger(Downloader.class);
-    private final DownloadConfig config;
+
+    private Resource resource;
+    private Receiver receiver;
+    private ClientContext clientContext;
 
     /**
      * Creates a new {@code Downloader} from the provided configuration
      *
-     * @param config The provided configuration for this {@code Downloader}
+     * @param clientContext
+     * @param resource
+     * @param receiver
      */
-    private Downloader(DownloadConfig config) {
-        this.config = Objects.requireNonNull(config, "Must have a configuration");
+    public Downloader(ClientContext clientContext, Resource resource, Receiver receiver) {
+        this.clientContext = clientContext;
+        this.resource = resource;
+        this.receiver = receiver;
     }
 
     @Override
@@ -139,15 +81,13 @@ public class Downloader implements Runnable {
 
         log.debug("Downloader Started");
 
-        var resource = config.getResource();
-        var eventBus = config.getEventBus();
         var token = resource.getToken();
 
         URL url = null;
         try {
             url = new URL(resource.getUrl());
         } catch (MalformedURLException e) {
-            config.getEventBus().post(DownloadFailedEvent.of(token, resource, e));
+            clientContext.post(DownloadFailedEvent.of(resource, e));
             return; // EARLY EXIT
         }
 
@@ -159,10 +99,10 @@ public class Downloader implements Runnable {
 
             var request = HttpRequest
                 .POST("/read/chunked", body)
-                .contentType(MediaType.APPLICATION_JSON_TYPE)
-                .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+                .contentType(APPLICATION_JSON_TYPE)
+                .accept(APPLICATION_OCTET_STREAM_TYPE);
 
-            log.debug("Making request to: {}, " + url);
+            log.debug("Making request to: {}, ", url);
 
             var flowable = client
                 .dataStream(request)
@@ -178,36 +118,29 @@ public class Downloader implements Runnable {
                 @Override public Resource getResource() {
                     return resource;
                 }
-                @Override public EventBus getEventBus() {
-                    return eventBus;
-                }
                 @Override
                 public <T> T get(Class<T> type) {
-                    return config.getClientContext().get(type);
+                    return clientContext.get(type);
                 }
             };
 
-            var receiver = config.getReceiverSupplier().get();
-            var bbis = new ByteBufferInputStream(flowable);
-
             try {
-
+                var bbis = new ByteBufferInputStream(flowable);
                 receiver.process(receiverContext, bbis);
-
             } catch (Exception e) {
-                // TODO: handle this (throw a DownloadFailedEvent maybe?)
+                clientContext.post(DownloadFailedEvent.of(resource, e));
             }
 
             // Note:
             // - we no longer need DownloadReadyEvent
 
-            var event = DownloadCompleteEvent.of(token, resource);
+            var event = DownloadCompleteEvent.of(resource);
 
-            config.getEventBus().post(event);
+            clientContext.post(event);
 
-            log.debug("posted event: {}, " + event);
+            log.debug("posted event: {}, ", event);
 
-        } finally {
+        } finally { // empty
         }
 
         log.debug("Downloader ended");

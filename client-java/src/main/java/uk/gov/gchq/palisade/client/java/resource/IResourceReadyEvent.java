@@ -46,13 +46,6 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 public interface IResourceReadyEvent {
 
     /**
-     * Returns the token to which this resource is associated
-     *
-     * @return the token to which this resource is associated
-     */
-    String getToken();
-
-    /**
      * Returns the resource to be downloaded
      *
      * @return the resource to be downloaded

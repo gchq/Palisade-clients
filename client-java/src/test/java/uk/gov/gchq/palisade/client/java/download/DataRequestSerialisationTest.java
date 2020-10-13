@@ -18,7 +18,6 @@ package uk.gov.gchq.palisade.client.java.download;
 import org.junit.jupiter.api.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +28,7 @@ class DataRequestSerialisationTest {
 
     @BeforeEach
     void setup() {
-        this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module()).registerModule(new GuavaModule());
+        this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
     }
 
     @Test

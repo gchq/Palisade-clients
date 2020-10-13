@@ -19,6 +19,8 @@ import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import org.junit.jupiter.api.*;
 
+import uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -63,7 +65,7 @@ class ByteBufferInputStreamTest {
     }
 
     /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#read()}.
+     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
      */
     @Test
     void test_read_bytearray_4_chars() throws Exception {
@@ -75,7 +77,7 @@ class ByteBufferInputStreamTest {
 
     /**
      * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#read()}.
+     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
      */
     @Test
     void test_read_bytearray_8_chars() throws Exception {
@@ -87,7 +89,7 @@ class ByteBufferInputStreamTest {
 
     /**
      * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#read()}.
+     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
      */
     @Test
     void test_read_bytearray_30_chars() throws Exception {
@@ -99,7 +101,7 @@ class ByteBufferInputStreamTest {
 
     /**
      * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#read()}.
+     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read()}.
      */
     @Test
     void test_read_bytearray_26_chars() throws Exception {
@@ -111,7 +113,7 @@ class ByteBufferInputStreamTest {
 
 
     /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#read(byte[], int, int)}.
+     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read(byte[], int, int)}.
      */
     @Test
     void test_read_bytearray_with_offset_and_length_of_4() throws Exception {
@@ -124,7 +126,7 @@ class ByteBufferInputStreamTest {
 
     /**
      * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#read(byte[], int, int)}.
+     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#read(byte[], int, int)}.
      */
     @Test
     void test_read_bytearray_with_offset_and_length_of_30() throws Exception {
@@ -137,7 +139,7 @@ class ByteBufferInputStreamTest {
 
     /**
      * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#skip(long)}.
+     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#skip(long)}.
      */
     @Test
     void test_skip_single_buffer() throws Exception {
@@ -151,7 +153,7 @@ class ByteBufferInputStreamTest {
 
     /**
      * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#skip(long)}.
+     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#skip(long)}.
      */
     @Test
     void test_skip_across_buffers() throws Exception {
@@ -201,7 +203,7 @@ class ByteBufferInputStreamTest {
 
     /**
      * Test method for
-     * {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#available()}.
+     * {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#available()}.
      */
     @Test
     void testAvailable() throws Exception {
@@ -209,7 +211,7 @@ class ByteBufferInputStreamTest {
     }
 
     /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#close()}.
+     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#close()}.
      */
     @Test
     void testClose() throws Exception {
@@ -222,7 +224,7 @@ class ByteBufferInputStreamTest {
 
 
     /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#reset()}.
+     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#reset()}.
      */
     @Test
     void testReset() {
@@ -230,7 +232,7 @@ class ByteBufferInputStreamTest {
     }
 
     /**
-     * Test method for {@link uk.gov.gchq.palisade.client.java.download.ByteBufferInputStream#markSupported()}.
+     * Test method for {@link uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream#markSupported()}.
      */
     @Test
     void testMarkSupported() {

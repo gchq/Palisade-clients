@@ -17,6 +17,8 @@ package uk.gov.gchq.palisade.client.java.receiver;
 
 import org.slf4j.*;
 
+import javax.inject.Singleton;
+
 import java.io.InputStream;
 
 /**
@@ -25,6 +27,7 @@ import java.io.InputStream;
  * @author dbell
  * @since 0.5.0
  */
+@Singleton
 public class LoggingReceiver implements Receiver {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingReceiver.class);

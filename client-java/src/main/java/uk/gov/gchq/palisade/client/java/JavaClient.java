@@ -15,16 +15,25 @@
  */
 package uk.gov.gchq.palisade.client.java;
 
-import io.micronaut.websocket.RxWebSocketClient;
+import io.micronaut.runtime.event.annotation.EventListener;
 import org.slf4j.*;
 
+import uk.gov.gchq.palisade.client.java.download.*;
 import uk.gov.gchq.palisade.client.java.job.*;
 import uk.gov.gchq.palisade.client.java.request.*;
-import uk.gov.gchq.palisade.client.java.state.StateManager;
+import uk.gov.gchq.palisade.client.java.resource.*;
+import uk.gov.gchq.palisade.client.java.util.Bus;
 
+import javax.inject.Singleton;
+import javax.websocket.ContainerProvider;
+
+import java.net.URI;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
-import com.google.common.eventbus.EventBus;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static uk.gov.gchq.palisade.client.java.job.IJobContext.createJobContext;
 
 /**
  * <p>
@@ -39,30 +48,33 @@ import com.google.common.eventbus.EventBus;
  * @author dbell
  * @since 0.5.0
  */
+@Singleton
 public class JavaClient implements Client {
 
     private static final Logger log = LoggerFactory.getLogger(JavaClient.class);
+    private static final String EVENT_CAUGHT = "Caught event: {}";
 
     private final ClientContext clientContext;
-
-    @SuppressWarnings("unused")
-    private final RxWebSocketClient webSocketClient; // NOT used yet
+    private final Map<String, JobContext> jobs = new HashMap<>();
 
     /**
      * Create a new JavaClient injected with required services. The main injection
      * is the actual ApplicationContext that is performing the injection. Same as
      * Guice, Micronaut can inject itself, which is cool.
      *
-     * @param webSocketClient This is to be used later instead of Tyrus
      * @param clientCcontext  The {@code ApplicationContext} doing the injecting
      */
-    public JavaClient(RxWebSocketClient webSocketClient, ClientContext clientCcontext) {
-        this.clientContext = clientCcontext;
-        this.webSocketClient = webSocketClient;
+    public JavaClient(ClientContext clientCcontext) {
+        this.clientContext = Objects.requireNonNull(clientCcontext);
     }
 
     @Override
-    public Job submit(JobConfig jobConfig) {
+    public Result submit(UnaryOperator<JobConfig.Builder> func) {
+        return submit(func.apply(JobConfig.builder()).build());
+    }
+
+    @Override
+    public Result submit(JobConfig jobConfig) {
 
         log.debug("Job configuration submitted: {}", jobConfig);
 
@@ -73,43 +85,78 @@ public class JavaClient implements Client {
 
         var palisadeResponse = palisadeService.submit(palisadeRequest);
 
-        log.debug("Got response from Palisade: {}", palisadeResponse);
-
         assert palisadeResponse != null : "No response back from palisade service";
 
+        log.debug("Got response from Palisade: {}", palisadeResponse);
+
         var token = palisadeResponse.getToken();
-        var eventBus = new EventBus("bus:" + token); // each job gets its own event bus (name is good for debbugging)
-        var stateManager = clientContext.get(StateManager.class);
 
-        // we'll wrap Micronaut's ApplicationConfig as we do nor want to expose this to
-        // the client later on.
-
-        // The JobContext contains everything that is unique for this job plus the
-        // application context used to look up extra services that may be need
-
-        var jobContext = IJobContext.createJobContext(b -> b
-            .clientContext(clientContext)
+        var jobContext = createJobContext(b -> b
             .jobConfig(jobConfig)
-            .eventBus(eventBus) // create here as we could hook in if we wanted to
             .response(palisadeResponse));
 
-        Job job = new DefaultJob("job:" + token, jobContext);
+        jobs.put(token, jobContext);
 
-        // The services being registered below need to talk to each other as they are
-        // loosely coupled.
+        var resourceClient = new ResourceClient(
+            token,
+            clientContext.get(Bus.class),
+            clientContext.get(ObjectMapper.class),
+            clientContext.get(DownloadTracker.class));
 
-        eventBus.register(stateManager);
-        eventBus.register(job);
+        try {
+            var url = palisadeResponse.getUrl();
+            var container = ContainerProvider.getWebSocketContainer();
+            container.connectToServer(resourceClient, new URI(url)); // this start communication
+            log.debug("Job [{}] started", token);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         log.debug("Job created for token: {}", token);
 
-        return job;
+        return new Result() {
+
+        };
 
     }
 
-    @Override
-    public Job submit(UnaryOperator<JobConfig.Builder> func) {
-        return submit(func.apply(JobConfig.builder()).build());
+    /**
+     * Handles the {@code ResourceReadyEvent} by scheduling a download. This method
+     * will return immediately as the download will be queued.
+     *
+     * @param event The event to be handled
+     */
+    @EventListener
+    public void onScheduleDownload(ResourceReadyEvent event) {
+        var resource = event.getResource();
+        var jobContext = getJobContext(resource.getToken());
+        var receiver = jobContext.getJobConfig().getReceiverSupplier().get();
+        clientContext.get(DownloadManager.class).schedule(resource, receiver);
+    }
+
+    /**
+     * Handles a download failed event
+     *
+     * @param event The event to be handled
+     */
+    @EventListener
+    public void onFailedDownload(DownloadFailedEvent event) {
+        log.debug(EVENT_CAUGHT, event);
+        log.debug("Download failed", event.getThrowble());
+    }
+
+    /**
+     * Handles the {@code ResourcesExhaustedEvent} event.
+     *
+     * @param event to be handled
+     */
+    @EventListener
+    public void onNoMoreDownloads(ResourcesExhaustedEvent event) {
+        log.debug(EVENT_CAUGHT, event);
+    }
+
+    public JobContext getJobContext(String token) {
+        return jobs.get(token);
     }
 
     /**
@@ -153,4 +200,34 @@ public class JavaClient implements Client {
         return req;
 
     }
+
+//    /**
+//     * Handle the job complete event by shutting down the executor. This method will
+//     * block for a small amount of time for the executors to complete before
+//     * shutting down, or if the timeout occurs, it is forced to quit. Once the
+//     * executor has terminated, an end of queue flag is added to the queue to
+//     * signify that the stream should complete once all other queued downloads have
+//     * been emitted.
+//     *
+//     * @param event The event to handle
+//     */
+//    @Subscribe
+//    public void handleJobComplete(ResourcesExhaustedEvent event) {
+//        // add a Download with no input stream to the queue. This will instruct the
+//        // stream to terminate
+//        executor.shutdown();
+//        try {
+//            executor.awaitTermination(2, TimeUnit.MINUTES);
+//        } catch (InterruptedException e) {
+//            // something musty be really stuck
+//        } finally {
+//            if (executor.isTerminating()) {
+//                // we've given it enough time, so halt it
+//                @SuppressWarnings("unused")
+//                var tasks = executor.shutdownNow();
+//                // TODO: we should do something with these tasks that were not executed.
+//            }
+//        }
+//    }
+
 }

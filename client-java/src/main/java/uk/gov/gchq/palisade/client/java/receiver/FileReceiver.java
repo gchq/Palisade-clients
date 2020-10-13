@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client.java.receiver;
 
+import javax.inject.Singleton;
+
 import java.io.*;
 import java.nio.file.*;
 
@@ -24,6 +26,7 @@ import java.nio.file.*;
  * @author dbell
  * @since 0.5.0
  */
+@Singleton
 public class FileReceiver implements Receiver {
 
     /**
@@ -35,7 +38,6 @@ public class FileReceiver implements Receiver {
     @Override
     public void process(ReceiverContext receiverContext, InputStream inputStream) {
 
-        var eventBus = receiverContext.getEventBus();
         var resource = receiverContext.getResource();
 
         var token = resource.getToken();

@@ -17,13 +17,10 @@ package uk.gov.gchq.palisade.client.java.job;
 
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.function.UnaryOperator;
-
-import com.google.common.eventbus.EventBus;
 
 /**
  * <p>
@@ -50,9 +47,7 @@ public interface IJobContext {
      * {@code
      * var jobctx =
      *     createJobContext(b -> b
-     *         .applicationContext(appctx)
      *         .jobConfig(jobConfig)
-     *         .eventBus(eventBus)
      *         .response(response));
      * }
      * </pre>
@@ -65,25 +60,11 @@ public interface IJobContext {
     }
 
     /**
-     * Returns the client context
-     *
-     * @return the client context
-     */
-    ClientContext getClientContext();
-
-    /**
      * Returns the job configuration that the user provided
      *
      * @return the job configuration that the user provided
      */
     JobConfig getJobConfig();
-
-    /**
-     * Returns the event bus to be used for registration and posting of events
-     *
-     * @return the event bus to be used for registration and posting of events
-     */
-    EventBus getEventBus();
 
     /**
      * Returns the response that was returned from the Palisade Service

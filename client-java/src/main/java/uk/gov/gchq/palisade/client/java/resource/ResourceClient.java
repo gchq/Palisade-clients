@@ -15,12 +15,10 @@
  */
 package uk.gov.gchq.palisade.client.java.resource;
 
-import org.immutables.value.Value;
 import org.slf4j.*;
 
 import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
-import uk.gov.gchq.palisade.client.java.state.*;
-import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
+import uk.gov.gchq.palisade.client.java.util.Bus;
 
 import javax.websocket.*;
 
@@ -28,10 +26,8 @@ import java.io.IOException;
 import java.util.function.UnaryOperator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.eventbus.EventBus;
 
 import static uk.gov.gchq.palisade.client.java.resource.MessageType.SUBSCRIBE;
-import static uk.gov.gchq.palisade.client.java.state.StateType.*;
 
 /**
  * The {@code ResourceClient} class represents a websocket endpoint. It handles
@@ -49,47 +45,6 @@ import static uk.gov.gchq.palisade.client.java.state.StateType.*;
 public class ResourceClient {
 
     /**
-     * The configuration for the client resource
-     *
-     * @author dbell
-     * @since 0.5.0
-     */
-    @Value.Immutable
-    @ImmutableStyle
-    public interface IResourceClientConfig {
-
-        /**
-         * Returns the token
-         *
-         * @return the token
-         */
-        String getToken();
-
-        /**
-         * Returns the event bus used to post events
-         *
-         * @return the event bus used to post events
-         */
-        EventBus getEventBus();
-
-        /**
-         * returns the object mapper to use when marshalling messages
-         *
-         * @return the object mapper to use when marshalling messages
-         */
-        ObjectMapper getMapper();
-
-        /**
-         * Returns the download tracker that the resource client will use to see if any
-         * download slots are available.
-         *
-         * @return the download tracker that the resource client will use to see if any
-         *         download slots are available.
-         */
-        DownloadTracker getDownloadTracker();
-    }
-
-    /**
      * An implementation of a {@link JSONCoder} for type of {@link Message}
      *
      * @author dbell
@@ -98,23 +53,30 @@ public class ResourceClient {
     public static class MessageCode extends JSONCoder<Message> { // empty
     }
 
-    /**
-     * Helper method to create a {@link ResourceClientConfig} using a builder
-     * function
-     *
-     * @param func The builder function
-     * @return a newly created {@code RequestId}
-     */
-    public static ResourceClient createResourceClient(UnaryOperator<ResourceClientConfig.Builder> func) {
-        return new ResourceClient(func.apply(ResourceClientConfig.builder()).build());
-    }
+    private final Bus bus;
+    private final String token;
+    private final ObjectMapper objectMapper;
+    private final DownloadTracker downloadTracker;
 
     private static final Logger log = LoggerFactory.getLogger(ResourceClient.class);
-    private final ResourceClientConfig config;
+
     private Session session = null;
 
-    private ResourceClient(ResourceClientConfig config) {
-        this.config = config;
+    /**
+     * A {@code ResourceClient} manages the passing of messages to/from a websocket
+     * server
+     *
+     * @param token           The token being managed
+     * @param bus             The event bus used to post application events
+     * @param objectMapper    The json mapper
+     * @param downloadTracker the download tracker providing insight into available
+     *                        download slots
+     */
+    public ResourceClient(String token, Bus bus, ObjectMapper objectMapper, DownloadTracker downloadTracker) {
+        this.token = token;
+        this.bus = bus;
+        this.objectMapper = objectMapper;
+        this.downloadTracker = downloadTracker;
     }
 
     /**
@@ -128,9 +90,7 @@ public class ResourceClient {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
         log.debug("Session {} opened", session.getId());
         this.session = session;
-        var token = config().getToken();
         sendMessage(b -> b.type(SUBSCRIBE).token(token));
-        post(StateChangeEvent.of(token, SUBSCRIBING));
     }
 
     /**
@@ -170,7 +130,6 @@ public class ResourceClient {
     }
 
     private void handleSubscribed(String token) {
-        post(StateChangeEvent.of(token, StateType.SUBSCRIBED));
     }
 
     private void handleAck(String token) { // noop
@@ -180,7 +139,7 @@ public class ResourceClient {
         log.debug("handle RTS for token {}", token);
         // This is a quite crude way of waiting for download slots to become available
         // Should implement a better way, but this will do for now.
-        while (!config.getDownloadTracker().hasAvailableSlots()) {
+        while (!downloadTracker.hasAvailableSlots()) {
             try {
                 log.debug("no download slots available, waiting");
                 Thread.sleep(1000);
@@ -188,21 +147,18 @@ public class ResourceClient {
             }
         }
         sendMessage(b -> b.type(MessageType.CTS).token(token));
-        post(StateChangeEvent.of(token, CTS));
     }
 
     private void handleResource(String token, Message message) {
         log.debug("handle resource for token {}, message: {}", token, message);
         var body = message.getBody().orElseThrow(() -> new MissingResourceException(message));
-        var resource = config().getMapper().convertValue(body, Resource.class);
-        post(ResourceReadyEvent.of(token, resource));
-        post(StateChangeEvent.of(token, RESOURCE));
+        var resource = objectMapper.convertValue(body, Resource.class);
+        post(ResourceReadyEvent.of(resource));
     }
 
     private void handleComplete(String token) {
         log.debug("handle Complete for token {}", token);
         post(ResourcesExhaustedEvent.of(token));
-        post(StateChangeEvent.of(token, COMPLETE));
     }
 
     private void sendMessage(UnaryOperator<Message.Builder> func) {
@@ -218,11 +174,7 @@ public class ResourceClient {
 
     private void post(Object event) {
         log.debug("Posting event: {}", event);
-        config.getEventBus().post(event);
-    }
-
-    private ResourceClientConfig config() {
-        return this.config;
+        bus.post(event);
     }
 
 }

@@ -16,6 +16,7 @@
 package uk.gov.gchq.palisade.client.java.download;
 
 import io.micronaut.context.annotation.Property;
+import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.*;
@@ -30,40 +31,35 @@ import javax.inject.Inject;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import com.google.common.eventbus.EventBus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author dbell
+ */
 @MicronautTest
 @Property(name = "palisade.client.url", value = DownloaderTest.BASE_URL)
 @Property(name = "micronaut.server.port", value = DownloaderTest.PORT)
-class DownloaderTest {
+public class DownloaderTest implements ApplicationEventListener<DownloadCompleteEvent> {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(DownloaderTest.class);
 
     static final String PORT = "8083";
     static final String BASE_URL = "http://localhost:8083";
 
-    private EventBus eventBus;
-    private LinkedBlockingQueue<InputStream> queue;
-
     @Inject
     EmbeddedServer embeddedServer;
 
+    private static DownloadCompleteEvent event;
+
     @BeforeEach
-    public void setup() {
+    void setup() {
+        embeddedServer.start();
+    }
 
-        /*
-         * We register this test with the event bus that the downloader will use. Once
-         * the downloader posts the event, this test will catch the result
-         */
-
-        this.eventBus = new EventBus();
-        this.eventBus.register(this);
-        this.queue = new LinkedBlockingQueue<InputStream>(1);
-
+    @AfterEach
+    void teardown() {
+        embeddedServer.stop();
     }
 
     @Test
@@ -80,13 +76,11 @@ class DownloaderTest {
             }
         };
 
-        var downloader = Downloader.create(b -> b
-            .clientContext(clientCtx)
-            .receiverSupplier(() -> new FileReceiver())
-            .eventBus(eventBus)
-            .resource(resource));
+        var downloader = new Downloader(clientCtx, resource, new FileReceiver());
 
         downloader.run();
+
+        log.debug("test says downloder.run() has finished");
 
         var actual_is = new FileInputStream(new File("/tmp/pal-" + token + "-" + filename));
         var expected_is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
@@ -99,7 +93,15 @@ class DownloaderTest {
 
         assertThat(isEqual(actual_is, expected_is)).isTrue();
 
+        // now check that an event was thrown
+
+        log.debug("test the event");
+
+        assertThat(event).isNotNull();
+        assertThat(event.getResource()).isEqualTo(resource);
+
     }
+
 
     private static boolean isEqual(InputStream i1, InputStream i2) throws IOException {
 
@@ -135,6 +137,12 @@ class DownloaderTest {
             if (i2 != null)
                 i2.close();
         }
+    }
+
+    @Override
+    public void onApplicationEvent(DownloadCompleteEvent event1) {
+        this.event = event1;
+        log.debug("caught: {}", event1);
     }
 
 }

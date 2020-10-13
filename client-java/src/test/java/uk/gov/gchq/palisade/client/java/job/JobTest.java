@@ -18,11 +18,15 @@ package uk.gov.gchq.palisade.client.java.job;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.junit.jupiter.api.Test;
+import org.glassfish.tyrus.server.Server;
+import org.junit.jupiter.api.*;
 
 import uk.gov.gchq.palisade.client.java.*;
+import uk.gov.gchq.palisade.client.java.resource.ServerSocket;
 
 import javax.inject.Inject;
+
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,9 +37,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Property(name = "micronaut.server.port", value = "8081")
 class JobTest {
 
-    @Inject Client client;
+    private static final int WS_PORT = 8082;
+    private static final String WS_HOST = "localhost";
+
+    @Inject Client rawClient;
     @Inject ObjectMapper objectMapper;
     @Inject EmbeddedServer embeddedServer;
+
+    private Server server;
+
+    @BeforeEach
+    void setup() throws Exception {
+        server = new Server(WS_HOST, WS_PORT, "/", Map.of(), ServerSocket.class);
+        server.start();
+        embeddedServer.start();
+    }
+
+    @AfterEach
+    void tearDown() {
+        server.stop();
+        embeddedServer.stop();
+    }
 
     @Test
     void test_new_job_creation() throws Exception {
@@ -47,12 +69,11 @@ class JobTest {
                 .resourceId("resource_id")
                 .userId("user_id"));
 
-        var job = (DefaultJob) client.submit(config);
+        JavaClient client = (JavaClient) rawClient;
 
-        assertThat(job).isNotNull();
-        assertThat(job.getId()).isEqualTo("job:abcd-1");
+        var result = client.submit(config);
 
-        var jobContext = job.getContext();
+        var jobContext = client.getJobContext("abcd-1");
 
         assertThat(jobContext).isNotNull();
 
@@ -65,11 +86,6 @@ class JobTest {
 //        assertThat(response)
 //            .hasToken("abcd-1")
 //            .hasUrl("ws://localhost:8082/name");
-
-        var bus = jobContext.getEventBus();
-
-        assertThat(bus).isNotNull();
-        assertThat(bus.identifier()).isEqualTo("bus:abcd-1");
 
         var jobConfig = jobContext.getJobConfig();
 

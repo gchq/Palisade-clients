@@ -22,7 +22,7 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 
 /**
  * <p>
- * A {@code DownloadReadyEvent} is posted to the event bus after a successful
+ * A {@code DownloadCompleteEvent} is posted to the event bus after a successful
  * response from the Data Service. At the time of posting, the actual download
  * has not started yet. This event contains the input stream to be cosumed whhen
  * downloading starts.
@@ -33,7 +33,8 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
  * example, an instance can be generated in the following way.
  *
  * <pre>
- * {@code
+ * {
+ *     &#64;code
  *     var event = DownloadReadyEvent.of("token", resource, inputStream);
  * }
  * </pre>
@@ -46,13 +47,6 @@ import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 @Value.Immutable
 @TupleStyle
 public interface IDownloadCompleteEvent {
-
-    /**
-     * Returns the token to which this event is associated
-     *
-     * @return the token to which this event is associated
-     */
-    String getToken();
 
     /**
      * Returns the resource to be downloaded
