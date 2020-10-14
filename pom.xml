@@ -153,20 +153,8 @@
                     <header>Palisade ${project.version}</header>
                     <footer>Palisade ${project.version}</footer>
                     <doctitle>Palisade ${project.version}</doctitle>
-                    <tags>
-                        <tag>
-                            <name>apiNote</name>
-                            <placement>a</placement>
-                            <head>API Note:</head>
-                        </tag>
-                        <tag>
-                            <name>implNote</name>
-                            <placement>a</placement>
-                            <head>Implementation note:</head>
-                        </tag>
-                    </tags>
                 </configuration>
-                <executions>
+<!--                 <executions>
                     <execution>
                         <id>javadoc-compile</id>
                         <phase>compile</phase>
@@ -189,7 +177,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+ -->            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
