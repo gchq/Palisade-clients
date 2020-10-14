@@ -22,6 +22,7 @@ import org.immutables.value.Value;
 import uk.gov.gchq.palisade.client.java.request.UserId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -45,7 +46,7 @@ import java.util.function.UnaryOperator;
 @ImmutableStyle
 @JsonDeserialize(as = Message.class)
 @JsonSerialize(as = Message.class)
-public interface IMessage {
+public interface IMessage extends Serializable {
 
     /**
      * Helper method to create a {@link Message} using a builder function

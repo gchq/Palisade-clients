@@ -148,7 +148,7 @@ public class ByteBufferInputStream extends InputStream {
     public long skip(final long n) throws IOException {
 
         if (closed) {
-            throw new IOException("tried to access to closed stream");
+            throw new IOException(CLOSED_STREAM_MSG);
         }
 
         if (n <= 0) {
@@ -168,7 +168,7 @@ public class ByteBufferInputStream extends InputStream {
             var rem = bb.remaining();
             if (rem > l) {
                 bb.position(bb.position() + l);
-                return c + l;
+                return (long) c + l;
             }
             this.buff = ByteBuffer.allocate(0);
             assert bb.remaining() == 0 : "must have no bytes left in current bytebuffer";
@@ -229,6 +229,9 @@ public class ByteBufferInputStream extends InputStream {
             }
             if (iterator.hasNext()) {
                 buff = iterator.next();
+            }
+            if (buff == null) {
+                buff = ByteBuffer.allocate(0);
             }
         }
         return buff;

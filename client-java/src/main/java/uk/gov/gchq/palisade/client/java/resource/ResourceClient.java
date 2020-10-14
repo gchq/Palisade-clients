@@ -154,6 +154,9 @@ public class ResourceClient {
                 LOG.debug("no download slots available, waiting");
                 Thread.sleep(1000);
             } catch (InterruptedException e) { // just swallow this
+                Thread.currentThread().interrupt();
+                LOG.warn("This thread was sleeping, when it was interrupted: {}", e.getMessage());
+                // we'll loop round to see if there are any available slots
             }
         }
         sendMessage(b -> b.type(MessageType.CTS).token(token));

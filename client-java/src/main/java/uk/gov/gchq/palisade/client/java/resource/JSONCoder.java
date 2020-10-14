@@ -54,12 +54,7 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
     /**
      * Store the object mapper in each thread
      */
-    private final ThreadLocal<ObjectMapper> mapper = new ThreadLocal<>() {
-        @Override
-        protected ObjectMapper initialValue() {
-            return new ObjectMapper().registerModule(new Jdk8Module());
-        }
-    };
+    private static final ObjectMapper MAPPER = new ObjectMapper().registerModule(new Jdk8Module());
 
     @SuppressWarnings("unchecked")
     @Override
@@ -75,12 +70,12 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
 
     @Override
     public void encode(final T object, final Writer writer) throws EncodeException, IOException {
-        mapper.get().writeValue(writer, object);
+        MAPPER.writeValue(writer, object);
     }
 
     @Override
     public T decode(final Reader reader) throws DecodeException, IOException {
-        return mapper.get().readValue(reader, type);
+        return MAPPER.readValue(reader, type);
     }
 
     @Override

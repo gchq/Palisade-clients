@@ -25,8 +25,6 @@ import uk.gov.gchq.palisade.client.java.ClientException;
 import uk.gov.gchq.palisade.client.java.download.DownloadManager;
 import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
 import uk.gov.gchq.palisade.client.java.request.PalisadeClient;
-import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
-import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.java.request.PalisadeServiceClient;
 
 import javax.inject.Singleton;
@@ -55,23 +53,19 @@ public class DIFactory {
      */
     @Singleton
     public PalisadeClient createPalisadeClient(final ClientConfig clientConfig, final PalisadeServiceClient prc) {
-        return new PalisadeClient() {
-            @Override
-            public PalisadeResponse submit(final PalisadeRequest request) {
-                var httpResponse = prc.registerDataRequestSync(request);
-                try {
-                    var opt = httpResponse.getBody();
-                    if (!opt.isPresent()) {
-                        var url = clientConfig.getClient().getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
-                        var code = httpResponse.code();
-                        throw new ClientException(String.format("Request to %s failed with status %s", url, code));
-                    }
-                    var response = opt.get();
-                    return response;
-                } catch (Exception e) {
-                    String msg = "Request to palisade failed";
-                    throw new ClientException(msg, e);
+        return (request) -> {
+            var httpResponse = prc.registerDataRequestSync(request);
+            try {
+                var opt = httpResponse.getBody();
+                if (!opt.isPresent()) {
+                    var url = clientConfig.getClient().getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
+                    var code = httpResponse.code();
+                    throw new ClientException(String.format("Request to %s failed with status %s", url, code));
                 }
+                return opt.get();
+            } catch (Exception e) {
+                String msg = "Request to palisade failed";
+                throw new ClientException(msg, e);
             }
         };
     }
