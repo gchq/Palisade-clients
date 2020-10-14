@@ -146,7 +146,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
             } catch (final CompletionException e) {
                 //something went wrong while fetching the next resource, what we do now depends on the user choice of how
                 //they want to handle errors, either way we need to log the error
-                LOGGER.warn("Failed to connect to resource {} due to {}", errResource, e.getCause());
+                LOGGER.warn("Failed to connect to resource {} due to {}", errResource, e.getCause().getMessage());
                 LOGGER.warn("Failure exception is", e);
                 errResource = null;
                 //notify via counter
@@ -178,18 +178,17 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
         //do we have a resource iterator?
         if (resIt == null) {
             return false;
-        } else {
-            //any resources left to process?
-            if (resIt.hasNext()) {
-                //set up the next resource
-//                setupItemStream();
-                return true;
-            } else {
-                //end of things to be iterated
-                resIt = null;
-                return false;
-            }
         }
+        // any resources left to process?
+        if (resIt.hasNext()) {
+            // set up the next resource
+            // setupItemStream();
+            return true;
+        }
+        // end of things to be iterated
+        resIt = null;
+        return false;
+
     }
 
     /**
@@ -261,8 +260,8 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     @Generated
     public float getProgress() {
         return (dataRequestResponse != null && dataRequestResponse.getResources().size() > 0)
-                ? (float) processed / dataRequestResponse.getResources().size()
-                : 0;
+            ? processed / dataRequestResponse.getResources().size()
+            : 0;
     }
 
     /**
