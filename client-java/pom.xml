@@ -28,7 +28,7 @@
     </parent>
 
 		<artifactId>client-java</artifactId>
-		<name>clients</name>
+		<name>clients-java</name>
 		<description>Java standalone client</description>
 		<url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
 
