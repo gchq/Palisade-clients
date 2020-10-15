@@ -117,6 +117,8 @@ public class ByteBufferInputStream extends InputStream {
         int o = off; // relative offset
         int c = 0; // current byte count
 
+        int r = 0; // the return
+
         while (l > 0) {
             var rem = bb.remaining();
 
@@ -125,7 +127,7 @@ public class ByteBufferInputStream extends InputStream {
                     throw new IOException(
                         "We have some bytes remaining where we should not have any. This could be a bug");
                 }
-                return c;
+                break; // return c;
             }
 
             if (rem > l) {
@@ -224,10 +226,6 @@ public class ByteBufferInputStream extends InputStream {
             this.iterator = flowable.blockingIterable().iterator();
         }
         if (buff == null || buff.remaining() == 0) {
-            if (buff != null) {
-                // TODO: This is where we should be releasing the buffers memory allocation, but
-                // there does not seem to be a way to do so.
-            }
             if (iterator.hasNext()) {
                 buff = iterator.next();
             }

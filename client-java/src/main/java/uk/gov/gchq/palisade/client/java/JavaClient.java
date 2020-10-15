@@ -140,6 +140,7 @@ public class JavaClient implements Client {
      *
      * @param event The event to be handled
      */
+    @SuppressWarnings("java:S3242")
     @EventListener
     public void onScheduleDownload(final ResourceReadyEvent event) {
         var resource = event.getResource();

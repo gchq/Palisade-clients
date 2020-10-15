@@ -140,10 +140,12 @@ public class ResourceClient {
         }
     }
 
+    @SuppressWarnings("java:S1941")
     private void handleSubscribed(final String token) {
         LOG.debug("handleSubscribed is currently a noop, token: {}", token);
     }
 
+    @SuppressWarnings("java:S1941")
     private void handleAck(final String token) {
         LOG.debug("handleAck is currently a noop, token: {}", token);
     }
@@ -177,7 +179,7 @@ public class ResourceClient {
         post(ResourcesExhaustedEvent.of(token));
     }
 
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    @SuppressWarnings({ "java:S3242", "java:S1135" }) // I REALLY want to use UnaryOperator here SonarQube!!!
     private void sendMessage(final UnaryOperator<Message.Builder> func) {
         var message = func.apply(Message.builder()).build();
         try {

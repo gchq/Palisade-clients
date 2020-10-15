@@ -87,7 +87,7 @@ class ResourceClientTest implements ApplicationEventListener<ResourceReadyEvent>
 
     @Disabled("skipped as this test fails intermittently")
     @Test
-    void test() throws Exception {
+    void testMessageFlow() throws Exception {
         startClient();
         awaitEvents();
         assertThat(eventCount).isEqualTo(2);

@@ -25,6 +25,7 @@ import uk.gov.gchq.palisade.client.java.ClientException;
 import uk.gov.gchq.palisade.client.java.download.DownloadManager;
 import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
 import uk.gov.gchq.palisade.client.java.request.PalisadeClient;
+import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.java.request.PalisadeServiceClient;
 
 import javax.inject.Singleton;
@@ -53,7 +54,7 @@ public class DIFactory {
      */
     @Singleton
     public PalisadeClient createPalisadeClient(final ClientConfig clientConfig, final PalisadeServiceClient prc) {
-        return request -> {
+        return (final PalisadeRequest request) -> {
             var httpResponse = prc.registerDataRequestSync(request);
             var opt = httpResponse.getBody();
             if (!opt.isPresent()) {

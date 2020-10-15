@@ -34,7 +34,7 @@ class ResourceSerialisationTest {
     }
 
     @Test
-    void test_Message_serialisation() throws Exception {
+    void testMessageSerialisation() throws Exception {
         var expected = IMessage.create(b -> b
             .token("token")
             .type(MessageType.RESOURCE)
@@ -46,7 +46,7 @@ class ResourceSerialisationTest {
     }
 
     @Test
-    void test_Resource_serialisation() throws Exception {
+    void testResourceSerialisation() throws Exception {
         var expected = IResource.create(b -> b
             .token("token")
             .leafResourceId("leaf-reource-id")
