@@ -19,6 +19,8 @@ import io.micronaut.context.event.ApplicationEventPublisher;
 
 import uk.gov.gchq.palisade.client.java.util.Bus;
 
+import java.util.Optional;
+
 /**
  * The main context for the client providing access to the internal registry,
  * the configuration and the event bus
@@ -33,8 +35,18 @@ public interface ClientContext extends Bus {
      * @param <T>  The type
      * @param type The type class
      * @return an instance of {@code type} from the client context
+     * @throws ClientException if an instance of {@code type} cannot be found
      */
     <T> T get(Class<T> type);
+
+    /**
+     * Returns an optional of {@code type} from the client context or empty if null
+     *
+     * @param <T>  The type
+     * @param type The type class
+     * @return an instance of {@code type} from the client context
+     */
+    <T> Optional<T> find(Class<T> type);
 
     /**
      * Returns the client configuration

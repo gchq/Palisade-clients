@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.java.util;
 import io.micronaut.context.BeanLocator;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.event.ApplicationEventPublisher;
+import io.micronaut.context.exceptions.NoSuchBeanException;
 
 import uk.gov.gchq.palisade.client.java.ClientConfig;
 import uk.gov.gchq.palisade.client.java.ClientContext;
@@ -29,6 +30,8 @@ import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.java.request.PalisadeServiceClient;
 
 import javax.inject.Singleton;
+
+import java.util.Optional;
 
 /**
  * This is the factory for any services that are injected via the DI framework.
@@ -75,12 +78,21 @@ public class DIFactory {
      *         {@code ApplicationContext} and methods which are not needed.
      */
     @Singleton
-    @SuppressWarnings("java:s1604") // cannot make a lambda as ClientContext::get is generic!
     public ClientContext createClientContext(final BeanLocator applicationContext) {
         return new ClientContext() {
+
             @Override
             public <T> T get(final Class<T> type) {
-                return applicationContext.getBean(type);
+                try {
+                    return applicationContext.getBean(type);
+                } catch (NoSuchBeanException nsbe) {
+                    throw new ClientException("Could not find type in underlying context", nsbe);
+                }
+            }
+
+            @Override
+            public <T> Optional<T> find(final Class<T> type) {
+                return applicationContext.findBean(type);
             }
         };
     }

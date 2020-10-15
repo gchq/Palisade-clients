@@ -56,6 +56,9 @@ class DownloaderTest implements ApplicationEventListener<DownloadCompleteEvent> 
     @Inject
     EmbeddedServer embeddedServer;
 
+    @Inject
+    ClientContext clientCtx;
+
     private static DownloadCompleteEvent event;
 
     @BeforeEach
@@ -74,13 +77,6 @@ class DownloaderTest implements ApplicationEventListener<DownloadCompleteEvent> 
         var token = "abcd-1";
         var filename = "Selection_032.png";
         var resource = IResource.create(b -> b.leafResourceId(filename).token(token).url(BASE_URL));
-
-        var appctx = embeddedServer.getApplicationContext();
-        ClientContext clientCtx = new ClientContext() {
-            @Override public <T> T get(final Class<T> type) {
-                return appctx.getBean(type);
-            }
-        };
 
         var downloader = new Downloader(clientCtx, resource, new FileReceiver());
 
