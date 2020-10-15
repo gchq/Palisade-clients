@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.java.download;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +33,8 @@ class DataRequestSerialisationTest {
     }
 
     @Test
-    void test_DataRequest_serialisation() throws Exception {
+    @DisplayName("Test DataRequest [De]Serialisation")
+    void testDataRequestSerialisation() throws Exception {
         var expected = IDataRequest.create(b -> b
             .token("blah")
             .leafResourceId("leaf-resource-id"));

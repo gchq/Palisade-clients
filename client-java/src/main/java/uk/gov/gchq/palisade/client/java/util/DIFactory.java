@@ -15,7 +15,7 @@
  */
 package uk.gov.gchq.palisade.client.java.util;
 
-import io.micronaut.context.ApplicationContext;
+import io.micronaut.context.BeanLocator;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.event.ApplicationEventPublisher;
 
@@ -55,18 +55,13 @@ public class DIFactory {
     public PalisadeClient createPalisadeClient(final ClientConfig clientConfig, final PalisadeServiceClient prc) {
         return request -> {
             var httpResponse = prc.registerDataRequestSync(request);
-            try {
-                var opt = httpResponse.getBody();
-                if (!opt.isPresent()) {
-                    var url = clientConfig.getClient().getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
-                    var code = httpResponse.code();
-                    throw new ClientException(String.format("Request to %s failed with status %s", url, code));
-                }
-                return opt.get();
-            } catch (Exception e) {
-                String msg = "Request to palisade failed";
-                throw new ClientException(msg, e);
+            var opt = httpResponse.getBody();
+            if (!opt.isPresent()) {
+                var url = clientConfig.getClient().getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
+                var code = httpResponse.code();
+                throw new ClientException(String.format("Request to %s failed with status %s", url, code));
             }
+            return opt.get();
         };
     }
 
@@ -80,7 +75,7 @@ public class DIFactory {
      */
     @Singleton
     @SuppressWarnings("java:s1604") // cannot make a lambda as ClientContext::get is generic!
-    public ClientContext createClientContext(final ApplicationContext applicationContext) {
+    public ClientContext createClientContext(final BeanLocator applicationContext) {
         return new ClientContext() {
             @Override
             public <T> T get(final Class<T> type) {

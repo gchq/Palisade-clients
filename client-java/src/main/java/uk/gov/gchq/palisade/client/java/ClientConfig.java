@@ -95,7 +95,8 @@ public class ClientConfig {
 
         private int threads = 1;
 
-        @SuppressWarnings("java:S1075") // this is a default uri which can then be overriden. this is OK.
+        // this is a default uri which can then be overridden. this is OK.
+        @SuppressWarnings("java:S1075")
         private String path = "/tmp";
 
         /**

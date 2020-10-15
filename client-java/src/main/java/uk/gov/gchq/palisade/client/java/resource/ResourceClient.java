@@ -56,14 +56,16 @@ public class ResourceClient {
     public static class MessageCode extends JSONCoder<Message> { // empty
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceClient.class);
+    private static final long ONE_SECOND = 1000L;
+
     private final Bus bus;
     private final String token;
     private final ObjectMapper objectMapper;
     private final DownloadTracker downloadTracker;
 
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceClient.class);
 
-    private Session session = null;
+    private Session session;
 
     /**
      * A {@code ResourceClient} manages the passing of messages to/from a websocket
@@ -133,14 +135,17 @@ public class ResourceClient {
         } else if (type == MessageType.COMPLETE) {
             handleComplete(tkn);
         } else {
-            // TODO: handle unsupported message type
+            // ignore the unsupported message
+            LOG.warn("Ignoring unsupported {} message type", type);
         }
     }
 
-    private void handleSubscribed(@SuppressWarnings("unused") final String token) { // empty (here for completeness)
+    private void handleSubscribed(final String token) {
+        LOG.debug("handleSubscribed is currently a noop, token: {}", token);
     }
 
-    private void handleAck(@SuppressWarnings("unused") final String token) { // noop
+    private void handleAck(final String token) {
+        LOG.debug("handleAck is currently a noop, token: {}", token);
     }
 
     private void handleReadyToSend(final String token) {
@@ -150,7 +155,7 @@ public class ResourceClient {
         while (!downloadTracker.hasAvailableSlots()) {
             try {
                 LOG.debug("no download slots available, waiting");
-                Thread.sleep(1000);
+                Thread.sleep(ONE_SECOND);
             } catch (InterruptedException e) { // just swallow this
                 Thread.currentThread().interrupt();
                 LOG.warn("This thread was sleeping, when it was interrupted: {}", e.getMessage());
@@ -179,8 +184,8 @@ public class ResourceClient {
             this.session.getBasicRemote().sendObject(message);
             LOG.debug("Sent: {}", message);
         } catch (IOException | EncodeException e) {
-            // TODO need to handle this one
-            e.printStackTrace();
+            // TODO: we should add this fail to a result object
+            LOG.warn("Failed to send message: {}", message, e);
         }
     }
 

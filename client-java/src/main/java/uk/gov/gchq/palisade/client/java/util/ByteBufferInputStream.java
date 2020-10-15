@@ -41,7 +41,7 @@ public class ByteBufferInputStream extends InputStream {
     private Iterator<ByteBuffer> iterator;
 
     private ByteBuffer buff = EMPTY_BUFFER;
-    private boolean closed = false;
+    private boolean closed;
 
     /**
      * Returns a newly created {@code ByteBufferInputStream} with the provided

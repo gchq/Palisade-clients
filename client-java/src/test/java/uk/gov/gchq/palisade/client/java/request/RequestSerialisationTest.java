@@ -34,7 +34,7 @@ class RequestSerialisationTest {
     }
 
     @Test
-    void test_PalisadeResponse_serialisation() throws Exception {
+    void testPalisadeResponseSserialisation() throws Exception {
         var expected = IPalisadeResponse.create(b -> b
             .token("blah")
             .url("url"));
@@ -44,7 +44,7 @@ class RequestSerialisationTest {
     }
 
     @Test
-    void test_PalisadeRequest_serialisation() throws Exception {
+    void testPalisadeRequestSerialisation() throws Exception {
         var expected = PalisadeRequest.builder()
             .resourceId("resourceId")
             .userId(UserId.builder()

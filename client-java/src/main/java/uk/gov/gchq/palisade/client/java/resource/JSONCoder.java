@@ -56,16 +56,9 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
      */
     private static final ObjectMapper MAPPER = new ObjectMapper().registerModule(new Jdk8Module());
 
-    @SuppressWarnings("unchecked")
     @Override
     public void init(final EndpointConfig endpointConfig) {
-        ParameterizedType thisClass = (ParameterizedType) this.getClass().getGenericSuperclass();
-        Type typeT = thisClass.getActualTypeArguments()[0];
-        if (typeT instanceof Class) {
-            type = (Class<T>) typeT;
-        } else if (typeT instanceof ParameterizedType) {
-            type = (Class<T>) ((ParameterizedType) typeT).getRawType();
-        }
+        type = getType();
     }
 
     @Override
@@ -80,6 +73,21 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
 
     @Override
     public void destroy() { // empty
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<T> getType() {
+        Class<T> cls = null;
+        ParameterizedType thisClass = (ParameterizedType) this.getClass().getGenericSuperclass();
+        Type typeT = thisClass.getActualTypeArguments()[0];
+        if (typeT instanceof Class) {
+            cls = (Class<T>) typeT;
+        } else if (typeT instanceof ParameterizedType) {
+            cls = (Class<T>) ((ParameterizedType) typeT).getRawType();
+        } else {
+            throw new IllegalStateException("This object is an unknown type. This should not happen");
+        }
+        return cls;
     }
 
 }

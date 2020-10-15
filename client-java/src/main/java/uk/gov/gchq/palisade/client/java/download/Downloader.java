@@ -102,12 +102,6 @@ public class Downloader implements Runnable {
                 .token(token)
                 .leafResourceId(resource.getLeafResourceId()));
 
-            var request = HttpRequest
-                .POST("/read/chunked", body)
-                .contentType(APPLICATION_JSON_TYPE)
-                .accept(APPLICATION_OCTET_STREAM_TYPE);
-
-            LOG.debug("Making request to: {}, ", url);
 
             // instead of posting the flowable in an event, we should get hole of a
             // "Receiver" from the DownloadConfig
@@ -123,6 +117,13 @@ public class Downloader implements Runnable {
                     return clientContext.get(type);
                 }
             };
+
+            var request = HttpRequest
+                .POST("/read/chunked", body)
+                .contentType(APPLICATION_JSON_TYPE)
+                .accept(APPLICATION_OCTET_STREAM_TYPE);
+
+            LOG.debug("Making request to: {}, ", url);
 
             var flowable = client
                 .dataStream(request)

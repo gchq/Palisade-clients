@@ -50,7 +50,7 @@ public class FileReceiver implements Receiver {
         try {
             write(inputStream, outFilename);
         } catch (IOException e) {
-            throw new ReceiverException(resource, "Failed to write downloaded resource to " + outFilename);
+            throw new ReceiverException(resource, "Failed to write downloaded resource to " + outFilename, e);
         }
 
     }

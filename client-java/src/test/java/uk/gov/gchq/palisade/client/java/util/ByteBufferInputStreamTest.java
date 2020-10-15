@@ -54,7 +54,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_read_bytearray_4_chars() throws Exception {
+    void testReadByteArray4Chars() throws Exception {
         var ba = new byte[4];
         int read = is.read(ba);
         assertThat(read).isEqualTo(4);
@@ -62,7 +62,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_read_bytearray_8_chars() throws Exception {
+    void testReadByteArray8Chars() throws Exception {
         var ba = new byte[8];
         int read = is.read(ba);
         assertThat(read).isEqualTo(8);
@@ -70,7 +70,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_read_bytearray_30_chars() throws Exception {
+    void testReadByteArray30Chars() throws Exception {
         var ba = new byte[30];
         int read = is.read(ba);
         assertThat(read).isEqualTo(26);
@@ -78,7 +78,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_read_bytearray_26_chars() throws Exception {
+    void testReadByteArray2Chars() throws Exception {
         var ba = new byte[30];
         int read = is.read(ba);
         assertThat(read).isEqualTo(26);
@@ -86,7 +86,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_read_bytearray_with_offset_and_length_of_4() throws Exception {
+    void testReadByteArrayWithOffsetAndLengthOf4() throws Exception {
         var ba = "11111111".getBytes();
         int read = is.read(ba, 4, 4);
         assertThat(read).isEqualTo(4);
@@ -95,7 +95,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_read_bytearray_with_offset_and_length_of_30() throws Exception {
+    void testReadByteArrayWithOffsetAndLengthOf30() throws Exception {
         var ba = "111111111111111111111111111111".getBytes();
         int read = is.read(ba, 0, 30);
         assertThat(read).isEqualTo(26);
@@ -104,7 +104,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_skip_single_buffer() throws Exception {
+    void testSkipSingleBuffer() throws Exception {
         long skipped = is.skip(2);
         assertThat(skipped).isEqualTo(2);
         var ba = "11".getBytes();
@@ -114,7 +114,7 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_skip_across_buffers() throws Exception {
+    void testSkipAcrossBuffers() throws Exception {
         long skipped = is.skip(2);
         assertThat(skipped).isEqualTo(2);
         var ba = "1111".getBytes();
@@ -124,25 +124,25 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void test_read_all() throws Exception {
+    void testReadAll() throws Exception {
         var ba = is.readAllBytes();
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
 
     @Test
-    void test_read_n_bytes() throws Exception {
+    void testReadNBytes() throws Exception {
         var ba = is.readNBytes(13);
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklm");
     }
 
     @Test
-    void test_read_n_bytes_all() throws Exception {
+    void testReadNBytesAll() throws Exception {
         var ba = is.readNBytes(26);
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
 
     @Test
-    void test_read_n_bytes_all_extra() throws Exception {
+    void testReadNBytesAllExtra() throws Exception {
         var ba = is.readNBytes(27);
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
@@ -160,7 +160,6 @@ class ByteBufferInputStreamTest {
         assertThatExceptionOfType(IOException.class).isThrownBy(() -> is.read(new byte[8], 0, 4));
         assertThatExceptionOfType(IOException.class).isThrownBy(() -> is.read(new byte[8], 0, 4));
     }
-
 
     @Test
     void testReset() {

@@ -38,38 +38,12 @@ import java.util.concurrent.TimeUnit;
  * @since 0.5.0
  */
 @Singleton
-public class DownloadManager {
+public class DownloadManager implements DownloadTracker {
 
     private static final Logger LOG = LoggerFactory.getLogger(DownloadManager.class);
 
     private final ThreadPoolExecutor executor;
     private final ClientContext clientContext;
-
-
-    private final DownloadTracker downloadTracker = new DownloadTracker() {
-
-        @Override
-        public int getAvaliableSlots() {
-            return executor.getMaximumPoolSize() - executor.getActiveCount();
-        }
-
-        @Override
-        public boolean hasAvailableSlots() {
-            LOG.debug("free slots: {}", getAvaliableSlots());
-            return getAvaliableSlots() > 0;
-        }
-
-        @Override
-        public ManagerStatus getStatus() {
-            if (executor.isTerminating()) {
-                return ManagerStatus.SHUTTING_DOWN;
-            } else if (executor.isShutdown()) {
-                return ManagerStatus.SHUT_DOWN;
-            } else {
-                return ManagerStatus.ACTIVE;
-            }
-        }
-    };
 
     /**
      * Create a new DownloadManager with the the provided {@code ClientContext}
@@ -102,8 +76,28 @@ public class DownloadManager {
      * @return the download tracker for this download manager
      */
     public DownloadTracker getDownloadTracker() {
-        return this.downloadTracker;
+        return this;
     }
 
+    @Override
+    public int getAvaliableSlots() {
+        return executor.getMaximumPoolSize() - executor.getActiveCount();
+    }
+
+    @Override
+    public boolean hasAvailableSlots() {
+        return getAvaliableSlots() > 0;
+    }
+
+    @Override
+    public ManagerStatus getStatus() {
+        if (executor.isTerminating()) {
+            return ManagerStatus.SHUTTING_DOWN;
+        } else if (executor.isShutdown()) {
+            return ManagerStatus.SHUT_DOWN;
+        } else {
+            return ManagerStatus.ACTIVE;
+        }
+    }
 
 }

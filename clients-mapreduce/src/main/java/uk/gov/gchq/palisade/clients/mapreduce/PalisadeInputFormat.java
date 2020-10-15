@@ -343,7 +343,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
      * @throws IOException          if de-serialisation could not happen
      * @throws NullPointerException if parameter is null
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S2658" })
     @Generated
     public static <V> Serialiser<V> getSerialiser(final Configuration conf) throws IOException {
         String serialConfig = conf.get(SERLIALISER_CONFIG_KEY);
@@ -359,7 +359,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
 
         //try to deserialise
         try {
-            return (Serialiser<V>) JSONSerialiser.deserialise(serialConfig, Class.forName(className).asSubclass(Serialiser.class));
+            return JSONSerialiser.deserialise(serialConfig, Class.forName(className).asSubclass(Serialiser.class));
         } catch (Exception e) {
             throw new IOException("Couldn't create serialiser", e);
         }

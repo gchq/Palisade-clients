@@ -63,7 +63,7 @@ class JobTest {
     }
 
     @Test
-    void test_new_job_creation() throws Exception {
+    void testNewJobCreation() throws Exception {
 
         var config = IJobConfig.create(b -> b
                 .classname("classname")

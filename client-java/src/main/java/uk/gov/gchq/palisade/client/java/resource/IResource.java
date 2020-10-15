@@ -54,6 +54,7 @@ public interface IResource extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static Resource create(final UnaryOperator<Resource.Builder> func) {
         return func.apply(Resource.builder()).build();
     }

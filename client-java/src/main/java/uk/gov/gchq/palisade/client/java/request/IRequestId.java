@@ -49,6 +49,7 @@ public interface IRequestId extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static RequestId create(final UnaryOperator<RequestId.Builder> func) {
         return func.apply(RequestId.builder()).build();
     }

@@ -44,13 +44,13 @@ import io.micronaut.http.client.annotation.Client;
  * @since 0.5.0
  * @see "https://docs.micronaut.io/latest/guide/index.html#clientAnnotation"
  */
+@SuppressWarnings("java:S1214")
 @Client("${palisade.client.url}")
 public interface PalisadeServiceClient {
 
     /**
      * The endpoint
      */
-    @SuppressWarnings("java:S1214")
     String REGISTER_DATA_REQUEST = "/registerDataRequest";
 
     /**

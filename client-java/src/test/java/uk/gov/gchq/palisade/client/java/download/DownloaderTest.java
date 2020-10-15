@@ -46,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @MicronautTest
 @Property(name = "palisade.client.url", value = DownloaderTest.BASE_URL)
 @Property(name = "micronaut.server.port", value = DownloaderTest.PORT)
-public class DownloaderTest implements ApplicationEventListener<DownloadCompleteEvent> {
+class DownloaderTest implements ApplicationEventListener<DownloadCompleteEvent> {
 
     private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(DownloaderTest.class);
 
@@ -69,7 +69,7 @@ public class DownloaderTest implements ApplicationEventListener<DownloadComplete
     }
 
     @Test
-    void test_download() throws Exception {
+    void testDownload() throws Exception {
 
         var token = "abcd-1";
         var filename = "Selection_032.png";
