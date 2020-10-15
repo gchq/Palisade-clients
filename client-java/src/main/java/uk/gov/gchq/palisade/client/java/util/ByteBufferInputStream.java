@@ -38,7 +38,6 @@ public class ByteBufferInputStream extends InputStream {
     private static final String CLOSED_STREAM_MSG = "tried to access to closed stream";
 
     private final Flowable<ByteBuffer> flowable;
-    private Iterable<ByteBuffer> iterable;
     private Iterator<ByteBuffer> iterator;
 
     private ByteBuffer buff = EMPTY_BUFFER;
@@ -122,7 +121,10 @@ public class ByteBufferInputStream extends InputStream {
             var rem = bb.remaining();
 
             if (rem == 0) {
-                assert c + l == len : "should have no bytes left, but have " + l;
+                if (c + l != len) {
+                    throw new IOException(
+                        "We have some bytes remaining where we should not have any. This could be a bug");
+                }
                 return c;
             }
 
@@ -219,8 +221,7 @@ public class ByteBufferInputStream extends InputStream {
 
     private ByteBuffer buffer() {
         if (iterator == null) {
-            this.iterable = flowable.blockingIterable();
-            this.iterator = iterable.iterator();
+            this.iterator = flowable.blockingIterable().iterator();
         }
         if (buff == null || buff.remaining() == 0) {
             if (buff != null) {

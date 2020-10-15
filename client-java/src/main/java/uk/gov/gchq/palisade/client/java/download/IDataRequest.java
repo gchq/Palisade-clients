@@ -51,20 +51,10 @@ public interface IDataRequest {
      * @param func The builder function
      * @return a newly created data request instance
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static DataRequest create(final UnaryOperator<DataRequest.Builder> func) {
         return func.apply(DataRequest.builder()).build();
     }
-
-//    /**
-//     * this is a unique ID for each individual request made between the
-//     * micro-services
-//     *
-//     * @return
-//     */
-//    @Value.Derived
-//    default RequestId getId() {
-//        return IRequestId.create(b -> b.id(UUID.randomUUID().toString()));
-//    }
 
     /**
      * Returns the token

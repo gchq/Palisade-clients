@@ -169,7 +169,7 @@ class ByteBufferInputStreamTest {
 
     @Test
     void testMarkSupported() {
-        assertThat(is.markSupported()).isEqualTo(false);
+        assertThat(is.markSupported()).isFalse();
     }
 
 }

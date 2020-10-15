@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.receiver.Receiver;
 import uk.gov.gchq.palisade.client.java.receiver.ReceiverContext;
+import uk.gov.gchq.palisade.client.java.receiver.ReceiverException;
 import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.ByteBufferInputStream;
 
@@ -85,8 +86,6 @@ public class Downloader implements Runnable {
 
         LOG.debug("Downloader Started");
 
-        var token = resource.getToken();
-
         URL url = null;
         try {
             url = new URL(resource.getUrl());
@@ -96,6 +95,8 @@ public class Downloader implements Runnable {
         }
 
         try (var client = RxStreamingHttpClient.create(url)) {
+
+            var token = resource.getToken();
 
             var body = IDataRequest.create(b -> b
                 .token(token)
@@ -107,13 +108,6 @@ public class Downloader implements Runnable {
                 .accept(APPLICATION_OCTET_STREAM_TYPE);
 
             LOG.debug("Making request to: {}, ", url);
-
-            var flowable = client
-                .dataStream(request)
-                .<java.nio.ByteBuffer>map(ByteBuffer::asNioBuffer)
-                .observeOn(Schedulers.io());
-
-            LOG.debug("Flowable returned from request");
 
             // instead of posting the flowable in an event, we should get hole of a
             // "Receiver" from the DownloadConfig
@@ -130,10 +124,17 @@ public class Downloader implements Runnable {
                 }
             };
 
+            var flowable = client
+                .dataStream(request)
+                .<java.nio.ByteBuffer>map(ByteBuffer::asNioBuffer)
+                .observeOn(Schedulers.io());
+
+            LOG.debug("Flowable returned from request");
+
             try {
                 var bbis = new ByteBufferInputStream(flowable);
                 receiver.process(receiverContext, bbis);
-            } catch (Exception e) {
+            } catch (ReceiverException e) {
                 clientContext.post(DownloadFailedEvent.of(resource, e));
             }
 

@@ -54,6 +54,7 @@ public interface IPalisadeResponse extends Serializable {
      * @param func The builder function
      * @return a newly created data request instance
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static PalisadeResponse create(final UnaryOperator<PalisadeResponse.Builder> func) {
         return func.apply(PalisadeResponse.builder()).build();
     }

@@ -34,8 +34,6 @@ import javax.websocket.Session;
 import java.io.IOException;
 import java.util.function.UnaryOperator;
 
-import static uk.gov.gchq.palisade.client.java.resource.MessageType.SUBSCRIBE;
-
 /**
  * The {@code ResourceClient} class represents a websocket endpoint. It handles
  * the communication to the Filtered Resource Service to negotiate the resources
@@ -95,7 +93,7 @@ public class ResourceClient {
     public void onOpen(final Session session, final EndpointConfig endpointConfig) {
         LOG.debug("Session {} opened", session.getId());
         this.session = session;
-        sendMessage(b -> b.type(SUBSCRIBE).token(token));
+        sendMessage(b -> b.type(MessageType.SUBSCRIBE).token(token));
     }
 
     /**
@@ -139,10 +137,10 @@ public class ResourceClient {
         }
     }
 
-    private void handleSubscribed(final String token) { // empty (here for completeness)
+    private void handleSubscribed(@SuppressWarnings("unused") final String token) { // empty (here for completeness)
     }
 
-    private void handleAck(final String token) { // noop
+    private void handleAck(@SuppressWarnings("unused") final String token) { // noop
     }
 
     private void handleReadyToSend(final String token) {
@@ -174,11 +172,12 @@ public class ResourceClient {
         post(ResourcesExhaustedEvent.of(token));
     }
 
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     private void sendMessage(final UnaryOperator<Message.Builder> func) {
         var message = func.apply(Message.builder()).build();
         try {
             this.session.getBasicRemote().sendObject(message);
-            LOG.debug("Sent: " + message);
+            LOG.debug("Sent: {}", message);
         } catch (IOException | EncodeException e) {
             // TODO need to handle this one
             e.printStackTrace();

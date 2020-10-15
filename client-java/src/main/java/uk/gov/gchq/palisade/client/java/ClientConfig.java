@@ -91,8 +91,11 @@ public class ClientConfig {
          * Threads property
          */
         public static final String THREADS_PROPERTY = "palisade.download.threads";
+        public static final String PATH_PROPERTY = "palisade.download.threads";
 
         private int threads = 1;
+
+        @SuppressWarnings("java:S1075") // this is a default uri which can then be overriden. this is OK.
         private String path = "/tmp";
 
         /**

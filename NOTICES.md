@@ -13,7 +13,7 @@ List of third-party dependencies grouped by their license type
 * AssertJ fluent assertions ([org.assertj:assertj-core:3.17.2](http://assertj.org/assertj-core))
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
 * Spring Cloud Starter OpenFeign ([org.springframework.cloud:spring-cloud-starter-openfeign:2.2.0.RELEASE](https://projects.spring.io/spring-cloud))
-* clients-common ([uk.gov.gchq.palisade:clients-common:0.5.0-20201007.071449-11](https://github.com/gchq/Palisade-clients/tree/develop/clients-common))
+* clients-common ([uk.gov.gchq.palisade:clients-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/clients-common))
 * common ([uk.gov.gchq.palisade:common:0.5.0-20200915.110014-6](https://github.com/gchq/Palisade-common))
 * readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-20200922.082555-13](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
 

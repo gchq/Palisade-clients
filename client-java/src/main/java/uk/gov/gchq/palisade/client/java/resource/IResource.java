@@ -22,6 +22,7 @@ import org.immutables.value.Value;
 import uk.gov.gchq.palisade.client.java.request.UserId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
@@ -45,7 +46,7 @@ import java.util.function.UnaryOperator;
 @ImmutableStyle
 @JsonDeserialize(as = Resource.class)
 @JsonSerialize(as = Resource.class)
-public interface IResource {
+public interface IResource extends Serializable {
 
     /**
      * Helper method to create a {@link Resource} using a builder function

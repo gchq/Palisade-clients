@@ -37,8 +37,11 @@ import uk.gov.gchq.palisade.client.java.util.Bus;
 
 import javax.inject.Singleton;
 import javax.websocket.ContainerProvider;
+import javax.websocket.DeploymentException;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -79,6 +82,7 @@ public class JavaClient implements Client {
     }
 
     @Override
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     public Result submit(final UnaryOperator<JobConfig.Builder> func) {
         return submit(func.apply(JobConfig.builder()).build());
     }
@@ -118,8 +122,8 @@ public class JavaClient implements Client {
             final var container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(resourceClient, new URI(url)); // this start communication
             LOG.debug("Job [{}] started", token);
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
+        } catch (final IOException | DeploymentException | URISyntaxException e) {
+            throw new ClientException("Error occurred in websocket: " + e.getMessage(), e);
         }
 
         LOG.debug("Job created for token: {}", token);
@@ -187,7 +191,7 @@ public class JavaClient implements Client {
         return this.clientContext;
     }
 
-    private PalisadeRequest createRequest(final JobConfig jobConfig) {
+    private static PalisadeRequest createRequest(final JobConfig jobConfig) {
 
         var userId = jobConfig.getUserId();
         var purpose = jobConfig.getPurpose();
@@ -217,33 +221,5 @@ public class JavaClient implements Client {
 
     }
 
-//    /**
-//     * Handle the job complete event by shutting down the executor. This method will
-//     * block for a small amount of time for the executors to complete before
-//     * shutting down, or if the timeout occurs, it is forced to quit. Once the
-//     * executor has terminated, an end of queue flag is added to the queue to
-//     * signify that the stream should complete once all other queued downloads have
-//     * been emitted.
-//     *
-//     * @param event The event to handle
-//     */
-//    @Subscribe
-//    public void handleJobComplete(ResourcesExhaustedEvent event) {
-//        // add a Download with no input stream to the queue. This will instruct the
-//        // stream to terminate
-//        executor.shutdown();
-//        try {
-//            executor.awaitTermination(2, TimeUnit.MINUTES);
-//        } catch (InterruptedException e) {
-//            // something musty be really stuck
-//        } finally {
-//            if (executor.isTerminating()) {
-//                // we've given it enough time, so halt it
-//                @SuppressWarnings("unused")
-//                var tasks = executor.shutdownNow();
-//                // TODO: we should do something with these tasks that were not executed.
-//            }
-//        }
-//    }
-
 }
+

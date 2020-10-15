@@ -20,6 +20,9 @@ import io.micronaut.context.event.ApplicationEventPublisher;
 import uk.gov.gchq.palisade.client.java.util.Bus;
 
 /**
+ * The main context for the client providing access to the internal registry,
+ * the configuration and the event bus
+ *
  * @since 0.5.0
  */
 public interface ClientContext extends Bus {

@@ -50,6 +50,7 @@ public interface PalisadeServiceClient {
     /**
      * The endpoint
      */
+    @SuppressWarnings("java:S1214")
     String REGISTER_DATA_REQUEST = "/registerDataRequest";
 
     /**
@@ -62,6 +63,7 @@ public interface PalisadeServiceClient {
      */
     @Post(REGISTER_DATA_REQUEST)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON) HttpResponse<PalisadeResponse> registerDataRequestSync(@Body final PalisadeRequest request);
+    @Produces(MediaType.APPLICATION_JSON)
+    HttpResponse<PalisadeResponse> registerDataRequestSync(@Body final PalisadeRequest request);
 
 }

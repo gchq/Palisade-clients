@@ -38,7 +38,7 @@ public class FileReceiver implements Receiver {
     }
 
     @Override
-    public void process(final ReceiverContext receiverContext, final InputStream inputStream) {
+    public void process(final ReceiverContext receiverContext, final InputStream inputStream) throws ReceiverException {
 
         var resource = receiverContext.getResource();
 
@@ -50,13 +50,12 @@ public class FileReceiver implements Receiver {
         try {
             write(inputStream, outFilename);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new ReceiverException(resource, "Failed to write downloaded resource to " + outFilename);
         }
 
     }
 
-    private void write(final InputStream initialStream, final String filename) throws IOException {
+    private static void write(final InputStream initialStream, final String filename) throws IOException {
         try (initialStream) {
             var file = new File(filename);
             Files.copy(initialStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);

@@ -47,6 +47,7 @@ public interface IUserId extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static UserId create(final UnaryOperator<UserId.Builder> func) {
         return func.apply(UserId.builder()).build();
     }

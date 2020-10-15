@@ -60,6 +60,7 @@ class FullTest {
     }
 
     @Test
+    @SuppressWarnings("java:S2925") // sleep used as we do not return a Future (or equivalent) yet
     void testFull() throws Exception {
 
         var config = IJobConfig.create(b -> b

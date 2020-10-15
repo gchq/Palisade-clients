@@ -85,7 +85,7 @@ class ResourceClientTest implements ApplicationEventListener<ResourceReadyEvent>
         server.stop();
     }
 
-    @Disabled
+    @Disabled("skipped as this test fails intermittently")
     @Test
     void test() throws Exception {
         startClient();
@@ -114,6 +114,7 @@ class ResourceClientTest implements ApplicationEventListener<ResourceReadyEvent>
 
     }
 
+    @SuppressWarnings("java:2925") // need to wait. must be a better way?
     private void awaitEvents() throws Exception {
         var tries = 40;
         while (eventCount < 2 && tries-- > 0) {

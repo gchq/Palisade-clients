@@ -30,6 +30,7 @@ import java.util.function.UnaryOperator;
 @ImmutableStyle
 public interface IServerState {
 
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static <E> ServerState create(final UnaryOperator<ServerState.Builder> func) {
         return func.apply(ServerState.builder()).build();
     }
@@ -49,6 +50,7 @@ public interface IServerState {
         return ServerStateType.WAITING;
     }
 
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     default ServerState change(final UnaryOperator<ServerState.Builder> func) {
         return func.apply(ServerState.builder().from(this)).build();
     }

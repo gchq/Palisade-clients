@@ -48,6 +48,7 @@ public interface IContext {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static Context create(final UnaryOperator<Context.Builder> func) {
         return func.apply(Context.builder()).build();
     }

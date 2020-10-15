@@ -64,6 +64,7 @@ public interface Client {
      * @return a newly constructed {@code Job} using the provided configuration
      *         function
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     Result submit(UnaryOperator<JobConfig.Builder> func);
 
     /**

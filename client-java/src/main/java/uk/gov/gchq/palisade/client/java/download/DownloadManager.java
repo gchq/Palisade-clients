@@ -25,10 +25,10 @@ import uk.gov.gchq.palisade.client.java.resource.Resource;
 
 import javax.inject.Singleton;
 
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -65,8 +65,9 @@ public class DownloadManager {
                 return ManagerStatus.SHUTTING_DOWN;
             } else if (executor.isShutdown()) {
                 return ManagerStatus.SHUT_DOWN;
+            } else {
+                return ManagerStatus.ACTIVE;
             }
-            return ManagerStatus.ACTIVE;
         }
     };
 
@@ -77,10 +78,9 @@ public class DownloadManager {
      *                      objects
      */
     public DownloadManager(final ClientContext clientContext) {
-        assert clientContext != null : "Must provide the client context";
-        this.clientContext = clientContext;
+        this.clientContext = Objects.requireNonNull(clientContext);
         var numThreads = clientContext.get(ClientConfig.class).getDownload().getThreads();
-        this.executor = new ThreadPoolExecutor(1, numThreads, 2000L, MILLISECONDS, new LinkedBlockingQueue<>(2));
+        this.executor = new ThreadPoolExecutor(1, numThreads, 2, TimeUnit.SECONDS, new LinkedBlockingQueue<>(2));
         LOG.debug("### Download manager created with thread pool size of {}", numThreads);
     }
 

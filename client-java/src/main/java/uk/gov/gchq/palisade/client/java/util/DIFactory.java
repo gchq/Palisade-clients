@@ -53,7 +53,7 @@ public class DIFactory {
      */
     @Singleton
     public PalisadeClient createPalisadeClient(final ClientConfig clientConfig, final PalisadeServiceClient prc) {
-        return (request) -> {
+        return request -> {
             var httpResponse = prc.registerDataRequestSync(request);
             try {
                 var opt = httpResponse.getBody();
@@ -79,6 +79,7 @@ public class DIFactory {
      *         {@code ApplicationContext} and methods which are not needed.
      */
     @Singleton
+    @SuppressWarnings("java:s1604") // cannot make a lambda as ClientContext::get is generic!
     public ClientContext createClientContext(final ApplicationContext applicationContext) {
         return new ClientContext() {
             @Override
@@ -109,7 +110,7 @@ public class DIFactory {
      */
     @Singleton
     public Bus createEventBus(final ApplicationEventPublisher applicationEventPublisher) {
-        return (event) -> applicationEventPublisher.publishEventAsync(event);
+        return applicationEventPublisher::publishEventAsync;
     }
 
 }

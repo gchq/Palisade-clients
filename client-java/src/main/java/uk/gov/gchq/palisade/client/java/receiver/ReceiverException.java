@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client.java.receiver;
 
+import uk.gov.gchq.palisade.client.java.resource.Resource;
+
 /**
  * Thrown when an inputstream receiver fails to complete
  *
@@ -24,42 +26,63 @@ public class ReceiverException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    private final Resource resource;
+
     /**
      * Creates a new instance
      *
+     * @param resource The resource being received
      * @see RuntimeException#RuntimeException()
      */
-    public ReceiverException() {
+    public ReceiverException(final Resource resource) {
+        this.resource = resource;
     }
 
     /**
      * Creates a new instance with the provided {@code message}
      *
-     * @param message The message
+     * @param resource The resource being received
+     * @param message  The message
      * @see RuntimeException#RuntimeException(String)
      */
-    public ReceiverException(final String message) {
+    public ReceiverException(final Resource resource, final String message) {
         super(message);
+        this.resource = resource;
     }
 
     /**
      * Creates a new instance with the provided {@code cause}
      *
-     * @param cause The cause
+     * @param resource The resource being received
+     * @param cause    The cause
      * @see RuntimeException#RuntimeException(Throwable)
      */
-    public ReceiverException(final Throwable cause) {
+    public ReceiverException(final Resource resource, final Throwable cause) {
         super(cause);
+        this.resource = resource;
     }
 
     /**
      * Creates a new instance with the provided {@code message} and {@code cause}
      *
-     * @param message The message
-     * @param cause   The cause
+     * @param resource The resource being received
+     * @param message  The message
+     * @param cause    The cause
      * @see RuntimeException#RuntimeException(String, Throwable)
      */
-    public ReceiverException(final String message, final Throwable cause) {
+    public ReceiverException(final Resource resource, final String message, final Throwable cause) {
         super(message, cause);
+        this.resource = resource;
     }
+
+    /**
+     * Returns the resource that the receiver was handling at the time this
+     * exception was thrown
+     *
+     * @return the resource that the receiver was handling
+     */
+    public Resource getResource() {
+        return this.resource;
+    }
+
 }
