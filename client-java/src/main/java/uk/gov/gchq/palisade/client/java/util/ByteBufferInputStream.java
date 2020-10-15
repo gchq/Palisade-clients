@@ -117,8 +117,6 @@ public class ByteBufferInputStream extends InputStream {
         int o = off; // relative offset
         int c = 0; // current byte count
 
-        int r = 0; // the return
-
         while (l > 0) {
             var rem = bb.remaining();
 
@@ -127,7 +125,7 @@ public class ByteBufferInputStream extends InputStream {
                     throw new IOException(
                         "We have some bytes remaining where we should not have any. This could be a bug");
                 }
-                break; // return c;
+                break; // return c
             }
 
             if (rem > l) {

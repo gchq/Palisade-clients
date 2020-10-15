@@ -187,6 +187,12 @@
 				<!-- Other -->
 
 				<dependency>
+				    <groupId>org.awaitility</groupId>
+				    <artifactId>awaitility</artifactId>
+				    <version>4.0.3</version>
+				    <scope>test</scope>
+				</dependency>
+				<dependency>
 						<groupId>org.assertj</groupId>
 						<artifactId>assertj-core</artifactId>
 						<version>3.17.2</version>

@@ -41,9 +41,10 @@ import javax.websocket.WebSocketContainer;
 
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
+import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @MicronautTest
 @Property(name = ClientConfig.Client.URL_PROPERTY, value = "http://localhost:8081")
@@ -89,7 +90,7 @@ class ResourceClientTest implements ApplicationEventListener<ResourceReadyEvent>
     @Test
     void testMessageFlow() throws Exception {
         startClient();
-        awaitEvents();
+        await().atMost(ofSeconds(5)).until(() -> eventCount != 2);
         assertThat(eventCount).isEqualTo(2);
     }
 
@@ -111,18 +112,6 @@ class ResourceClientTest implements ApplicationEventListener<ResourceReadyEvent>
         container.connectToServer(rc, new URI("ws://localhost:8082/name"));
 
         return rc;
-
-    }
-
-    @SuppressWarnings("java:2925") // need to wait. must be a better way?
-    private void awaitEvents() throws Exception {
-        var tries = 40;
-        while (eventCount < 2 && tries-- > 0) {
-            Thread.sleep(100);
-        }
-        if (tries == 0) {
-            throw new TimeoutException("Timeout reached while waitin for all the resource events");
-        }
 
     }
 

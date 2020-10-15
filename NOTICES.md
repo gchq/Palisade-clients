@@ -11,6 +11,7 @@ List of third-party dependencies grouped by their license type
 * Apache Hadoop Common ([org.apache.hadoop:hadoop-common:3.2.1](no url defined))
 * Apache Hadoop MapReduce Core ([org.apache.hadoop:hadoop-mapreduce-client-core:3.2.1](no url defined))
 * AssertJ fluent assertions ([org.assertj:assertj-core:3.17.2](http://assertj.org/assertj-core))
+* Awaitility ([org.awaitility:awaitility:4.0.3](http://awaitility.org))
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
 * Spring Cloud Starter OpenFeign ([org.springframework.cloud:spring-cloud-starter-openfeign:2.2.0.RELEASE](https://projects.spring.io/spring-cloud))
 * clients-common ([uk.gov.gchq.palisade:clients-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/clients-common))

@@ -96,12 +96,6 @@ public class Downloader implements Runnable {
 
         try (var client = RxStreamingHttpClient.create(url)) {
 
-            var token = resource.getToken();
-
-            var body = IDataRequest.create(b -> b
-                .token(token)
-                .leafResourceId(resource.getLeafResourceId()));
-
 
             // instead of posting the flowable in an event, we should get hole of a
             // "Receiver" from the DownloadConfig
@@ -117,6 +111,12 @@ public class Downloader implements Runnable {
                     return clientContext.get(type);
                 }
             };
+
+            var token = resource.getToken();
+
+            var body = IDataRequest.create(b -> b
+                .token(token)
+                .leafResourceId(resource.getLeafResourceId()));
 
             var request = HttpRequest
                 .POST("/read/chunked", body)

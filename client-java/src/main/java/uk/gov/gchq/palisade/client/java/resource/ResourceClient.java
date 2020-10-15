@@ -141,12 +141,12 @@ public class ResourceClient {
     }
 
     @SuppressWarnings("java:S1941")
-    private void handleSubscribed(final String token) {
+    private static void handleSubscribed(final String token) {
         LOG.debug("handleSubscribed is currently a noop, token: {}", token);
     }
 
     @SuppressWarnings("java:S1941")
-    private void handleAck(final String token) {
+    private static void handleAck(final String token) {
         LOG.debug("handleAck is currently a noop, token: {}", token);
     }
 
