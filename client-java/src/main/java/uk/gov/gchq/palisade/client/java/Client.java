@@ -42,12 +42,15 @@ import java.util.function.UnaryOperator;
  * </p>
  * <pre>
  * {@code
- *     var result = client.submit(b -> b
- *         .classname("classname")
- *         .purpose("purpose")
- *         .requestId("request_id")
- *         .resourceId("resource_id")
- *         .userId("user_id"));
+ *   var futureResult = client
+ *       .submit(b -> b
+ *           .userId("user_id")
+ *           .resourceId("resource_id")
+ *           .purpose("purpose")
+ *           .context(Map.of(
+ *                "key1", "value1",
+ *                "key2", "value2"))
+ *           .receiverSupplier(() -> new FileReceiver());
  * }
  * </pre>
  *
