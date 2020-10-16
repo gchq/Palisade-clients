@@ -30,6 +30,12 @@ Also note this is the first draft of the new client.
 
 ## Overview
 
+## Logical Diagram
+
+![Logical Diagram](doc/java-client-logical-diagram-1.svg){width=800}
+
+## Code
+
 The main classes within the client are as follows:
 
 * JavaClient - This is the main entry point and the manager of all events
