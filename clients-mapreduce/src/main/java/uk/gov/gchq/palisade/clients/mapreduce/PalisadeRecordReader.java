@@ -261,7 +261,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     public float getProgress() {
         float result = 0;
         if (dataRequestResponse != null && !dataRequestResponse.getResources().isEmpty()) {
-            result = processed / dataRequestResponse.getResources().size();
+            result = ((float) processed) / dataRequestResponse.getResources().size();
         }
         return result;
     }
