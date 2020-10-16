@@ -25,11 +25,9 @@ import uk.gov.gchq.palisade.client.java.download.DownloadManager;
 import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
 import uk.gov.gchq.palisade.client.java.job.JobConfig;
 import uk.gov.gchq.palisade.client.java.job.JobContext;
-import uk.gov.gchq.palisade.client.java.request.Context;
+import uk.gov.gchq.palisade.client.java.request.IPalisadeRequest;
 import uk.gov.gchq.palisade.client.java.request.PalisadeClient;
 import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
-import uk.gov.gchq.palisade.client.java.request.RequestId;
-import uk.gov.gchq.palisade.client.java.request.UserId;
 import uk.gov.gchq.palisade.client.java.resource.ResourceClient;
 import uk.gov.gchq.palisade.client.java.resource.ResourceReadyEvent;
 import uk.gov.gchq.palisade.client.java.resource.ResourcesExhaustedEvent;
@@ -195,26 +193,16 @@ public class JavaClient implements Client {
     private static PalisadeRequest createRequest(final JobConfig jobConfig) {
 
         var userId = jobConfig.getUserId();
-        var purpose = jobConfig.getPurpose();
-        var className = jobConfig.getClassname();
-        var requestId = jobConfig.getRequestId();
+        var purposeOpt = jobConfig.getPurpose();
         var resourceId = jobConfig.getResourceId();
-        var properties = jobConfig.getProperties();
+        var properties = new HashMap<>(jobConfig.getProperties());
 
-        var req = PalisadeRequest.builder()
-                .resourceId(resourceId)
-                .userId(UserId.builder()
-                        .id(userId)
-                        .build())
-                .requestId(RequestId.builder()
-                        .id(requestId)
-                        .build())
-                .context(Context.builder()
-                        .className(className)
-                        .purpose(purpose)
-                        .contents(properties)
-                        .build())
-                .build();
+        purposeOpt.ifPresent(pp -> properties.put("PURPOSE", pp));
+
+        var req = IPalisadeRequest.create(b -> b
+            .resourceId(resourceId)
+            .userId(userId)
+            .conext(properties));
 
         LOG.debug("new palisade request crteated from job config: {}", req);
 

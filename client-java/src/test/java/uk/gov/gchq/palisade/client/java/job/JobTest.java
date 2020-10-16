@@ -66,9 +66,7 @@ class JobTest {
     void testNewJobCreation() throws Exception {
 
         var config = IJobConfig.create(b -> b
-                .classname("classname")
                 .purpose("purpose")
-                .requestId("request_id")
                 .resourceId("resource_id")
                 .userId("user_id"));
 

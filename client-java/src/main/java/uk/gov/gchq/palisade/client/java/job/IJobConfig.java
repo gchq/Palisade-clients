@@ -22,6 +22,7 @@ import uk.gov.gchq.palisade.client.java.receiver.Receiver;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -54,20 +55,6 @@ public interface IJobConfig {
     }
 
     /**
-     * Returns the resource id
-     *
-     * @return the resource id
-     */
-    String getResourceId();
-
-    /**
-     * Returns the request id
-     *
-     * @return the request id
-     */
-    String getRequestId();
-
-    /**
      * Returns the user id
      *
      * @return the user id
@@ -75,25 +62,25 @@ public interface IJobConfig {
     String getUserId();
 
     /**
+     * Returns the resource id
+     *
+     * @return the resource id
+     */
+    String getResourceId();
+
+    /**
      * Returns the purpose
      *
      * @return the purpose
      */
-    String getPurpose();
-
-    /**
-     * Returns the class name
-     *
-     * @return the class name
-     */
-    String getClassname();
+    Optional<Object> getPurpose();
 
     /**
      * Returns a map of extra properties for this job
      *
      * @return a map of extra properties for this job
      */
-    Map<String, String> getProperties();
+    Map<String, Object> getProperties();
 
     /**
      * Returns the receiver supplier. If it has not been set then a simple logging

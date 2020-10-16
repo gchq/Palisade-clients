@@ -64,11 +64,9 @@ class FullTest {
     void testFull() throws Exception {
 
         var config = IJobConfig.create(b -> b
-            .classname("classname")
-            .purpose("purpose")
-            .requestId("request_id")
-            .resourceId("pi.txt")
             .userId("user_id")
+            .resourceId("pi.txt")
+            .purpose("purpose")
             .receiverSupplier(() -> new FileReceiver()));
 
         // lets start the ball rolling

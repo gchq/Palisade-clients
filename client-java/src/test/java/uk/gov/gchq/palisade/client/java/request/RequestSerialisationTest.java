@@ -20,8 +20,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RequestSerialisationTest {
@@ -35,9 +33,7 @@ class RequestSerialisationTest {
 
     @Test
     void testPalisadeResponseSserialisation() throws Exception {
-        var expected = IPalisadeResponse.create(b -> b
-            .token("blah")
-            .url("url"));
+        var expected = IPalisadeResponse.create(b -> b.token("blah").url("url"));
         var string = objectMapper.writeValueAsString(expected);
         var actual = objectMapper.readValue(string, PalisadeResponse.class);
         assertThat(actual).isEqualTo(expected);
@@ -45,20 +41,7 @@ class RequestSerialisationTest {
 
     @Test
     void testPalisadeRequestSerialisation() throws Exception {
-        var expected = PalisadeRequest.builder()
-            .resourceId("resourceId")
-            .userId(UserId.builder()
-                .id("userId")
-                .build())
-            .requestId(RequestId.builder()
-                .id("requestId")
-                .build())
-            .context(Context.builder()
-                .className("className")
-                .purpose("purpose")
-                .contents(Map.of())
-                .build())
-            .build();
+        var expected = IPalisadeRequest.create(b -> b.resourceId("resourceId").userId("userId"));
         var string = objectMapper.writeValueAsString(expected);
         var actual = objectMapper.readValue(string, PalisadeRequest.class);
         assertThat(actual).isEqualTo(expected);

@@ -22,7 +22,7 @@ import org.immutables.value.Value;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.io.Serializable;
-import java.util.Optional;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
@@ -68,27 +68,13 @@ public interface IPalisadeRequest extends Serializable {
      *
      * @return the user id
      */
-    UserId getUserId();
+    String getUserId();
 
     /**
-     * Returns the context
+     * Returns the context in support of this request
      *
-     * @return the context
+     * @return the context in support of this request
      */
-    Context getContext();
-
-    /**
-     * Returns the request id
-     *
-     * @return the request id
-     */
-    RequestId getRequestId();
-
-    /**
-     * Returns the original request id
-     *
-     * @return the original request id
-     */
-    Optional<RequestId> getOriginalRequestId();
+    Map<String, Object> getConext();
 
 }
