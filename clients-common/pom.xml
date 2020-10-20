@@ -20,72 +20,14 @@
     <parent>
         <groupId>uk.gov.gchq.palisade</groupId>
         <artifactId>clients</artifactId>
-        <version>0.4.0</version>
+        <version>0.5.0-${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <!--  *********** Aritfact ID ***********    -->
     <artifactId>clients-common</artifactId>
-    <url>https://github.com/gchq/Palisade-clients/tree/main/clients-common</url>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/clients-common</url>
     <!--  *********** Aritfact ID ***********    -->
-
-    <!--<dependencies>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>resource-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>cache-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>palisade-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>policy-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>user-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>audit-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>data-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>config-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>proxy-rest-config-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>proxy-rest-data-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>${project.parent.groupId}</groupId>-->
-    <!--<artifactId>proxy-rest-palisade-service</artifactId>-->
-    <!--<version>${project.parent.version}</version>-->
-    <!--</dependency>-->
-    <!--</dependencies>-->
 
     <dependencies>
         <dependency>
@@ -94,6 +36,5 @@
             <version>${slf4j.api.version}</version>
         </dependency>
     </dependencies>
-
 
 </project>

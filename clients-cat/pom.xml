@@ -20,13 +20,13 @@
     <parent>
         <groupId>uk.gov.gchq.palisade</groupId>
         <artifactId>clients</artifactId>
-        <version>0.4.0</version>
+        <version>0.5.0-${revision}</version>
         <!--<relativePath>../pom.xml</relativePath>-->
     </parent>
 
     <!--  *********** Aritfact ID ***********    -->
     <artifactId>clients-cat</artifactId>
-    <url>https://github.com/gchq/Palisade-clients/tree/main/clients-cat</url>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/clients-cat</url>
     <!--  *********** Aritfact ID ***********    -->
 
     <dependencies>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
