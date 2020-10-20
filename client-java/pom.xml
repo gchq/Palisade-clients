@@ -15,10 +15,10 @@
   ~ limitations under the License.
   -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xmlns="http://maven.apache.org/POM/4.0.0"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-		<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>uk.gov.gchq.palisade</groupId>
@@ -27,208 +27,123 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-		<artifactId>client-java</artifactId>
-		<name>clients-java</name>
-		<description>Java standalone client</description>
-		<url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
+    <artifactId>client-java</artifactId>
+    <name>clients-java</name>
+    <description>Java standalone client</description>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
 
-		<properties>
+    <properties>
+        <!-- Dependency versions -->
+        <micronaut.version>2.1.0</micronaut.version>
+        <immutables.version>2.8.2</immutables.version>
+        <tyrus.version>1.17</tyrus.version>
+        <!-- Test dependency versions -->
+        <junit5.version>5.7.0</junit5.version>
+        <awaitility.version>4.0.3</awaitility.version>
+        <assertj.version>3.17.2</assertj.version>
+        <logback.version>1.2.3</logback.version>
+        <equalsverifier.version>3.4.2</equalsverifier.version>
+        <reflections.version>0.9.12</reflections.version>
+    </properties>
 
-				<!-- Versions -->
-				<java.version>11</java.version>
-				<revision>SNAPSHOT</revision>
-				<maven.compiler.source>${java.version}</maven.compiler.source>
-				<maven.compiler.target>${java.version}</maven.compiler.target>
+    <dependencies>
+        <dependency>
+            <!-- Websocket reference impl -->
+            <groupId>org.glassfish.tyrus.bundles</groupId>
+            <artifactId>tyrus-standalone-client</artifactId>
+            <version>${tyrus.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Micronaut DI -->
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-inject-java</artifactId>
+            <version>${micronaut.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Micronaut HTTP -->
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-http-client</artifactId>
+            <version>${micronaut.version}</version>
+        </dependency>
+        <dependency>
+            <!-- User/Resource/Context objects -->
+            <groupId>uk.gov.gchq.palisade</groupId>
+            <artifactId>common</artifactId>
+            <version>0.5.0-${common.revision}</version>
+        </dependency>
+        <dependency>
+            <!-- Immutables code generation -->
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+            <version>${immutables.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
-				<!-- encodings -->
-				<encoding>UTF-8</encoding>
-				<project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
-				<project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
-
-				<!-- Plugins -->
-				<junit5.version>5.7.0</junit5.version>
-
-		</properties>
-
-		<build>
-				<plugins>
-						<plugin>
-								<artifactId>maven-surefire-plugin</artifactId>
-						</plugin>
-      <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <!-- Please see https://github.com/immutables/immutables/issues/902 -->
-		        <configuration>
-		          <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/annotations</sourcepath>
-		          <additionalDependencies>
-		            <additionalDependency>
-		              <groupId>javax.annotation</groupId>
-		              <artifactId>javax.annotation-api</artifactId>
-		              <version>1.3.2</version>
-		            </additionalDependency>
-		          </additionalDependencies>
-            <additionalOptions>-html5</additionalOptions>
-            <doclint>none</doclint>
-          </configuration>
-      </plugin>
-      <!--
-						<plugin>
-						    <groupId>org.assertj</groupId>
-						    <artifactId>assertj-assertions-generator-maven-plugin</artifactId>
-						    <version>2.1.0</version>
-						    <executions>
-						        <execution>
-						            <goals>
-						                <goal>generate-assertions</goal>
-						            </goals>
-						        </execution>
-						    </executions>
-						    <configuration>
-						        <packages>
-						            <param>uk.gov.gchq.palisade</param>
-						        </packages>
-              <includes>
-                <param>uk\.gov\.gchq\.palisade\.client\.java\..*\.I.*</param>
-              </includes>
-              <generateAssertionsInPackage>uk.gov.gchq.palisade.client.java.assertions</generateAssertionsInPackage>
-              <targetDir>target/generated-test-sources/test-annotations</targetDir>
-														<generateAssertions>false</generateAssertions>
-														<generateBddAssertions>false</generateBddAssertions>
-														<generateSoftAssertions>false</generateSoftAssertions>
-														<generateJUnitSoftAssertions>false</generateJUnitSoftAssertions>          </configuration>
-						</plugin>
-						-->
-				</plugins>
-		</build>
-
-		<dependencies>
-
-				<!-- MAIN -->
-
-				<!-- https://mvnrepository.com/artifact/io.micronaut/micronaut-inject-java -->
-				<dependency>
-						<groupId>io.micronaut</groupId>
-						<artifactId>micronaut-inject-java</artifactId>
-						<version>2.1.0</version>
-				</dependency>
-				<dependency>
-		    <groupId>io.micronaut</groupId>
-		    <artifactId>micronaut-http-client</artifactId>
-      <version>2.1.0</version>
-				</dependency>
-
-				<!-- Palisade -->
-
-				<dependency>
-						<groupId>uk.gov.gchq.palisade</groupId>
-						<artifactId>common</artifactId>
-						<version>0.5.0-${common.revision}</version>
-				</dependency>
-				<dependency>
-						<groupId>uk.gov.gchq.palisade</groupId>
-						<artifactId>readers-common</artifactId>
-						<version>0.5.0-${common.revision}</version>
-				</dependency>
-
-				<dependency>
-						<groupId>org.glassfish.tyrus.bundles</groupId>
-						<artifactId>tyrus-standalone-client</artifactId>
-						<version>1.17</version>
-				</dependency>
-
-				<!-- Other -->
-
-				<dependency>
-						<groupId>org.immutables</groupId>
-						<artifactId>value</artifactId>
-						<version>2.8.2</version>
-						<scope>provided</scope>
-				</dependency>
-				<dependency>
-						<groupId>com.fasterxml.jackson.core</groupId>
-						<artifactId>jackson-core</artifactId>
-				</dependency>
-
-				<!-- TEST -->
-
-				<dependency>
-				    <groupId>io.micronaut.test</groupId>
-				    <artifactId>micronaut-test-junit5</artifactId>
-				    <version>2.1.0</version>
-				    <scope>test</scope>
-				</dependency>
-				<dependency>
-				    <groupId>io.micronaut</groupId>
-				    <artifactId>micronaut-http-server-netty</artifactId>
-				    <version>2.1.0</version>
-				    <scope>test</scope>
-				</dependency>				<!-- JUnit -->
-
-				<dependency>
-						<groupId>org.junit.jupiter</groupId>
-						<artifactId>junit-jupiter-api</artifactId>
-						<version>${junit5.version}</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>org.junit.jupiter</groupId>
-						<artifactId>junit-jupiter</artifactId>
-						<version>${junit5.version}</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>org.junit.jupiter</groupId>
-						<artifactId>junit-jupiter-params</artifactId>
-						<version>${junit5.version}</version>
-						<scope>test</scope>
-				</dependency>
-
-				<!-- Other -->
-
-				<dependency>
-				    <groupId>org.awaitility</groupId>
-				    <artifactId>awaitility</artifactId>
-				    <version>4.0.3</version>
-				    <scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>org.assertj</groupId>
-						<artifactId>assertj-core</artifactId>
-						<version>3.17.2</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>nl.jqno.equalsverifier</groupId>
-						<artifactId>equalsverifier</artifactId>
-						<version>3.4.2</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>ch.qos.logback</groupId>
-						<artifactId>logback-classic</artifactId>
-						<version>1.2.3</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>org.glassfish.tyrus</groupId>
-						<artifactId>tyrus-server</artifactId>
-						<version>1.17</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<groupId>org.glassfish.tyrus</groupId>
-						<artifactId>tyrus-container-grizzly-server</artifactId>
-						<version>1.17</version>
-						<scope>test</scope>
-				</dependency>
-    <!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
-    <dependency>
-      <groupId>org.reflections</groupId>
-      <artifactId>reflections</artifactId>
-      <version>0.9.12</version>
-    </dependency>
-
-		</dependencies>
-
+        <!--
+         - Test Dependencies
+         -->
+        <dependency>
+            <!-- Reference websocket impl -->
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-grizzly-server</artifactId>
+            <version>${tyrus.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Micronaut DI -->
+            <groupId>io.micronaut.test</groupId>
+            <artifactId>micronaut-test-junit5</artifactId>
+            <version>${micronaut.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Micronaut HTTP -->
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-http-server-netty</artifactId>
+            <version>${micronaut.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- JUnit -->
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Async testing utilities -->
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitility.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- AssertJ Unittest DSL -->
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- SLF4J logging framework -->
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Equals/HashCode verification -->
+            <groupId>nl.jqno.equalsverifier</groupId>
+            <artifactId>equalsverifier</artifactId>
+            <version>${equalsverifier.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Reflections -->
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

@@ -18,10 +18,8 @@ package uk.gov.gchq.palisade.client.java.receiver;
 import java.io.InputStream;
 
 /**
- * <p>
- * A {@code Receiver} is an object that will be provided with an input stream to
+ * A {@link Receiver} is an object that will be provided with an input stream to
  * process. Implementations could write to a file or simply log the data.
- * </p>
  *
  * @since 0.5.0
  */

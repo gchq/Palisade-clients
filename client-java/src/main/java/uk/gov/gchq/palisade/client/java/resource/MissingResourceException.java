@@ -18,7 +18,7 @@ package uk.gov.gchq.palisade.client.java.resource;
 import uk.gov.gchq.palisade.client.java.ClientException;
 
 /**
- * An instance of this class is thrown if the body of a reource message is not
+ * An instance of this class is thrown if the body of a resource message is not
  * set by the server. This should be very rare.
  *
  * @since 0.5.0

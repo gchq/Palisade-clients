@@ -22,7 +22,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ClientTest {
-
     private static final int PORT = 8083;
     private static final String HOST = "localhost";
     private static final String BASE_URL = String.format("http://%s:%s", HOST, PORT);
@@ -30,18 +29,16 @@ class ClientTest {
 
     @Test
     void testCreate() {
+        JavaClient client = (JavaClient) Client.create(Map.of(
+                ClientConfig.Client.URL_PROPERTY, BASE_URL,
+                ClientConfig.Download.THREADS_PROPERTY, NUM_THREADS));
 
-        var client = (JavaClient) Client.create(Map.of(
-            ClientConfig.Client.URL_PROPERTY, BASE_URL,
-            ClientConfig.Download.THREADS_PROPERTY, NUM_THREADS));
+        ClientContext context = client.getClientContext();
 
-        var context = client.getClientContext();
-
-        var clientConfig = context.get(ClientConfig.class);
+        ClientConfig clientConfig = context.get(ClientConfig.class);
 
         assertThat(clientConfig.getClient().getUrl()).isEqualTo("http://localhost:8083");
         assertThat(clientConfig.getDownload().getThreads()).isEqualTo(2);
-
     }
 
 }

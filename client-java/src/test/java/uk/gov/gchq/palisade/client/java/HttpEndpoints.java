@@ -31,6 +31,8 @@ import uk.gov.gchq.palisade.client.java.request.IPalisadeResponse;
 import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 
+import java.io.InputStream;
+
 /**
  * A controller containing our test endpoints
  */
@@ -50,10 +52,10 @@ public class HttpEndpoints {
     public HttpResponse<PalisadeResponse> handleDataRequest(@Body final PalisadeRequest request) {
         LOG.debug("### Test endpoint {} received body: {}", "/registerDataRequest", request);
         return HttpResponse
-            .ok(IPalisadeResponse.create(b -> b
-                .url("ws://localhost:8082/name")
-                .token("abcd-1")))
-            .contentType(MediaType.APPLICATION_JSON_TYPE);
+                .ok(IPalisadeResponse.create(b -> b
+                        .url("ws://localhost:8082/name")
+                        .token("abcd-1")))
+                .contentType(MediaType.APPLICATION_JSON_TYPE);
     }
 
 //    /**
@@ -90,24 +92,24 @@ public class HttpEndpoints {
 
         LOG.debug("### Test endpoint {} received body: {}", "/read/chunked", request);
 
-        var octetStream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+        MediaType octetStream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
 
-        var filename = request.getLeafResourceId(); // using this as a file name to load a file for streaming
+        String filename = request.getLeafResourceId(); // using this as a file name to load a file for streaming
 
         LOG.debug("### Trying to load: {}", filename);
 
-        var is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
 
 //        if (is == null) {
 //            return HttpResponse.badRequest();
 //        }
 
-        var sf = new StreamedFile(is, octetStream);
+        StreamedFile sf = new StreamedFile(is, octetStream);
 
         return HttpResponse
-            .ok(sf)
-            .contentType(octetStream)
-            .header("Content-Disposition", filename);
+                .ok(sf)
+                .contentType(octetStream)
+                .header("Content-Disposition", filename);
     }
 
 }

@@ -25,9 +25,12 @@ import uk.gov.gchq.palisade.client.java.download.DownloadManager;
 import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
 import uk.gov.gchq.palisade.client.java.job.JobConfig;
 import uk.gov.gchq.palisade.client.java.job.JobContext;
+import uk.gov.gchq.palisade.client.java.receiver.Receiver;
 import uk.gov.gchq.palisade.client.java.request.IPalisadeRequest;
 import uk.gov.gchq.palisade.client.java.request.PalisadeClient;
 import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
+import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.resource.ResourceClient;
 import uk.gov.gchq.palisade.client.java.resource.ResourceReadyEvent;
 import uk.gov.gchq.palisade.client.java.resource.ResourcesExhaustedEvent;
@@ -36,6 +39,7 @@ import uk.gov.gchq.palisade.client.java.util.Bus;
 import javax.inject.Singleton;
 import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
+import javax.websocket.WebSocketContainer;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,6 +47,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.java.job.IJobContext.createJobContext;
@@ -54,15 +59,14 @@ import static uk.gov.gchq.palisade.client.java.job.IJobContext.createJobContext;
  * <p>
  * Note that this class should only be created via the static {@code create}
  * methods on the {@link Client} interface. For tests it can be injected into a
- * test class annotated with {@code @MicronautTest} as it is configured for
+ * test class annotated with {@code MicronautTest} as it is configured for
  * dependency injection. This makes testing much easier.
  *
  * @since 0.5.0
  */
 @Singleton
 public class JavaClient implements Client {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JavaClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaClient.class);
     private static final String EVENT_CAUGHT = "Caught event: {}";
 
     private final ClientContext clientContext;
@@ -73,7 +77,7 @@ public class JavaClient implements Client {
      * is the actual ApplicationContext that is performing the injection. Same as
      * Guice, Micronaut can inject itself, which is cool.
      *
-     * @param clientCcontext  The {@code ApplicationContext} doing the injecting
+     * @param clientCcontext The {@code ApplicationContext} doing the injecting
      */
     public JavaClient(final ClientContext clientCcontext) {
         this.clientContext = Objects.requireNonNull(clientCcontext);
@@ -88,43 +92,41 @@ public class JavaClient implements Client {
     @Override
     public Result submit(final JobConfig jobConfig) {
 
-        LOG.debug("Job configuration submitted: {}", jobConfig);
+        LOGGER.debug("Job configuration submitted: {}", jobConfig);
 
-        final var palisadeRequest = createRequest(jobConfig); // actual instance sent to palisade Service
-        final var palisadeService = clientContext.get(PalisadeClient.class); // the actual http client is wrapped
+        final PalisadeRequest palisadeRequest = createRequest(jobConfig); // actual instance sent to palisade Service
+        final PalisadeClient palisadeService = clientContext.get(PalisadeClient.class); // the actual http client is wrapped
 
-        LOG.debug("Submitting request to Palisade....");
-
-        final var palisadeResponse = palisadeService.submit(palisadeRequest);
+        LOGGER.debug("Submitting request to Palisade....");
+        final PalisadeResponse palisadeResponse = palisadeService.submit(palisadeRequest);
 
         assert palisadeResponse != null : "No response back from palisade service";
+        LOGGER.debug("Got response from Palisade: {}", palisadeResponse);
 
-        LOG.debug("Got response from Palisade: {}", palisadeResponse);
+        final String token = palisadeResponse.getToken();
 
-        final var token = palisadeResponse.getToken();
-
-        final var jobContext = createJobContext(b -> b
-            .jobConfig(jobConfig)
-            .response(palisadeResponse));
+        final JobContext jobContext = createJobContext(b -> b
+                .jobConfig(jobConfig)
+                .response(palisadeResponse));
 
         jobs.put(token, jobContext);
 
-        final var resourceClient = new ResourceClient(
-            token,
-            clientContext.get(Bus.class),
-            clientContext.get(ObjectMapper.class),
-            clientContext.get(DownloadTracker.class));
+        final ResourceClient resourceClient = new ResourceClient(
+                token,
+                clientContext.get(Bus.class),
+                clientContext.get(ObjectMapper.class),
+                clientContext.get(DownloadTracker.class));
 
         try {
-            final var url = palisadeResponse.getUrl();
-            final var container = ContainerProvider.getWebSocketContainer();
+            final String url = palisadeResponse.getUrl();
+            final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(resourceClient, new URI(url)); // this start communication
-            LOG.debug("Job [{}] started", token);
+            LOGGER.debug("Job [{}] started", token);
         } catch (final IOException | DeploymentException | URISyntaxException e) {
             throw new ClientException("Error occurred in websocket: " + e.getMessage(), e);
         }
 
-        LOG.debug("Job created for token: {}", token);
+        LOGGER.debug("Job created for token: {}", token);
 
         return new Result() {
             // empty for the moment
@@ -141,9 +143,9 @@ public class JavaClient implements Client {
     @SuppressWarnings("java:S3242")
     @EventListener
     public void onScheduleDownload(final ResourceReadyEvent event) {
-        var resource = event.getResource();
-        var jobContext = getJobContext(resource.getToken());
-        var receiver = jobContext.getJobConfig().getReceiverSupplier().get();
+        Resource resource = event.getResource();
+        JobContext jobContext = getJobContext(resource.getToken());
+        Receiver receiver = jobContext.getJobConfig().getReceiverSupplier().get();
         clientContext.get(DownloadManager.class).schedule(resource, receiver);
     }
 
@@ -154,8 +156,8 @@ public class JavaClient implements Client {
      */
     @EventListener
     public void onFailedDownload(final DownloadFailedEvent event) {
-        LOG.debug(EVENT_CAUGHT, event);
-        LOG.debug("Download failed", event.getThrowble());
+        LOGGER.debug(EVENT_CAUGHT, event);
+        LOGGER.debug("Download failed", event.getThrowble());
     }
 
     /**
@@ -165,7 +167,7 @@ public class JavaClient implements Client {
      */
     @EventListener
     public void onNoMoreDownloads(final ResourcesExhaustedEvent event) {
-        LOG.debug(EVENT_CAUGHT, event);
+        LOGGER.debug(EVENT_CAUGHT, event);
     }
 
     /**
@@ -192,19 +194,18 @@ public class JavaClient implements Client {
 
     private static PalisadeRequest createRequest(final JobConfig jobConfig) {
 
-        var userId = jobConfig.getUserId();
-        var purposeOpt = jobConfig.getPurpose();
-        var resourceId = jobConfig.getResourceId();
-        var properties = new HashMap<>(jobConfig.getProperties());
+        String userId = jobConfig.getUserId();
+        Optional<Object> purposeOpt = jobConfig.getPurpose();
+        String resourceId = jobConfig.getResourceId();
+        HashMap<String, Object> properties = new HashMap<>(jobConfig.getProperties());
 
         purposeOpt.ifPresent(pp -> properties.put("PURPOSE", pp));
 
-        var req = IPalisadeRequest.create(b -> b
-            .resourceId(resourceId)
-            .userId(userId)
-            .conext(properties));
-
-        LOG.debug("new palisade request crteated from job config: {}", req);
+        PalisadeRequest req = IPalisadeRequest.create(b -> b
+                .resourceId(resourceId)
+                .userId(userId)
+                .context(properties));
+        LOGGER.debug("new palisade request created from job config: {}", req);
 
         return req;
 

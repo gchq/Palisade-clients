@@ -31,16 +31,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * <p>
  * This class manages multiple downloads from the Palisade Data Service.
- * </p>
  *
  * @since 0.5.0
  */
 @Singleton
 public class DownloadManager implements DownloadTracker {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DownloadManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
 
     private final ThreadPoolExecutor executor;
     private final ClientContext clientContext;
@@ -53,9 +51,9 @@ public class DownloadManager implements DownloadTracker {
      */
     public DownloadManager(final ClientContext clientContext) {
         this.clientContext = Objects.requireNonNull(clientContext);
-        var numThreads = clientContext.get(ClientConfig.class).getDownload().getThreads();
+        int numThreads = clientContext.get(ClientConfig.class).getDownload().getThreads();
         this.executor = new ThreadPoolExecutor(1, numThreads, 2, TimeUnit.SECONDS, new LinkedBlockingQueue<>(2));
-        LOG.debug("### Download manager created with thread pool size of {}", numThreads);
+        LOGGER.debug("### Download manager created with thread pool size of {}", numThreads);
     }
 
     /**
@@ -65,8 +63,8 @@ public class DownloadManager implements DownloadTracker {
      * @param receiver The receiver to process the data stream
      */
     public void schedule(final Resource resource, final Receiver receiver) {
-        LOG.debug("### Scheduling resource: {}", resource);
-        var downloader = new Downloader(clientContext, resource, receiver);
+        LOGGER.debug("### Scheduling resource: {}", resource);
+        Downloader downloader = new Downloader(clientContext, resource, receiver);
         executor.execute(downloader);
     }
 

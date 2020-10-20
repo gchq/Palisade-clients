@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client.java.receiver;
 
+import uk.gov.gchq.palisade.client.java.resource.Resource;
+
 import javax.inject.Singleton;
 
 import java.io.File;
@@ -31,35 +33,24 @@ import java.nio.file.StandardCopyOption;
 @Singleton
 public class FileReceiver implements Receiver {
 
-    /**
-     * Create a new file reviver
-     */
-    public FileReceiver() { // empty
-    }
-
     @Override
     public void process(final ReceiverContext receiverContext, final InputStream inputStream) throws ReceiverException {
-
-        var resource = receiverContext.getResource();
-
-        var token = resource.getToken();
-        var resourceId = resource.getLeafResourceId();
-
-        var outFilename = "/tmp/pal-" + token + "-" + resourceId;
+        Resource resource = receiverContext.getResource();
+        String token = resource.getToken();
+        String resourceId = resource.getLeafResourceId();
+        String outFilename = "/tmp/pal-" + token + "-" + resourceId;
 
         try {
             write(inputStream, outFilename);
         } catch (IOException e) {
             throw new ReceiverException(resource, "Failed to write downloaded resource to " + outFilename, e);
         }
-
     }
 
     private static void write(final InputStream initialStream, final String filename) throws IOException {
         try (initialStream) {
-            var file = new File(filename);
+            File file = new File(filename);
             Files.copy(initialStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-      }
+        }
     }
-
-  }
+}

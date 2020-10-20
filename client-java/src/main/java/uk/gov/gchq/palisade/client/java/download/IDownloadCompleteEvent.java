@@ -21,27 +21,20 @@ import uk.gov.gchq.palisade.client.java.resource.Resource;
 import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 
 /**
- * <p>
- * A {@code DownloadCompleteEvent} is posted to the event bus after a successful
+ * A {@link DownloadCompleteEvent} is posted to the event bus after a successful
  * response from the Data Service. At the time of posting, the actual download
  * has not started yet. This event contains the input stream to be cosumed whhen
  * downloading starts.
- * </p>
  * <p>
- * Note that the {@code DownloadReadyEvent} class is generated at compile time.
+ * Note that the {@link DownloadCompleteEvent} class is generated at compile time.
  * The generated class does not use a builder but uses "Tuple Style". For
  * example, an instance can be generated in the following way.
- * </p>
- *
  * <pre>
- * {
- *     &#64;code
- *     var event = DownloadReadyEvent.of("token", resource, inputStream);
- * }
+ *     {@code var event = DownloadReadyEvent.of("token", resource, inputStream);}
  * </pre>
  *
- * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @TupleStyle

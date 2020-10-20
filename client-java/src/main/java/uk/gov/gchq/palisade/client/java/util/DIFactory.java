@@ -19,6 +19,7 @@ import io.micronaut.context.BeanLocator;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.event.ApplicationEventPublisher;
 import io.micronaut.context.exceptions.NoSuchBeanException;
+import io.micronaut.http.HttpResponse;
 
 import uk.gov.gchq.palisade.client.java.ClientConfig;
 import uk.gov.gchq.palisade.client.java.ClientContext;
@@ -27,6 +28,7 @@ import uk.gov.gchq.palisade.client.java.download.DownloadManager;
 import uk.gov.gchq.palisade.client.java.download.DownloadTracker;
 import uk.gov.gchq.palisade.client.java.request.PalisadeClient;
 import uk.gov.gchq.palisade.client.java.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.java.request.PalisadeServiceClient;
 
 import javax.inject.Singleton;
@@ -35,7 +37,7 @@ import java.util.Optional;
 
 /**
  * This is the factory for any services that are injected via the DI framework.
- * This configuration is used when a new {@code ApplicationContext} is created.
+ * This configuration is used when a new {@link io.micronaut.context.ApplicationContext} is created.
  *
  * @since 0.5.0
  */
@@ -58,11 +60,11 @@ public class DIFactory {
     @Singleton
     public PalisadeClient createPalisadeClient(final ClientConfig clientConfig, final PalisadeServiceClient prc) {
         return (final PalisadeRequest request) -> {
-            var httpResponse = prc.registerDataRequestSync(request);
-            var opt = httpResponse.getBody();
-            if (!opt.isPresent()) {
-                var url = clientConfig.getClient().getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
-                var code = httpResponse.code();
+            HttpResponse<PalisadeResponse> httpResponse = prc.registerDataRequestSync(request);
+            Optional<PalisadeResponse> opt = httpResponse.getBody();
+            if (opt.isEmpty()) {
+                String url = clientConfig.getClient().getUrl() + PalisadeServiceClient.REGISTER_DATA_REQUEST;
+                int code = httpResponse.code();
                 throw new ClientException(String.format("Request to %s failed with status %s", url, code));
             }
             return opt.get();
@@ -75,7 +77,7 @@ public class DIFactory {
      *
      * @param applicationContext The context to be wrapped
      * @return a {@code ClientContext} which wraps Micronaut's
-     *         {@code ApplicationContext} and methods which are not needed.
+     * {@code ApplicationContext} and methods which are not needed.
      */
     @Singleton
     public ClientContext createClientContext(final BeanLocator applicationContext) {
@@ -114,7 +116,7 @@ public class DIFactory {
      *
      * @param applicationEventPublisher the publisher being wrapped
      * @return a {@code Bus} instance which wraps Micronaut's
-     *         {@code ApplicationEventPublisher}
+     * {@code ApplicationEventPublisher}
      */
     @Singleton
     public Bus createEventBus(final ApplicationEventPublisher applicationEventPublisher) {

@@ -26,19 +26,16 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * <p>
- * An instance of {@code PalisadeRequest} is used to wrap all the information
+ * An instance of {@link PalisadeRequest} is used to wrap all the information
  * that the user needs to supply to the palisade service to register the data
  * access request.
- * </p>
  * <p>
- * Note that the {@code PalisadeRequest} class is created at compile time. The
+ * Note that the {@link PalisadeRequest} class is created at compile time. The
  * way in which the class is created is determined by the
  * {@link ImmutableStyle}. This class is also compatible with Jackson.
- * </p>
  *
- * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle
@@ -75,6 +72,6 @@ public interface IPalisadeRequest extends Serializable {
      *
      * @return the context in support of this request
      */
-    Map<String, Object> getConext();
+    Map<String, Object> getContext();
 
 }

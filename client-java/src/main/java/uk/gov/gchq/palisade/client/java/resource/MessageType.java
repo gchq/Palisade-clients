@@ -30,20 +30,24 @@ public enum MessageType {
     SUBSCRIBE,
 
     /**
-     * Receive only: Subscribe the client to a request token Required headers:
+     * Receive only: Subscribe the client to a request token
+     * Required headers:
      * token: The request token to subscribe to
      */
     SUBSCRIBED,
 
     /**
-     * Send/Recieve: Acknowledge a message Required headers: token: The request
-     * token to subscribe to msg_type: The message type being acknowledged
+     * Send/Recieve: Acknowledge a message
+     * Required headers:
+     * token: The request token to subscribe to
+     * msg_type: The message type being acknowledged
      */
     ACK,
 
     /**
-     * Server is ready to send a resource Required headers: token: The request token
-     * to subscribe to
+     * Server is ready to send a resource
+     * Required headers:
+     * token: The request token to subscribe to
      */
     RTS,
 
@@ -60,8 +64,9 @@ public enum MessageType {
     RESOURCE,
 
     /**
-     * No more resources available for token Required headers: token: The request
-     * token to subscribe to
+     * No more resources available for token
+     * Required headers:
+     * token: The request token to subscribe to
      */
     COMPLETE
 

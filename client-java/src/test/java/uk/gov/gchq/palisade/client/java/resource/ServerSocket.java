@@ -30,17 +30,16 @@ import javax.websocket.server.ServerEndpoint;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Optional;
 
 @ServerEndpoint(
         value = "/name",
-        encoders = { ResourceClient.MessageCode.class },
-        decoders = { ResourceClient.MessageCode.class }
-        )
+        encoders = {ResourceClient.MessageCode.class},
+        decoders = {ResourceClient.MessageCode.class}
+)
 public class ServerSocket {
-
     private static final Logger LOG = LoggerFactory.getLogger(ServerSocket.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new Jdk8Module());
-    private static final int NUM_RESOURCES = 1;
 
     private final ServerStateManager statemanager = new ServerStateManager();
 
@@ -58,8 +57,12 @@ public class ServerSocket {
     public void onMessage(final Message inmsg, final Session session) {
         LOG.debug("Recd: {}", inmsg);
         switch (inmsg.getType()) {
-            case SUBSCRIBE: onSubscribe(session, inmsg); break;
-            case CTS:       onCTS(session, inmsg);       break;
+            case SUBSCRIBE:
+                onSubscribe(session, inmsg);
+                break;
+            case CTS:
+                onCTS(session, inmsg);
+                break;
             default:
                 LOG.warn("Unknown message type: {}", inmsg.getType());
                 break;
@@ -72,32 +75,31 @@ public class ServerSocket {
     }
 
     private void onSubscribe(final Session session, final Message message) {
+        String token = message.getToken();
 
-        var token = message.getToken();
+        Optional<ServerState> oldState = statemanager.find(token).filter(ServerState::isActive);
 
-        var oldState = statemanager.find(token).filter(ServerState::isActive);
-
-        var ack = IMessage.create(b -> b
-            .type(MessageType.SUBSCRIBED)
-            .token(token)
-            .putHeader("state", (oldState.isPresent() ? "reconnect" : "new"))
-            .putHeader("test", "test response message"));
+        Message ack = IMessage.create(b -> b
+                .type(MessageType.SUBSCRIBED)
+                .token(token)
+                .putHeader("state", (oldState.isPresent() ? "reconnect" : "new"))
+                .putHeader("test", "test response message"));
 
         sendMessage(session, ack);
 
         // create a weak reference for the session as we should not get in the way of it
         // being reclaimed
-        var sessionRef = new WeakReference<>(session);
+        WeakReference<Session> sessionRef = new WeakReference<>(session);
 
-        var newState = oldState.isPresent()
-            ? oldState.get().change(b -> b
-                .sessionReference(sessionRef)
-                .currentState(ServerStateType.WAITING))
-            : IServerState.create(b -> b
-                .token(token)
-                .sessionReference(sessionRef)
-                .resources(new ResourceGenerator(token).iterator())
-                .currentState(ServerStateType.WAITING));
+        ServerState newState = oldState
+                .map(state -> state.change(b -> b
+                        .sessionReference(sessionRef)
+                        .currentState(ServerStateType.WAITING)))
+                .orElseGet(() -> IServerState.create(b -> b
+                        .token(token)
+                        .sessionReference(sessionRef)
+                        .resources(new ResourceGenerator(token).iterator())
+                        .currentState(ServerStateType.WAITING)));
 
         statemanager.set(newState);
 
@@ -109,7 +111,7 @@ public class ServerSocket {
         // queue
 
         if (newState.getResources().hasNext()) {
-            var rts = IMessage.create(b -> b.type(MessageType.RTS).token(token));
+            Message rts = IMessage.create(b -> b.type(MessageType.RTS).token(token));
             sendMessage(session, rts);
             statemanager.set(statemanager.get(token).change(b -> b.currentState(ServerStateType.RTS)));
         }
@@ -118,9 +120,9 @@ public class ServerSocket {
 
     private void onCTS(final Session session, final Message message) {
 
-        var token = message.getToken();
+        String token = message.getToken();
 
-        var oldState = statemanager.get(token);
+        ServerState oldState = statemanager.get(token);
 
         // we need to check the current state is RTS (the reason we are recieving a CTS)
         if (!oldState.isAt(ServerStateType.RTS)) {
@@ -130,9 +132,9 @@ public class ServerSocket {
         }
 
         // get the next resource
-        var resource = oldState.getResources().next();
+        Resource resource = oldState.getResources().next();
 
-        var msg = IMessage.create(b -> b.type(MessageType.RESOURCE).token(token)
+        Message msg = IMessage.create(b -> b.type(MessageType.RESOURCE).token(token)
                 .putHeader("test", "test response message").body(resource));
 
         sendMessage(session, msg);
@@ -140,7 +142,7 @@ public class ServerSocket {
         // now create the state
         // for now we will just overwrite any existing state for this token.
 
-        var newState = oldState.change(b -> b.currentState(ServerStateType.WAITING));
+        ServerState newState = oldState.change(b -> b.currentState(ServerStateType.WAITING));
         statemanager.set(newState);
 
         // now that we have done an ACK, we do have resources to send
@@ -151,11 +153,11 @@ public class ServerSocket {
         // queue
 
         if (newState.getResources().hasNext()) {
-            var rts = IMessage.create(b -> b.type(MessageType.RTS).token(token));
+            Message rts = IMessage.create(b -> b.type(MessageType.RTS).token(token));
             sendMessage(session, rts);
             statemanager.set(statemanager.get(token).change(b -> b.currentState(ServerStateType.RTS)));
         } else {
-            var comp = IMessage.create(b -> b.type(MessageType.COMPLETE).token(token));
+            Message comp = IMessage.create(b -> b.type(MessageType.COMPLETE).token(token));
             sendMessage(session, comp);
             statemanager.remove(token);
         }
@@ -164,7 +166,7 @@ public class ServerSocket {
 
     private void sendMessage(final Session session, final Message message) {
         try {
-            var text = OBJECT_MAPPER.writeValueAsString(message);
+            String text = OBJECT_MAPPER.writeValueAsString(message);
             session.getBasicRemote().sendText(text);
             LOG.debug("Sent: " + message);
         } catch (JsonProcessingException e) {

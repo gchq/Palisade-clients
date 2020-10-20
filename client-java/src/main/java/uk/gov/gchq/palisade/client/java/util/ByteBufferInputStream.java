@@ -26,16 +26,16 @@ import java.util.Objects;
 import static java.lang.System.arraycopy;
 
 /**
- * A simple InputStream which uses ByteBuffers as it's backing store.
- * <P>
- * The only IOException should come if the InputStream has been closed. All
- * other IOException should not occur because all the data is local. Data reads
- * on an exhausted ByteBuffer returns a -1.
+ * A simple {@link InputStream} which uses {@link ByteBuffer}s as its backing store.
+ * <p>
+ * The only {@link IOException} should come if the stream has been closed. All
+ * other exceptions should not occur because all the data is local. Data reads
+ * on an exhausted buffer return a -1.
  */
 public class ByteBufferInputStream extends InputStream {
 
     private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
-    private static final String CLOSED_STREAM_MSG = "tried to access to closed stream";
+    private static final String CLOSED_STREAM_MSG = "tried to access closed stream";
 
     private final Flowable<ByteBuffer> flowable;
     private Iterator<ByteBuffer> iterator;
@@ -55,16 +55,16 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public byte[] readAllBytes() throws IOException {
+    public byte[] readAllBytes() {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
     public byte[] readNBytes(final int len) throws IOException {
-        var bytes1 = new byte[len];
-        var actual = read(bytes1);
+        byte[] bytes1 = new byte[len];
+        int actual = read(bytes1);
         if (actual < len) {
-            var bytes2 = new byte[actual];
+            byte[] bytes2 = new byte[actual];
             arraycopy(bytes1, 0, bytes2, 0, actual);
             return bytes2;
         }
@@ -82,7 +82,7 @@ public class ByteBufferInputStream extends InputStream {
         if (closed) {
             throw new IOException(CLOSED_STREAM_MSG);
         }
-        var bb = buffer();
+        ByteBuffer bb = buffer();
         if (bb.remaining() == 0) {
             return -1;
         }
@@ -107,7 +107,7 @@ public class ByteBufferInputStream extends InputStream {
             return 0;
         }
 
-        var bb = buffer();
+        ByteBuffer bb = buffer();
 
         if (!bb.hasRemaining()) {
             return -1;
@@ -118,12 +118,12 @@ public class ByteBufferInputStream extends InputStream {
         int c = 0; // current byte count
 
         while (l > 0) {
-            var rem = bb.remaining();
+            int rem = bb.remaining();
 
             if (rem == 0) {
                 if (c + l != len) {
                     throw new IOException(
-                        "We have some bytes remaining where we should not have any. This could be a bug");
+                            "We have some bytes remaining where we should not have any. This could be a bug");
                 }
                 break; // return c
             }
@@ -157,7 +157,7 @@ public class ByteBufferInputStream extends InputStream {
             return 0;
         }
 
-        var bb = buffer();
+        ByteBuffer bb = buffer();
 
         if (!bb.hasRemaining()) {
             return 0;
@@ -167,7 +167,7 @@ public class ByteBufferInputStream extends InputStream {
         int c = 0; // skipped
 
         while (l > 0) {
-            var rem = bb.remaining();
+            int rem = bb.remaining();
             if (rem > l) {
                 bb.position(bb.position() + l);
                 return (long) c + l;
@@ -199,7 +199,8 @@ public class ByteBufferInputStream extends InputStream {
      */
     @Override
     public synchronized void mark(final int readlimit) {
-        /* noop */ }
+        /* noop */
+    }
 
     /**
      * Throws {@code IOException} as marking is not supported

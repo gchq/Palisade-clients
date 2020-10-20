@@ -31,15 +31,12 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
- * <p>
  * This class is the base class of more concrete implementations to
  * serialise/deserialise objects to and from text streams. This class is used by
  * the web socket to translate strings to/from objects.
- * </p>
  * <p>
- * When {@code #init(EndpointConfig)} is called, the type generic type is
+ * When {@link #init(EndpointConfig)} is called, the type generic type is
  * retrieved from the superclass
- * </p>
  *
  * @param <T> The type of object to be serialised to and deserialised from
  * @since 0.5.0
@@ -77,7 +74,7 @@ public abstract class JSONCoder<T> implements Encoder.TextStream<T>, Decoder.Tex
 
     @SuppressWarnings("unchecked")
     private Class<T> getType() {
-        Class<T> cls = null;
+        Class<T> cls;
         ParameterizedType thisClass = (ParameterizedType) this.getClass().getGenericSuperclass();
         Type typeT = thisClass.getActualTypeArguments()[0];
         if (typeT instanceof Class) {

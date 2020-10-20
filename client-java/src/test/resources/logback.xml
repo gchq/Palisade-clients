@@ -30,11 +30,11 @@
 
     <logger name="uk.gov.gchq.palisade" level="INFO"/>
 
-<!--
-    <logger name="io.micronaut.discovery" level="TRACE"/>
-    <logger name="io.micronaut.context.env" level="TRACE"/>
-    <logger name="io.micronaut.context.condition" level="TRACE"/>
- -->
+    <!--
+        <logger name="io.micronaut.discovery" level="TRACE"/>
+        <logger name="io.micronaut.context.env" level="TRACE"/>
+        <logger name="io.micronaut.context.condition" level="TRACE"/>
+     -->
 
     <logger name="io.micronaut.http.client" level="INFO"/>
 

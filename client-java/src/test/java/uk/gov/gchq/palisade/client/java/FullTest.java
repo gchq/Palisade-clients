@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.java.job.IJobConfig;
+import uk.gov.gchq.palisade.client.java.job.JobConfig;
 import uk.gov.gchq.palisade.client.java.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.java.resource.ServerSocket;
 
@@ -34,6 +35,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,28 +62,25 @@ class FullTest {
     }
 
     @Test
-    @SuppressWarnings("java:S2925") // sleep used as we do not return a Future (or equivalent) yet
     void testFull() throws Exception {
 
-        var config = IJobConfig.create(b -> b
-            .userId("user_id")
-            .resourceId("pi.txt")
-            .purpose("purpose")
-            .receiverSupplier(() -> new FileReceiver()));
+        JobConfig config = IJobConfig.create(b -> b
+                .userId("user_id")
+                .resourceId("pi.txt")
+                .purpose("purpose")
+                .receiverSupplier(FileReceiver::new));
 
         // lets start the ball rolling
+        Client.create().submit(config);
 
-        var result = Client.create().submit(config);
-
-        Thread.sleep(3000);
+        TimeUnit.SECONDS.sleep(3);
 
         /*
-         * now we should read bothe the original and the new file The original is in
+         * now we should read both the original and the new file The original is in
          * "src/test/resources" and the download file is in "/tmp"
          */
-
-        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("pi.txt");
-        var actual = new FileInputStream(new File("/tmp/pal-abcd-1-pi.txt"));
+        InputStream expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("pi.txt");
+        FileInputStream actual = new FileInputStream(new File("/tmp/pal-abcd-1-pi.txt"));
 
         assertThat(isEqual(actual, expected)).isTrue();
 
@@ -93,14 +92,13 @@ class FullTest {
     }
 
     private static boolean isEqual(final InputStream i1, final InputStream i2) throws IOException {
-
         ReadableByteChannel ch1 = Channels.newChannel(i1);
         ReadableByteChannel ch2 = Channels.newChannel(i2);
 
         ByteBuffer buf1 = ByteBuffer.allocateDirect(1024);
         ByteBuffer buf2 = ByteBuffer.allocateDirect(1024);
 
-        try {
+        try (i1; i2) {
             while (true) {
 
                 int n1 = ch1.read(buf1);
@@ -122,17 +120,7 @@ class FullTest {
                 buf1.compact();
                 buf2.compact();
             }
-
-        } finally {
-            if (i1 != null) {
-                i1.close();
-            }
-            if (i2 != null) {
-                i2.close();
-            }
         }
     }
-
-
 
 }

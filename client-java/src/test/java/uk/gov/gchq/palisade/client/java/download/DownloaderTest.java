@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import uk.gov.gchq.palisade.client.java.ClientContext;
 import uk.gov.gchq.palisade.client.java.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.java.resource.IResource;
+import uk.gov.gchq.palisade.client.java.resource.Resource;
 
 import javax.inject.Inject;
 
@@ -40,9 +41,6 @@ import java.nio.channels.ReadableByteChannel;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- *
- */
 @MicronautTest
 @Property(name = "palisade.client.url", value = DownloaderTest.BASE_URL)
 @Property(name = "micronaut.server.port", value = DownloaderTest.PORT)
@@ -74,18 +72,18 @@ class DownloaderTest implements ApplicationEventListener<DownloadCompleteEvent> 
     @Test
     void testDownload() throws Exception {
 
-        var token = "abcd-1";
-        var filename = "Selection_032.png";
-        var resource = IResource.create(b -> b.leafResourceId(filename).token(token).url(BASE_URL));
+        String token = "abcd-1";
+        String filename = "Selection_032.png";
+        Resource resource = IResource.create(b -> b.leafResourceId(filename).token(token).url(BASE_URL));
 
-        var downloader = new Downloader(clientCtx, resource, new FileReceiver());
+        Downloader downloader = new Downloader(clientCtx, resource, new FileReceiver());
 
         downloader.run();
 
         LOG.debug("test says downloder.run() has finished");
 
-        var actual = new FileInputStream(new File("/tmp/pal-" + token + "-" + filename));
-        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
+        FileInputStream actual = new FileInputStream(new File("/tmp/pal-" + token + "-" + filename));
+        InputStream expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
 
         assertThat(actual).isNotNull();
         assertThat(expected).isNotNull();

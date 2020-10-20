@@ -24,24 +24,20 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * <p>
  * A Client is the entry point to running jobs against Palisade. To create a
  * client do the following:
- * </p>
  * <pre>
- * {@code
+ *     {@code
  *     var client = (JavaClient) Client.create(Map.of(
  *         "palisade.client.download.threads", NUM_THREADS,
  *         "palisade.client.url", BASE_URL));
- * }
+ *     }
  * </pre>
  * <p>
  * The number of threads is 1 by default. The default base url is
  * {@code http://localhost:8081}. In order to submit a request to Palisade, use
  * the following to submit a request:
- * </p>
- * <pre>
- * {@code
+ * <pre> {@code
  *   var futureResult = client
  *       .submit(b -> b
  *           .userId("user_id")
@@ -51,8 +47,7 @@ import java.util.function.UnaryOperator;
  *                "key1", "value1",
  *                "key2", "value2"))
  *           .receiverSupplier(() -> new FileReceiver());
- * }
- * </pre>
+ * } </pre>
  *
  * @since 0.5.0
  */
@@ -65,9 +60,10 @@ public interface Client {
      * @param func The function applied to the {@code JobConfig.Builder} which
      *             provided the configuration
      * @return a newly constructed {@code Job} using the provided configuration
-     *         function
+     * function
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    @SuppressWarnings("java:S3242")
+    // I REALLY want to use UnaryOperator here SonarQube!!!
     Result submit(UnaryOperator<JobConfig.Builder> func);
 
     /**
@@ -94,7 +90,7 @@ public interface Client {
      *
      * @param properties The properties to configure the client
      * @return a newly created {@code JavaClient} using the provided property
-     *         overrides
+     * overrides
      */
     static Client create(final Map<String, String> properties) {
 
@@ -103,8 +99,7 @@ public interface Client {
          * These will then become available for injection via the full ClientConfig
          * class or individual values.
          */
-
-        final var map = new LinkedHashMap<String, Object>(properties); // need to be string,object!
+        final LinkedHashMap<String, Object> map = new LinkedHashMap<>(properties); // need to be string,object!
         return ApplicationContext.run(map).getBean(Client.class);
 
     }

@@ -27,17 +27,14 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
- * <p>
- * An instance of {@code JobConfig} is passed during the submission of a new
+ * An instance of {@link JobConfig} is passed during the submission of a new
  * request.
- * </p>
  * <p>
- * Note that the {@code JobConfig} class is created at compile time. The way in
+ * Note that the {@link JobConfig} class is created at compile time. The way in
  * which the class is created is determined by the {@link ImmutableStyle}.
- * </p>
  *
- * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle

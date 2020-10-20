@@ -28,19 +28,16 @@ import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 /**
- * <p>
- * The {@code Message} object is used in the communication between the client
+ * The {@link Message} object is used in the communication between the client
  * and the Filtered Resource Service over a WebSocket.
- * </p>
  * <p>
  * Note that the {@link UserId} class is created at compile time. The way in
  * which the class is created is determined by the {@link ImmutableStyle}. This
  * class is also compatible with Jackson.
- * </p>
  *
- * @since 0.5.0
  * @see ResourceClient
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle

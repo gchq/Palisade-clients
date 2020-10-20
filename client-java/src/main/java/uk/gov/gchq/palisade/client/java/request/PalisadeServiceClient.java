@@ -24,25 +24,19 @@ import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.client.annotation.Client;
 
 /**
- * <p>
  * This class is a declarative HTTP Client which is generated at compile time.
  * It is responsible for making requests to the Palisade Service endpoint. The
  * url is configured at runtime via the provided property provided on the
- * {@code @Client} annotation.
- * </p>
+ * {@link Client} annotation.
  * <p>
  * This client can be either injected where needed (if the type being injected
- * into is itself injected) or looked up via the {@code ApplicationContext} via:
- *
+ * into is itself injected) or looked up via the {@link io.micronaut.context.ApplicationContext} via:
  * <pre>
- * {
- *     &#64;code
- *     var client = appCtx.getBean(PalisadeServiceClient.class);
- * }
+ *     {@code var client = appCtx.getBean(PalisadeServiceClient.class);}
  * </pre>
  *
- * @since 0.5.0
  * @see "https://docs.micronaut.io/latest/guide/index.html#clientAnnotation"
+ * @since 0.5.0
  */
 @SuppressWarnings("java:S1214")
 @Client("${palisade.client.url}")

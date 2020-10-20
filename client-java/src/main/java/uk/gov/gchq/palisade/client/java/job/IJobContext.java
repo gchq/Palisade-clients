@@ -23,16 +23,13 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import java.util.function.UnaryOperator;
 
 /**
+ * An instance of {@link JobConfig} is passed during the creation of a new Job.
  * <p>
- * An instance of {@code JobConfig} is passed during the creation of a new Job.
- * </p>
- * <p>
- * Note that the {@code JobConfig} class is created at compile time. The way in
+ * Note that the {@link JobConfig} class is created at compile time. The way in
  * which the class is created is determined by the {@link ImmutableStyle}.
- * </p>
  *
- * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle
@@ -41,7 +38,6 @@ public interface IJobContext {
     /**
      * Helper method to create a {@code JobConfig} using a builder function which
      * negates the need to use {@code builder()} and {@code build()} methods:
-     *
      * <pre>
      * {@code
      * var jobctx =

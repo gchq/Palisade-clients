@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.gchq.palisade.client.java.Client;
 import uk.gov.gchq.palisade.client.java.ClientConfig;
 import uk.gov.gchq.palisade.client.java.JavaClient;
+import uk.gov.gchq.palisade.client.java.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.java.resource.ServerSocket;
 
 import javax.inject.Inject;
@@ -43,9 +44,12 @@ class JobTest {
     private static final int WS_PORT = 8082;
     private static final String WS_HOST = "localhost";
 
-    @Inject Client rawClient;
-    @Inject ObjectMapper objectMapper;
-    @Inject EmbeddedServer embeddedServer;
+    @Inject
+    Client rawClient;
+    @Inject
+    ObjectMapper objectMapper;
+    @Inject
+    EmbeddedServer embeddedServer;
 
     private Server server;
 
@@ -63,34 +67,28 @@ class JobTest {
     }
 
     @Test
-    void testNewJobCreation() throws Exception {
-
-        var config = IJobConfig.create(b -> b
+    void testNewJobCreation() {
+        JobConfig config = IJobConfig.create(b -> b
                 .purpose("purpose")
                 .resourceId("resource_id")
                 .userId("user_id"));
 
         JavaClient client = (JavaClient) rawClient;
 
-        var result = client.submit(config);
+        client.submit(config);
 
-        var jobContext = client.getJobContext("abcd-1");
+        JobContext jobContext = client.getJobContext("abcd-1");
 
         assertThat(jobContext).isNotNull();
 
-        var response = jobContext.getResponse();
+        PalisadeResponse response = jobContext.getResponse();
 
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isEqualTo("abcd-1");
         assertThat(response.getUrl()).isEqualTo("ws://localhost:8082/name");
 
-//        assertThat(response)
-//            .hasToken("abcd-1")
-//            .hasUrl("ws://localhost:8082/name");
-
-        var jobConfig = jobContext.getJobConfig();
+        JobConfig jobConfig = jobContext.getJobConfig();
 
         assertThat(jobConfig).isEqualTo(config);
-
     }
 }

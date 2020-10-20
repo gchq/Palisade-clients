@@ -18,9 +18,7 @@ package uk.gov.gchq.palisade.client.java.receiver;
 import uk.gov.gchq.palisade.client.java.resource.Resource;
 
 /**
- * <p>
  * Instances of this class are passed to a receiver.
- * </p>
  *
  * @since 0.5.0
  */

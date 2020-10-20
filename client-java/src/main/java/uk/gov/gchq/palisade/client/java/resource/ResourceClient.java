@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.function.UnaryOperator;
 
 /**
- * The {@code ResourceClient} class represents a websocket endpoint. It handles
+ * The {@link ResourceClient} class represents a websocket endpoint. It handles
  * the communication to the Filtered Resource Service to negotiate the resources
  * that are available for download. This class uses the standard implementation
  * of websockets in Java
@@ -43,8 +43,8 @@ import java.util.function.UnaryOperator;
  * @since 0.5.0
  */
 @ClientEndpoint(
-    encoders = {ResourceClient.MessageCode.class},
-    decoders = {ResourceClient.MessageCode.class}
+        encoders = {ResourceClient.MessageCode.class},
+        decoders = {ResourceClient.MessageCode.class}
 )
 public class ResourceClient {
 
@@ -107,7 +107,7 @@ public class ResourceClient {
     @OnClose
     public void onClose(final Session session, final CloseReason closeReason) {
         LOG.debug("Session {} closed with code {} because {}",
-            session.getId(), closeReason.getCloseCode(), closeReason.getReasonPhrase());
+                session.getId(), closeReason.getCloseCode(), closeReason.getReasonPhrase());
         this.session = null;
     }
 
@@ -179,7 +179,7 @@ public class ResourceClient {
         post(ResourcesExhaustedEvent.of(token));
     }
 
-    @SuppressWarnings({ "java:S3242", "java:S1135" }) // I REALLY want to use UnaryOperator here SonarQube!!!
+    @SuppressWarnings({"java:S3242", "java:S1135"}) // I REALLY want to use UnaryOperator here SonarQube!!!
     private void sendMessage(final UnaryOperator<Message.Builder> func) {
         var message = func.apply(Message.builder()).build();
         try {

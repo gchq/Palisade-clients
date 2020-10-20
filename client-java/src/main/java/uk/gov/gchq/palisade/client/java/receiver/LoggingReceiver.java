@@ -29,20 +29,11 @@ import java.io.InputStream;
  */
 @Singleton
 public class LoggingReceiver implements Receiver {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LoggingReceiver.class);
-
-    /**
-     * Create a new file reviver
-     */
-    public LoggingReceiver() { // empty
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingReceiver.class);
 
     @Override
     public void process(final ReceiverContext receiverContext, final InputStream is) {
-
-        LOG.debug("Received: {}", receiverContext);
-
+        LOGGER.debug("Received: {}", receiverContext);
     }
 
 }

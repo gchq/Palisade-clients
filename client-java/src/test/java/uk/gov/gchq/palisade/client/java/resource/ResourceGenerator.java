@@ -32,11 +32,11 @@ public class ResourceGenerator implements Iterable<Resource> {
      */
     public ResourceGenerator(final String token) {
         resources = FILENAMES.stream()
-            .map(fn -> IResource.create(b -> b
-                .token(token)
-                .leafResourceId(fn)
-                .url("http://localhost:8081")))
-            .collect(Collectors.toList());
+                .map(fn -> IResource.create(b -> b
+                        .token(token)
+                        .leafResourceId(fn)
+                        .url("http://localhost:8081")))
+                .collect(Collectors.toList());
     }
 
     @Override

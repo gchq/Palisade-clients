@@ -35,11 +35,11 @@ class DataRequestSerialisationTest {
     @Test
     @DisplayName("Test DataRequest [De]Serialisation")
     void testDataRequestSerialisation() throws Exception {
-        var expected = IDataRequest.create(b -> b
-            .token("blah")
-            .leafResourceId("leaf-resource-id"));
-        var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, DataRequest.class);
+        DataRequest expected = IDataRequest.create(b -> b
+                .token("blah")
+                .leafResourceId("leaf-resource-id"));
+        String string = objectMapper.writeValueAsString(expected);
+        DataRequest actual = objectMapper.readValue(string, DataRequest.class);
         assertThat(actual).isEqualTo(expected);
     }
 

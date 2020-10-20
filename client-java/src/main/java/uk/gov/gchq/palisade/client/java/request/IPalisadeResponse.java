@@ -27,20 +27,17 @@ import java.io.Serializable;
 import java.util.function.UnaryOperator;
 
 /**
- * <p>
- * An instance of {@code PalisadeResponse} is returned after a successful
+ * An instance of {@link PalisadeResponse} is returned after a successful
  * request to the Palisade Service. This object contains the url and the token
  * which is to be used to contact the Filtered Resource Service and wait for
  * resources to become available.
- * </p>
  * <p>
- * Note that the {@code PalisadeResponse} class is created at compile time. The
+ * Note that the {@link PalisadeResponse} class is created at compile time. The
  * way in which the class is created is determined by the
  * {@link ImmutableStyle}. This class is also compatible with Jackson.
- * </p>
  *
- * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle
@@ -64,7 +61,7 @@ public interface IPalisadeResponse extends Serializable {
      * resources
      *
      * @return the url of the websocket endpoint to contact when waiting for
-     *         resources
+     * resources
      */
     String getUrl();
 

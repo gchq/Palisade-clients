@@ -23,13 +23,12 @@ package uk.gov.gchq.palisade.client.java;
 public interface Result {
 
     /*
-     * This class will in the future provide access to the actuial configuration and
+     * This class will in the future provide access to the actual configuration and
      * the resource requested. It will also contain a future that will signal the
      * completion of all processing for the job.
      *
      * Information provided will be information about each downloaded resource and
-     * the path to the file if there is one. This couls also contain possible timing
-     * metrics, file size etc.
+     * the path to the file if there is one.
      */
 
 }

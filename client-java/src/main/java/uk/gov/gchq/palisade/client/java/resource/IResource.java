@@ -27,20 +27,17 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * <p>
- * A {@code Resource} object is received in a {@code Message} of type
+ * A {@link Resource} object is received in a {@link Message} of type
  * {@link MessageType#RESOURCE} after it has sent a message of type
  * {@link MessageType#CTS}.
- * </p>
  * <p>
  * Note that the {@link UserId} class is created at compile time. The way in
  * which the class is created is determined by the {@link ImmutableStyle}. This
  * class is also compatible with Jackson.
- * </p>
  *
- * @since 0.5.0
  * @see ResourceClient
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle
@@ -85,7 +82,7 @@ public interface IResource extends Serializable {
      * none
      *
      * @return any extra properties for this resource or an empty map if there are
-     *         none
+     * none
      */
     Map<String, String> getProperties();
 

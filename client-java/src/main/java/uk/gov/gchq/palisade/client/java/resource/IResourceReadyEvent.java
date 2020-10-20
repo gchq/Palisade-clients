@@ -20,25 +20,18 @@ import org.immutables.value.Value;
 import uk.gov.gchq.palisade.client.java.util.TupleStyle;
 
 /**
- * <p>
- * A {@code ResourceReadyEvent} is posted to the event bus when a resource
+ * A {@link ResourceReadyEvent} is posted to the event bus when a resource
  * {@link Message} has been received signifying that it is ready for download.
- * </p>
  * <p>
- * Note that the {@code DownloadFailedEvent} class is generated at compile time.
+ * Note that the {@link ResourceReadyEvent} class is generated at compile time.
  * The generated class does not use a builder but uses "Tuple Style". For
  * example, an instance can be generated in the following way.
- * </p>
- *
  * <pre>
- * {
- *     &#64;code
- *     var event = ResourceReadyEvent.of("token", resource);
- * }
+ *     {@code var event = ResourceReadyEvent.of(resource);}
  * </pre>
  *
- * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @TupleStyle

@@ -23,44 +23,9 @@ import uk.gov.gchq.palisade.client.java.resource.Resource;
  * @since 0.5.0
  */
 public class ReceiverException extends Exception {
-
     private static final long serialVersionUID = 1L;
 
     private final Resource resource;
-
-    /**
-     * Creates a new instance
-     *
-     * @param resource The resource being received
-     * @see RuntimeException#RuntimeException()
-     */
-    public ReceiverException(final Resource resource) {
-        this.resource = resource;
-    }
-
-    /**
-     * Creates a new instance with the provided {@code message}
-     *
-     * @param resource The resource being received
-     * @param message  The message
-     * @see RuntimeException#RuntimeException(String)
-     */
-    public ReceiverException(final Resource resource, final String message) {
-        super(message);
-        this.resource = resource;
-    }
-
-    /**
-     * Creates a new instance with the provided {@code cause}
-     *
-     * @param resource The resource being received
-     * @param cause    The cause
-     * @see RuntimeException#RuntimeException(Throwable)
-     */
-    public ReceiverException(final Resource resource, final Throwable cause) {
-        super(cause);
-        this.resource = resource;
-    }
 
     /**
      * Creates a new instance with the provided {@code message} and {@code cause}

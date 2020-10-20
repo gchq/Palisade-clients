@@ -35,25 +35,25 @@ class ResourceSerialisationTest {
 
     @Test
     void testMessageSerialisation() throws Exception {
-        var expected = IMessage.create(b -> b
-            .token("token")
-            .type(MessageType.RESOURCE)
-            .body("string")
-            .headers(Map.of("key", "value")));
-        var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, Message.class);
+        Message expected = IMessage.create(b -> b
+                .token("token")
+                .type(MessageType.RESOURCE)
+                .body("string")
+                .headers(Map.of("key", "value")));
+        String string = objectMapper.writeValueAsString(expected);
+        Message actual = objectMapper.readValue(string, Message.class);
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void testResourceSerialisation() throws Exception {
-        var expected = IResource.create(b -> b
-            .token("token")
-            .leafResourceId("leaf-reource-id")
-            .url("url")
-            .properties(Map.of("key", "value")));
-        var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, Resource.class);
+        Resource expected = IResource.create(b -> b
+                .token("token")
+                .leafResourceId("leaf-reource-id")
+                .url("url")
+                .properties(Map.of("key", "value")));
+        String string = objectMapper.writeValueAsString(expected);
+        Resource actual = objectMapper.readValue(string, Resource.class);
         assertThat(actual).isEqualTo(expected);
     }
 

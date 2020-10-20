@@ -21,16 +21,7 @@ package uk.gov.gchq.palisade.client.java;
  * @since 0.5.0
  */
 public class ClientException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Creates a new instance
-     *
-     * @see RuntimeException#RuntimeException()
-     */
-    public ClientException() {
-    }
 
     /**
      * Creates a new instance with the provided {@code message}
@@ -40,16 +31,6 @@ public class ClientException extends RuntimeException {
      */
     public ClientException(final String message) {
         super(message);
-    }
-
-    /**
-     * Creates a new instance with the provided {@code cause}
-     *
-     * @param cause The cause
-     * @see RuntimeException#RuntimeException(Throwable)
-     */
-    public ClientException(final Throwable cause) {
-        super(cause);
     }
 
     /**

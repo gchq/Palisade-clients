@@ -104,15 +104,13 @@ class ResourceClientTest implements ApplicationEventListener<ResourceReadyEvent>
     }
 
     private ResourceClient startClient() throws Exception {
-
-        var appCtx = ApplicationContext.run();
-        var rc = new ResourceClient(TOKEN, bus, objectMapper, downloadTracker);
+        ApplicationContext.run();
+        ResourceClient rc = new ResourceClient(TOKEN, bus, objectMapper, downloadTracker);
 
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         container.connectToServer(rc, new URI("ws://localhost:8082/name"));
 
         return rc;
-
     }
 
 }

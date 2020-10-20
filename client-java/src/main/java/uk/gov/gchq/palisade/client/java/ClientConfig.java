@@ -18,21 +18,16 @@ package uk.gov.gchq.palisade.client.java;
 import io.micronaut.context.annotation.ConfigurationProperties;
 
 /**
- * <p>
  * A configuration to be used to load the initial property map to be loaded
  * into. A map of properties is passed to the {@link Client} during creation.
  * Micronaut will take this map and overlay it onto this instance. The
  * properties will override any propertis set via java parameters, environment
  * variables and those set in a yaml file.
- * </p>
  * <p>
  * The current recognised parameters are:
- * </p>
- * <ul>
  * <li><b>palisade.client.url</b> - The initial url which will be used to
  * connect to the Palisade service in order to submit the request</li>
  * <li><b>palisade.client.download.threads</b> - The number of download threads
- * </ul>
  *
  * @since 0.5.0
  */

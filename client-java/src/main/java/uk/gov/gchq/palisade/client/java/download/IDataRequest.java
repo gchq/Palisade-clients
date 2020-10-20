@@ -25,19 +25,16 @@ import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 import java.util.function.UnaryOperator;
 
 /**
- * <p>
- * An instance of a {@code DataRequest} represents a request to the data service
+ * An instance of a {@link DataRequest} represents a request to the data service
  * in order to initiate a download.
- * </p>
  * <p>
- * Note that the {@code DataRequest} class is created at compile time. The way
+ * Note that the {@link DataRequest} class is created at compile time. The way
  * in which the class is created is determined by the {@link ImmutableStyle}.
- * The {@code JsonDeserialize} so that Jackson can use the generated builder
+ * The {@link JsonDeserialize} is so that Jackson can use the generated builder
  * upon deserialisation.
- * </p>
  *
- * @since 0.5.0
  * @see "https://immutables.github.io/style.html"
+ * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle
