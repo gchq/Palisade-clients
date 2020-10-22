@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.UserId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.io.Serializable;
@@ -28,11 +27,11 @@ import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 /**
- * The {@link Message} object is used in the communication between the client
+ * The {@code Message} object is used in the communication between the client
  * and the Filtered Resource Service over a WebSocket.
  * <p>
- * Note that the {@link UserId} class is created at compile time. The way in
- * which the class is created is determined by the {@link ImmutableStyle}. This
+ * Note that the {@code UserId} class is created at compile time. The way in
+ * which the class is created is determined by the {@code ImmutableStyle}. This
  * class is also compatible with Jackson.
  *
  * @see ResourceClient

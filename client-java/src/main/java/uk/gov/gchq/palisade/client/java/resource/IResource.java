@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.UserId;
 import uk.gov.gchq.palisade.client.java.util.ImmutableStyle;
 
 import java.io.Serializable;
@@ -27,12 +26,12 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * A {@link Resource} object is received in a {@link Message} of type
- * {@link MessageType#RESOURCE} after it has sent a message of type
- * {@link MessageType#CTS}.
+ * A {@code Resource} object is received in a {@link Message} of type
+ * {@code MessageType#RESOURCE} after it has sent a message of type
+ * {@code MessageType#CTS}.
  * <p>
- * Note that the {@link UserId} class is created at compile time. The way in
- * which the class is created is determined by the {@link ImmutableStyle}. This
+ * Note that the {@code UserId} class is created at compile time. The way in
+ * which the class is created is determined by the {@code ImmutableStyle}. This
  * class is also compatible with Jackson.
  *
  * @see ResourceClient

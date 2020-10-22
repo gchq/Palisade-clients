@@ -29,7 +29,7 @@ import java.util.function.UnaryOperator;
  * in order to initiate a download.
  * <p>
  * Note that the {@link DataRequest} class is created at compile time. The way
- * in which the class is created is determined by the {@link ImmutableStyle}.
+ * in which the class is created is determined by the {@code ImmutableStyle}.
  * The {@link JsonDeserialize} is so that Jackson can use the generated builder
  * upon deserialisation.
  *

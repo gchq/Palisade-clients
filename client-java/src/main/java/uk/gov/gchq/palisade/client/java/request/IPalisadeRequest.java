@@ -32,7 +32,7 @@ import java.util.function.UnaryOperator;
  * <p>
  * Note that the {@link PalisadeRequest} class is created at compile time. The
  * way in which the class is created is determined by the
- * {@link ImmutableStyle}. This class is also compatible with Jackson.
+ * {@code ImmutableStyle}. This class is also compatible with Jackson.
  *
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0

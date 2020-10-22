@@ -26,7 +26,7 @@ import java.util.function.UnaryOperator;
  * An instance of {@link JobConfig} is passed during the creation of a new Job.
  * <p>
  * Note that the {@link JobConfig} class is created at compile time. The way in
- * which the class is created is determined by the {@link ImmutableStyle}.
+ * which the class is created is determined by the {@code ImmutableStyle}.
  *
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0

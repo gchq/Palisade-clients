@@ -25,9 +25,12 @@ import io.micronaut.context.annotation.ConfigurationProperties;
  * variables and those set in a yaml file.
  * <p>
  * The current recognised parameters are:
+ * <ul>
  * <li><b>palisade.client.url</b> - The initial url which will be used to
  * connect to the Palisade service in order to submit the request</li>
- * <li><b>palisade.client.download.threads</b> - The number of download threads
+ * <li><b>palisade.client.download.threads</b> - The number of download
+ * threads</li>
+ * </ul>
  *
  * @since 0.5.0
  */
