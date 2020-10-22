@@ -49,7 +49,7 @@ public class HttpEndpoints {
      */
     @Post("/registerDataRequest")
     @Produces(MediaType.APPLICATION_JSON)
-    public HttpResponse<PalisadeResponse> handleDataRequest(@Body final PalisadeRequest request) {
+    public HttpResponse<PalisadeResponse> registerDataRequest(@Body final PalisadeRequest request) {
         LOG.debug("### Test endpoint {} received body: {}", "/registerDataRequest", request);
         return HttpResponse
                 .ok(IPalisadeResponse.create(b -> b

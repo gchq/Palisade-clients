@@ -60,11 +60,7 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 |  |           \- jakarta.activation:jakarta.activation-api:jar:1.2.1:test
 |  \- org.glassfish.tyrus:tyrus-container-grizzly-client:jar:1.17:test
 +- io.micronaut.test:micronaut-test-junit5:jar:2.1.0:test
-|  +- io.micronaut.test:micronaut-test-core:jar:2.1.0:test
-|  \- org.junit.jupiter:junit-jupiter-api:jar:5.5.2:test
-|     +- org.apiguardian:apiguardian-api:jar:1.1.0:test
-|     +- org.opentest4j:opentest4j:jar:1.2.0:test
-|     \- org.junit.platform:junit-platform-commons:jar:1.5.2:test
+|  \- io.micronaut.test:micronaut-test-core:jar:2.1.0:test
 +- io.micronaut:micronaut-http-server-netty:jar:2.1.0:test
 |  +- io.micronaut:micronaut-http-server:jar:2.1.0:test
 |  |  \- io.micronaut:micronaut-router:jar:2.1.0:test
@@ -73,9 +69,13 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 |  |     \- com.google.code.findbugs:jsr305:jar:3.0.2:compile
 |  \- io.netty:netty-codec-http:jar:4.1.42.Final:compile
 +- org.junit.jupiter:junit-jupiter:jar:5.7.0:test
-|  +- org.junit.jupiter:junit-jupiter-params:jar:5.5.2:test
-|  \- org.junit.jupiter:junit-jupiter-engine:jar:5.5.2:test
-|     \- org.junit.platform:junit-platform-engine:jar:1.5.2:test
+|  +- org.junit.jupiter:junit-jupiter-api:jar:5.7.0:test
+|  |  +- org.apiguardian:apiguardian-api:jar:1.1.0:test
+|  |  +- org.opentest4j:opentest4j:jar:1.2.0:test
+|  |  \- org.junit.platform:junit-platform-commons:jar:1.7.0:test
+|  +- org.junit.jupiter:junit-jupiter-params:jar:5.7.0:test
+|  \- org.junit.jupiter:junit-jupiter-engine:jar:5.7.0:test
+|     \- org.junit.platform:junit-platform-engine:jar:1.7.0:test
 +- org.awaitility:awaitility:jar:4.0.3:test
 |  \- org.hamcrest:hamcrest:jar:2.1:test
 +- org.assertj:assertj-core:jar:3.17.2:test

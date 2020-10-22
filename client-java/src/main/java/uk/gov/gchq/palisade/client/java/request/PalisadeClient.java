@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client.java.request;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Instances of this class wrap the generated palisade service client
  *
@@ -29,5 +31,13 @@ public interface PalisadeClient {
      * @return the response
      */
     PalisadeResponse submit(final PalisadeRequest request);
+
+    /**
+     * Submit the provided request to Palisade
+     *
+     * @param request The request to submit
+     * @return the response
+     */
+    CompletableFuture<PalisadeResponse> submitAsync(final PalisadeRequest request);
 
 }

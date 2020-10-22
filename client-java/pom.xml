@@ -38,7 +38,8 @@
         <immutables.version>2.8.2</immutables.version>
         <tyrus.version>1.17</tyrus.version>
         <!-- Test dependency versions -->
-        <junit5.version>5.7.0</junit5.version>
+        <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <junit.platform.version>1.7.0</junit.platform.version>
         <awaitility.version>4.0.3</awaitility.version>
         <assertj.version>3.17.2</assertj.version>
         <logback.version>1.2.3</logback.version>
@@ -46,6 +47,52 @@
         <reflections.version>0.9.12</reflections.version>
     </properties>
 
+    <dependencyManagement>
+      <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>       
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>       
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>       
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>       
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>       
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+            <version>${junit.platform.version}</version>
+            <scope>test</scope>
+        </dependency>       
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
+            <version>${junit.platform.version}</version>
+            <scope>test</scope>
+        </dependency>       
+      </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <!-- Websocket reference impl -->
@@ -95,6 +142,12 @@
             <artifactId>micronaut-test-junit5</artifactId>
             <version>${micronaut.version}</version>
             <scope>test</scope>
+            <exclusions>
+            		<exclusion>
+            				<groupId>org.junit.jupiter</groupId>
+            				<artifactId>junit-jupiter-api</artifactId>
+            		</exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <!-- Micronaut HTTP -->
@@ -107,7 +160,7 @@
             <!-- JUnit -->
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit5.version}</version>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
