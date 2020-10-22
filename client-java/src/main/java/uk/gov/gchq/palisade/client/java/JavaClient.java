@@ -53,9 +53,7 @@ import java.util.function.UnaryOperator;
 import static uk.gov.gchq.palisade.client.java.job.IJobContext.createJobContext;
 
 /**
- * <p>
  * The main client implementation.
- * </p>
  * <p>
  * Note that this class should only be created via the static {@code create}
  * methods on the {@link Client} interface. For tests it can be injected into a

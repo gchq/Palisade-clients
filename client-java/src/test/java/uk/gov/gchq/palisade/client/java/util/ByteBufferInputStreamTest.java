@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.java.util;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -119,7 +120,8 @@ class ByteBufferInputStreamTest {
     }
 
     @Test
-    void testReadAll() throws Exception {
+    @Disabled("This test is valid, but we've explicitly declared readAllBytes to throw")
+    void testReadAll() {
         byte[] ba = is.readAllBytes();
         assertThat(new String(ba, 0, ba.length)).isEqualTo("abcdefghijklmnopqrstuvwxyz");
     }
