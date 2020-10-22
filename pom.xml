@@ -167,6 +167,7 @@
                         <phase>compile</phase>
                         <configuration>
                             <show>public</show>
+                            <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/annotations</sourcepath>
                             <additionalDependencies>
                                 <additionalDependency>
                                     <groupId>javax.annotation</groupId>
