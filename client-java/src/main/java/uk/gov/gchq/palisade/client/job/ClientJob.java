@@ -108,6 +108,7 @@ public final class ClientJob implements Job {
     public static ClientJob createJob(final JobSetup setup) {
         return new ClientJob(setup);
     }
+
     /**
      * Helper method to create a {@code ClientJob} using a builder function
      *

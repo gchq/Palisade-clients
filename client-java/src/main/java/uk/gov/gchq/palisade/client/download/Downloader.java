@@ -75,23 +75,6 @@ public final class Downloader implements ReceiverContext {
         }
 
         /**
-         * Returns the {@code Receiver} instance which will be used to process the
-         * download {@code InputStream}
-         *
-         * @return the {@code Receiver} instance which will be used to process the
-         *         download {@code InputStream}
-         */
-        Receiver getReceiver();
-
-        /**
-         * Returns the resource to be downloaded. The resource contains the url of where
-         * to download it from
-         *
-         * @return the resource to be downloaded
-         */
-        Resource getResource();
-
-        /**
          * Returns the object mapper to be used when converting request bodies to json
          * strings
          *
@@ -108,6 +91,46 @@ public final class Downloader implements ReceiverContext {
          *         {@code ReceiverContext} instance
          */
         Map<String, Object> getProperties();
+
+        /**
+         * Returns the {@code Receiver} instance which will be used to process the
+         * download {@code InputStream}
+         *
+         * @return the {@code Receiver} instance which will be used to process the
+         *         download {@code InputStream}
+         */
+        Receiver getReceiver();
+
+        /**
+         * Returns the resource to be downloaded. The resource contains the url of where
+         * to download it from
+         *
+         * @return the resource to be downloaded
+         */
+        Resource getResource();
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Downloader.class);
+
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().build();
+    private static final int HTTP_STATUS_OK = 200;
+    private static final int HTTP_STATUS_NOT_FOUND = 404;
+
+    private static String createBody(final Resource resource, final ObjectMapper objectMapper) {
+
+        assert resource != null : "Need a resource to create a request from";
+        assert resource != null : "Need an object mapper to convert request object to a json string";
+
+        var dataRequest = createDataRequest(b -> b
+            .token(resource.getToken())
+            .leafResourceId(resource.getLeafResourceId()));
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dataRequest);
+        } catch (JsonProcessingException e1) {
+            throw new DownloaderException("Failed to parse request body", e1);
+        }
+
     }
 
     /**
@@ -122,16 +145,88 @@ public final class Downloader implements ReceiverContext {
         return new Downloader(func.apply(DownloaderSetup.builder()).build());
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Downloader.class);
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().build();
-    private static final int HTTP_STATUS_OK = 200;
-    private static final int HTTP_STATUS_NOT_FOUND = 200;
+    private static URI createUri(final String baseUri, final String endpoint) {
+
+        assert baseUri != null : "Need the base uri";
+        assert baseUri != null : "Need the uri endpoint to append to the base uri";
+
+        var uri = new StringBuilder();
+        if (baseUri.endsWith("/")) {
+            uri.append(baseUri.substring(0, baseUri.length() - 2));
+        } else {
+            uri.append(baseUri);
+        }
+        if (!endpoint.startsWith("/")) {
+            uri.append("/");
+        }
+        uri.append(endpoint);
+        return URI.create(uri.toString());
+    }
+
+    private static void processStream(final InputStream is, final Receiver rc, final ReceiverContext rcCtx)
+        throws ReceiverException {
+
+        assert is != null : "Need an inputstream for the reciver to process";
+        assert rc != null : "Need a receiver to process the inmput stream";
+        assert rcCtx != null : "Need a receiver context which provides access to other services";
+
+        try (is) {
+            rc.process(rcCtx, is);
+        } catch (Exception e) {
+            throw new ReceiverException("Caught unexpected error", e);
+        }
+
+    }
+
+    private static HttpResponse<InputStream> sendRequest(final String requestBody, final URI uri) {
+
+        assert requestBody != null : "Need a request body to send";
+        assert uri != null : "Need a URI so we know where to send the request";
+
+        var httpRequest = HttpRequest.newBuilder(uri)
+            .setHeader("User-Agent", "Palisade Java Client")
+            .header("Content-Type", "application/json")
+            .POST(BodyPublishers.ofString(requestBody))
+            .build();
+
+        LOGGER.debug("Sending request:\n{}", requestBody);
+
+        try {
+            var httpResponse = HTTP_CLIENT.send(httpRequest, BodyHandlers.ofInputStream());
+            LOGGER.debug("Got http status: {}", httpResponse.statusCode());
+            return httpResponse;
+        } catch (IOException | InterruptedException e1) {
+            Thread.currentThread().interrupt();
+            throw new DownloaderException("Error occurred making request to data service", e1);
+        }
+
+    }
 
     private final DownloaderSetup setup;
 
     private Downloader(final DownloaderSetup setup) {
         assert setup != null : "Cannot create downloader without a setup!";
         this.setup = setup;
+    }
+
+    @Override
+    public Optional<Object> findProperty(final String key) {
+        checkArgument(key);
+        return Optional.ofNullable(setup.getProperties().get(key));
+    }
+
+    /**
+     * Returns the downloadId associated with this downloader
+     *
+     * @return the downloadId associated with this downloader
+     */
+    UUID getDownloadId() {
+        return setup.getId();
+    }
+
+    @Override
+    public Resource getResource() {
+        return setup.getResource();
     }
 
     /**
@@ -175,100 +270,6 @@ public final class Downloader implements ReceiverContext {
             throw e;
         } catch (Exception e) {
             throw new DownloaderException("Caught unknown exception", e);
-        }
-
-    }
-
-    @Override
-    public Resource getResource() {
-        return setup.getResource();
-    }
-
-    @Override
-    public Optional<Object> findProperty(final String key) {
-        checkArgument(key);
-        return Optional.ofNullable(setup.getProperties().get(key));
-    }
-
-    /**
-     * Returns the downloadId associated with this downloader
-     *
-     * @return the downloadId associated with this downloader
-     */
-    UUID getDownloadId() {
-        return setup.getId();
-    }
-
-    private static URI createUri(final String baseUri, final String endpoint) {
-
-        assert baseUri != null : "Need the base uri";
-        assert baseUri != null : "Need the uri endpoint to append to the base uri";
-
-        var uri = new StringBuilder();
-        if (baseUri.endsWith("/")) {
-            uri.append(baseUri.substring(0, baseUri.length() - 2));
-        } else {
-            uri.append(baseUri);
-        }
-        if (!endpoint.startsWith("/")) {
-            uri.append("/");
-        }
-        uri.append(endpoint);
-        return URI.create(uri.toString());
-    }
-
-    private static HttpResponse<InputStream> sendRequest(final String requestBody, final URI uri) {
-
-        assert requestBody != null : "Need a request body to send";
-        assert uri != null : "Need a URI so we know where to send the request";
-
-        var httpRequest = HttpRequest.newBuilder(uri)
-            .setHeader("User-Agent", "Palisade Java Client")
-            .header("Content-Type", "application/json")
-            .POST(BodyPublishers.ofString(requestBody))
-            .build();
-
-        LOGGER.debug("Sending request:\n{}", requestBody);
-
-        try {
-            var httpResponse = HTTP_CLIENT.send(httpRequest, BodyHandlers.ofInputStream());
-            LOGGER.debug("Got http status: {}", httpResponse.statusCode());
-            return httpResponse;
-        } catch (IOException | InterruptedException e1) {
-            Thread.currentThread().interrupt();
-            throw new DownloaderException("Error occurred making request to data service", e1);
-        }
-
-    }
-
-    private static String createBody(final Resource resource, final ObjectMapper objectMapper) {
-
-        assert resource != null : "Need a resource to create a request from";
-        assert resource != null : "Need an object mapper to convert request object to a json string";
-
-        var dataRequest = createDataRequest(b -> b
-            .token(resource.getToken())
-            .leafResourceId(resource.getLeafResourceId()));
-
-        try {
-            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dataRequest);
-        } catch (JsonProcessingException e1) {
-            throw new DownloaderException("Failed to parse request body", e1);
-        }
-
-    }
-
-    private static void processStream(final InputStream is, final Receiver rc, final ReceiverContext rcCtx)
-        throws ReceiverException {
-
-        assert is != null : "Need an inputstream for the reciver to process";
-        assert rc != null : "Need a receiver to process the inmput stream";
-        assert rcCtx != null : "Need a receiver context which provides access to other services";
-
-        try (is) {
-            rc.process(rcCtx, is);
-        } catch (Exception e) {
-            throw new ReceiverException("Caught unexpected error", e);
         }
 
     }
