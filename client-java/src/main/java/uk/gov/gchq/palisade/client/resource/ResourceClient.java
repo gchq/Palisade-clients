@@ -45,16 +45,6 @@ public class ResourceClient {
     public interface IResourceClientSetup {
 
         /**
-         * Returns the token
-         *
-         * @return the token
-         */
-        @Value.Derived
-        default String getToken() {
-            return getResourceClientListener().getToken();
-        }
-
-        /**
          * Returns the base web socket uri
          *
          * @return the base web socket uri
@@ -66,7 +56,17 @@ public class ResourceClient {
          *
          * @return the listener
          */
-        ResourceClientListenr getResourceClientListener();
+        ResourceClientListener getResourceClientListener();
+
+        /**
+         * Returns the token
+         *
+         * @return the token
+         */
+        @Value.Derived
+        default String getToken() {
+            return getResourceClientListener().getToken();
+        }
 
     }
 
@@ -99,6 +99,17 @@ public class ResourceClient {
     }
 
     /**
+     * Closes this resource client and the underlying socket connection
+     */
+    public void close() {
+        // this will close the output side of the websocket
+        webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "");
+        // until the listener receives and onClose(), the input side of the websocket is
+        // till open. this client should abort the websocket if no data arrives after
+        // around 30 seconds. Not sure how to do this yet.
+    }
+
+    /**
      * Connect to the server and start communications
      *
      * @return this for fluent usage
@@ -125,6 +136,22 @@ public class ResourceClient {
         return this;
     }
 
+    private String getBaseUri() {
+        return getSetup().getBaseUri();
+    }
+
+    private ResourceClientListener getListener() {
+        return getSetup().getResourceClientListener();
+    }
+
+    private ResourceClientSetup getSetup() {
+        return setup;
+    }
+
+    private String getToken() {
+        return getSetup().getToken();
+    }
+
     /**
      * Returns true if this resource client is still open
      *
@@ -132,33 +159,6 @@ public class ResourceClient {
      */
     public boolean isOpen() {
         return webSocket != null && !webSocket.isOutputClosed();
-    }
-
-    /**
-     * Closes this resource client and the underlying socket connection
-     */
-    public void close() {
-        // this will close the output side of the websocket
-        webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "");
-        // until the listener receives and onClose(), the input side of the websocket is
-        // till open. this client should abort the websocket if no data arrives after
-        // around 30 seconds. Not sure how to do this yet.
-    }
-
-    private String getToken() {
-        return getSetup().getToken();
-    }
-
-    private ResourceClientListenr getListener() {
-        return getSetup().getResourceClientListener();
-    }
-
-    private String getBaseUri() {
-        return getSetup().getBaseUri();
-    }
-
-    private ResourceClientSetup getSetup() {
-        return setup;
     }
 
 }

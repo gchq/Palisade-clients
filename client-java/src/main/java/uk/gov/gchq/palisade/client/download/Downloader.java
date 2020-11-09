@@ -116,6 +116,18 @@ public final class Downloader implements ReceiverContext {
     private static final int HTTP_STATUS_OK = 200;
     private static final int HTTP_STATUS_NOT_FOUND = 404;
 
+    /**
+     * Helper method to create a {@code Downloader} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created data request instance
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
+        checkArgument(func);
+        return new Downloader(func.apply(DownloaderSetup.builder()).build());
+    }
+
     private static String createBody(final Resource resource, final ObjectMapper objectMapper) {
 
         assert resource != null : "Need a resource to create a request from";
@@ -131,18 +143,6 @@ public final class Downloader implements ReceiverContext {
             throw new DownloaderException("Failed to parse request body", e1);
         }
 
-    }
-
-    /**
-     * Helper method to create a {@code Downloader} using a builder function
-     *
-     * @param func The builder function
-     * @return a newly created data request instance
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
-        checkArgument(func);
-        return new Downloader(func.apply(DownloaderSetup.builder()).build());
     }
 
     private static URI createUri(final String baseUri, final String endpoint) {
@@ -235,6 +235,7 @@ public final class Downloader implements ReceiverContext {
      * @return a download result after successful completion
      * @throws DownloaderException if any error occurs
      */
+    @SuppressWarnings("java:S2221")
     public DownloadResult start() {
 
         LOGGER.debug("Downloader Started");

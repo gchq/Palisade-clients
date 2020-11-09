@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import static uk.gov.gchq.palisade.client.job.IJobContext.createJobContext;
 import static uk.gov.gchq.palisade.client.request.IPalisadeRequest.createPalisadeRequest;
 import static uk.gov.gchq.palisade.client.resource.ResourceClient.createResourceClient;
-import static uk.gov.gchq.palisade.client.resource.ResourceClientListenr.createResourceClientListenr;
+import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListenr;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**

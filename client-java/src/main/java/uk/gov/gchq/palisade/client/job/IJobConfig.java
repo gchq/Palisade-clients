@@ -21,6 +21,7 @@ import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.job.IJobReceiver.createJobReceiver;
@@ -46,7 +47,7 @@ public interface IJobConfig {
      * @return a newly created data request instance
      */
 //    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    static JobConfig createJobConfig(final UnaryOperator<JobConfig.Builder> func) {
+    static JobConfig createJobConfig(final Function<JobConfig.Builder, JobConfig.Builder> func) {
         return func.apply(JobConfig.builder()).build();
     }
 

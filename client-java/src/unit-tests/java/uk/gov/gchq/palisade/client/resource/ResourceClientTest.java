@@ -37,7 +37,7 @@ import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
-import static uk.gov.gchq.palisade.client.resource.ResourceClientListenr.createResourceClientListenr;
+import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListenr;
 
 /**
  * Note that this class must be public for the subscriptions on the event bus to

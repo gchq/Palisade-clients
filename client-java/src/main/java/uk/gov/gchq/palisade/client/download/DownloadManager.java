@@ -64,6 +64,11 @@ public final class DownloadManager implements DownloadManagerStatus {
         ObjectMapper getObjectMapper();
     }
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
+
+    private static final int CORE_POOL_SIZE = 0; // ensure that unreferenced pools are reclaimed
+    private static final int KEEP_ALIVE_SECONDS = 10;
+
     /**
      * Helper method to create a {@code DownloadManager} using a builder function
      *
@@ -74,10 +79,6 @@ public final class DownloadManager implements DownloadManagerStatus {
     public static DownloadManager createDownloadManager(final UnaryOperator<DownloadManagerSetup.Builder> func) {
         return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
-    private static final int CORE_POOL_SIZE = 0; // ensure that unreferenced pools are reclaimed
-    private static final int KEEP_ALIVE_SECONDS = 10;
 
     private final ThreadPoolExecutor executor;
     private final DownloadManagerSetup setup;
@@ -101,12 +102,94 @@ public final class DownloadManager implements DownloadManagerStatus {
     }
 
     /**
+     * Blocks until all tasks have completed execution after a shutdown request, or
+     * the timeout occurs, or the current thread is interrupted, whichever happens
+     * first.
+     *
+     * @param timeout the maximum time to wait
+     * @param unit    the time unit of the timeout argument
+     * @return true if this download manager terminated and false if the timeout
+     *         elapsed before termination
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public boolean awaitTermination(final long timeout, final TimeUnit unit) throws InterruptedException {
+        LOGGER.debug("Awaiting for download manager to terminate for {} {} ", timeout, unit);
+        var terminated = executor.awaitTermination(timeout, unit);
+        if (terminated) {
+            LOGGER.debug("Download manager termiated successfully within timeout period");
+        } else {
+            LOGGER.debug("Download manager not termiated within timeout period");
+        }
+        return terminated;
+    }
+
+    @Override
+    public int getAvaliableSlots() {
+        return executor.getMaximumPoolSize() - executor.getActiveCount();
+    }
+
+    /**
+     * Returns the download tracker for this download manager
+     *
+     * @return the download tracker for this download manager
+     */
+    public DownloadManagerStatus getDownloadTracker() {
+        return this;
+    }
+
+    @Override
+    public ManagerStatus getStatus() {
+        if (executor.isTerminating()) {
+            return ManagerStatus.SHUTTING_DOWN;
+        } else if (executor.isShutdown()) {
+            return ManagerStatus.SHUT_DOWN;
+        } else {
+            return ManagerStatus.ACTIVE;
+        }
+    }
+
+    @Override
+    public boolean hasAvailableSlots() {
+        return getAvaliableSlots() > 0;
+    }
+
+    /**
+     * Returns true if all downloads have completed following shut down. Note that
+     * isTerminated is never true unless either shutdown or shutdownNow was called
+     * first.
+     *
+     * @return true if this download manager terminated and false if the timeout
+     *         elapsed before termination
+     */
+    public boolean isTerminated() {
+        var terminated = executor.isTerminated();
+        LOGGER.debug("Download manager asked if it is terminated. Answer is {}", terminated);
+        return terminated;
+    }
+
+    /**
+     * Returns true if this download manager is in the process of terminating after
+     * shutdown() or shutdownNow() but has not completely terminated. This method
+     * may be useful for debugging. A return of true reported a sufficient period
+     * after shutdown may indicate that submitted tasks have ignored or suppressed
+     * interruption, causing this download manager not to properly terminate.
+     *
+     * @return true if terminating but not yet terminated
+     */
+    public boolean isTerminating() {
+        var terminating = executor.isTerminating();
+        LOGGER.debug("Download manager asked if it is terminating. Answer is {}", terminating);
+        return executor.isTerminating();
+    }
+
+    /**
      * Schedule the provided resource for download
      *
      * @param resource   The resource describing the data to be downloaded.
      * @param jobContext The job context
      * @return the fownload id
      */
+    @SuppressWarnings("java:S2221")
     public UUID schedule(final Resource resource, final JobContext jobContext) {
 
         LOGGER.debug("### Scheduling resource: {}", resource);
@@ -146,15 +229,6 @@ public final class DownloadManager implements DownloadManagerStatus {
     }
 
     /**
-     * Returns the download tracker for this download manager
-     *
-     * @return the download tracker for this download manager
-     */
-    public DownloadManagerStatus getDownloadTracker() {
-        return this;
-    }
-
-    /**
      * Initiates an orderly shutdown in which previously submitted tasks are
      * executed, but no new tasks will be accepted. Invocation has no additional
      * effect if already shut down.
@@ -182,78 +256,6 @@ public final class DownloadManager implements DownloadManagerStatus {
     public void shutdownNow() {
         LOGGER.debug("Download manager told to shutdown now");
         executor.shutdownNow();
-    }
-
-    /**
-     * Returns true if all downloads have completed following shut down. Note that
-     * isTerminated is never true unless either shutdown or shutdownNow was called
-     * first.
-     *
-     * @return true if this download manager terminated and false if the timeout
-     *         elapsed before termination
-     */
-    public boolean isTerminated() {
-        var terminated = executor.isTerminated();
-        LOGGER.debug("Download manager asked if it is terminated. Answer is {}", terminated);
-        return terminated;
-    }
-
-    /**
-     * Blocks until all tasks have completed execution after a shutdown request, or
-     * the timeout occurs, or the current thread is interrupted, whichever happens
-     * first.
-     *
-     * @param timeout the maximum time to wait
-     * @param unit    the time unit of the timeout argument
-     * @return true if this download manager terminated and false if the timeout
-     *         elapsed before termination
-     * @throws InterruptedException if interrupted while waiting
-     */
-    public boolean awaitTermination(final long timeout, final TimeUnit unit) throws InterruptedException {
-        LOGGER.debug("Awaiting for download manager to terminate for {} {} ", timeout, unit);
-        var terminated = executor.awaitTermination(timeout, unit);
-        if (terminated) {
-            LOGGER.debug("Download manager termiated successfully within timeout period");
-        } else {
-            LOGGER.debug("Download manager not termiated within timeout period");
-        }
-        return terminated;
-    }
-
-    /**
-     * Returns true if this download manager is in the process of terminating after
-     * shutdown() or shutdownNow() but has not completely terminated. This method
-     * may be useful for debugging. A return of true reported a sufficient period
-     * after shutdown may indicate that submitted tasks have ignored or suppressed
-     * interruption, causing this download manager not to properly terminate.
-     *
-     * @return true if terminating but not yet terminated
-     */
-    public boolean isTerminating() {
-        var terminating = executor.isTerminating();
-        LOGGER.debug("Download manager asked if it is terminating. Answer is {}", terminating);
-        return executor.isTerminating();
-    }
-
-    @Override
-    public int getAvaliableSlots() {
-        return executor.getMaximumPoolSize() - executor.getActiveCount();
-    }
-
-    @Override
-    public boolean hasAvailableSlots() {
-        return getAvaliableSlots() > 0;
-    }
-
-    @Override
-    public ManagerStatus getStatus() {
-        if (executor.isTerminating()) {
-            return ManagerStatus.SHUTTING_DOWN;
-        } else if (executor.isShutdown()) {
-            return ManagerStatus.SHUT_DOWN;
-        } else {
-            return ManagerStatus.ACTIVE;
-        }
     }
 
 }
