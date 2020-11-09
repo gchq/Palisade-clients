@@ -51,6 +51,4 @@ public interface IDownloadResult {
      */
     UUID getId();
 
-    // TODO: maybe add some stuff in here
-
 }

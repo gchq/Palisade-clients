@@ -25,10 +25,11 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * An instance of {@link JobConfig} is passed during the creation of a new Job.
+ * An instance of {@link JobReceiver} is passed during the creation of a new
+ * Job.
  * <p>
- * Note that the {@link JobConfig} class is created at compile time. The way in
- * which the class is created is determined by the {@code ImmutableStyle}.
+ * Note that the {@link JobReceiver} class is created at compile time. The way
+ * in which the class is created is determined by the {@code ImmutableStyle}.
  *
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0
@@ -60,13 +61,31 @@ public interface IJobReceiver {
         return JobReceiver.builder().build();
     }
 
+    /**
+     * Returns the receiver which will be used to process the downloaded input
+     * stream
+     *
+     * @return the receiver
+     */
     @Value.Default
     default Receiver getReciver() {
         return new FileReceiver();
     }
 
+    /**
+     * Returns the properties which will be passed to the receiver
+     *
+     * @return the properties which will be passed to the receiver
+     */
     Map<String, String> getProperties();
 
+    /**
+     * Returns a new instance which is created by copying this instance and then
+     * applying the changes provided by the supplied function
+     *
+     * @param func The function to apply
+     * @return a new instance
+     */
     default JobReceiver change(final UnaryOperator<JobReceiver.Builder> func) {
         return func.apply(JobReceiver.builder().from(this)).build();
     }

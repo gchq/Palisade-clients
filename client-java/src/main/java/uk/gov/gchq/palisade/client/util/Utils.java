@@ -26,10 +26,7 @@ import java.util.Map;
  *
  * @since 0.5.0
  */
-public abstract class Utils {
-
-    private Utils() { // cannot instantiate
-    }
+public interface Utils {
 
     /**
      * Copies each property from source to target if they do not exist in target.
@@ -39,7 +36,7 @@ public abstract class Utils {
      * @param original  The original properties to be overriden
      * @return A new map containing all properties and overides
      */
-    public static Map<String, String> overrideProperties(final Map<String, String> overrides,
+    static Map<String, String> overrideProperties(final Map<String, String> overrides,
         final Map<String, String> original) {
         var result = new HashMap<>(original);
         result.putAll(overrides);
@@ -53,7 +50,7 @@ public abstract class Utils {
      * @param suffix   The suffix
      * @return The concatenated paths
      */
-    public static String appendPath(final String basePath, final String suffix) {
+    static String appendPath(final String basePath, final String suffix) {
         var path = basePath;
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 2);
@@ -72,15 +69,14 @@ public abstract class Utils {
      * @return a newly created instance of the provided class
      */
     @SuppressWarnings("unchecked")
-    public static <T> T newInstance(final String className) {
-        Class<T> cls;
+    static <T> T newInstance(final String className) {
         try {
             return (T) Class.forName(className).getConstructor().newInstance();
         } catch (ClassNotFoundException | InstantiationException |
                  IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException | NoSuchMethodException |
                  SecurityException e) {
-            throw new ClientException("Failed to load class " + className);
+            throw new ClientException("Failed to load class " + className, e);
         }
     }
 }

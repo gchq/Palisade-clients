@@ -33,6 +33,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.UnaryOperator;
 
 /**
+ * Listens on the in-bound socket connection
+ *
  * @since 0.5.0
  */
 public class ResourceClientListenr implements Listener {
@@ -78,8 +80,8 @@ public class ResourceClientListenr implements Listener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceClientListenr.class);
     private static final long ONE_SECOND = 1000L;
+    private static final int REASON_OK = 1001;
 
-    private final ResourceClientListenrSetup setup;
 
     /**
      * Helper method to create a {@link Message} using a builder function
@@ -92,6 +94,8 @@ public class ResourceClientListenr implements Listener {
         final UnaryOperator<ResourceClientListenrSetup.Builder> func) {
         return new ResourceClientListenr(func.apply(ResourceClientListenrSetup.builder()).build());
     }
+
+    private final ResourceClientListenrSetup setup;
 
     /**
      * A {@code ResourceClient} manages the passing of messages to/from a websocket
@@ -173,7 +177,7 @@ public class ResourceClientListenr implements Listener {
 
     private void handleComplete(final WebSocket ws) {
         LOGGER.debug("handle Complete for token {}", getToken());
-        ws.sendClose(1001, "complete (token=" + getToken() + ")");
+        ws.sendClose(REASON_OK, "complete (token=" + getToken() + ")");
         post(ResourcesExhaustedEvent.of(getToken()));
     }
 

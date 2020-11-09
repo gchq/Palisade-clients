@@ -28,6 +28,9 @@ import java.net.http.WebSocket;
 import java.util.function.UnaryOperator;
 
 /**
+ * An instance of this class manages the comunications to the Filtered Resource
+ * Server via webn sockets
+ *
  * @since 0.5.0
  */
 public class ResourceClient {
@@ -68,11 +71,6 @@ public class ResourceClient {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceClient.class);
-    private static final long ONE_SECOND = 1000L;
-
-    private final ResourceClientSetup setup;
-
-    private WebSocket webSocket;
 
     /**
      * Helper method to create a {@link Message} using a builder function
@@ -85,6 +83,10 @@ public class ResourceClient {
         return new ResourceClient(func.apply(ResourceClientSetup.builder()).build());
     }
 
+    private final ResourceClientSetup setup;
+
+    private WebSocket webSocket;
+
     /**
      * A {@code ResourceClient} manages the passing of messages to/from a websocket
      * server
@@ -96,6 +98,11 @@ public class ResourceClient {
 
     }
 
+    /**
+     * Connect to the server and start communications
+     *
+     * @return this for fluent usage
+     */
     public ResourceClient connect() {
 
         var uri = URI.create(getBaseUri() + "/" + getToken());
@@ -118,10 +125,18 @@ public class ResourceClient {
         return this;
     }
 
+    /**
+     * Returns true if this resource client is still open
+     *
+     * @return true if this resource client is still open
+     */
     public boolean isOpen() {
         return webSocket != null && !webSocket.isOutputClosed();
     }
 
+    /**
+     * Closes this resource client and the underlying socket connection
+     */
     public void close() {
         // this will close the output side of the websocket
         webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "");

@@ -38,7 +38,7 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
  *
  * @since 0.5.0
  */
-public class DownloadManager implements DownloadManagerStatus {
+public final class DownloadManager implements DownloadManagerStatus {
 
     /**
      * Setup for a {@code DownloadManager}
@@ -64,10 +64,6 @@ public class DownloadManager implements DownloadManagerStatus {
         ObjectMapper getObjectMapper();
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
-    private static final int CORE_POOL_SIZE = 0; // ensure that unreferenced pools are reclaimed
-    private static final int KEEP_ALIVE_SECONDS = 10;
-
     /**
      * Helper method to create a {@code DownloadManager} using a builder function
      *
@@ -78,6 +74,10 @@ public class DownloadManager implements DownloadManagerStatus {
     public static DownloadManager createDownloadManager(final UnaryOperator<DownloadManagerSetup.Builder> func) {
         return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
+    private static final int CORE_POOL_SIZE = 0; // ensure that unreferenced pools are reclaimed
+    private static final int KEEP_ALIVE_SECONDS = 10;
 
     private final ThreadPoolExecutor executor;
     private final DownloadManagerSetup setup;

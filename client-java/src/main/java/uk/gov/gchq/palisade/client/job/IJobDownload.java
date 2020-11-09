@@ -26,11 +26,11 @@ import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 /**
- * An instance of {@link JobConfig} is passed during the submission of a new
+ * An instance of {@link JobDownload} is passed during the submission of a new
  * request.
  * <p>
- * Note that the {@link JobConfig} class is created at compile time. The way in
- * which the class is created is determined by the {@code ImmutableStyle}.
+ * Note that the {@link JobDownload} class is created at compile time. The way
+ * in which the class is created is determined by the {@code ImmutableStyle}.
  *
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0
@@ -55,29 +55,70 @@ public interface IJobDownload {
         return UUID.randomUUID();
     }
 
+    /**
+     * Returns the execuction containing this download
+     *
+     * @return the execuction containing this download
+     */
     JobExecution getExecution();
 
+    /**
+     * Returns the time this download was started
+     *
+     * @return the time this download was started
+     */
     @Value.Default
     default Instant getStartedTime() {
         return Instant.now();
     }
 
+    /**
+     * Returns the download status
+     *
+     * @return the download status
+     */
     @Value.Default
     default JobDownloadStatus getStatus() {
         return JobDownloadStatus.IN_PROGRESS;
     }
 
+    /**
+     * Returns the time this download ended
+     *
+     * @return the end time
+     */
     Optional<Instant> getEndTime();
 
+    /**
+     * Returns details of the resource being downloaded
+     *
+     * @return details of the resource being downloaded
+     */
     Resource getResource();
 
+    /**
+     * Returns the cause of the download failure or empty if none
+     *
+     * @return the cause of the download failure
+     */
     Optional<Exception> getCause();
 
+    /**
+     * Returns the status code
+     *
+     * @return the status code
+     */
     @Value.Default
     default int getStatusCode() {
         return -1;
     }
 
+    /**
+     * Returns a new instance with changes applied from the provided function
+     *
+     * @param func The changer function
+     * @return a new instance with changes applied
+     */
     default JobDownload change(final UnaryOperator<JobDownload.Builder> func) {
         return func.apply(JobDownload.builder().from(this)).build();
     }

@@ -44,7 +44,7 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
  */
 public class PalisadeService implements PalisadeClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeService.class);
 
     private final ObjectMapper objectMapper;
     private final String baseUri;

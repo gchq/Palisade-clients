@@ -46,7 +46,7 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
  *
  * @since 0.5.0
  */
-public class ClientJob implements Job {
+public final class ClientJob implements Job {
 
     /**
      * The setup instance for a job
@@ -63,14 +63,6 @@ public class ClientJob implements Job {
          * @return the job context
          */
         JobContext getContext();
-
-        /**
-         * Returns the resource client instance that provides communication to the
-         * Filtered Resource Service.
-         *
-         * @return the resource client
-         */
-        ResourceClient getResourceClient();
 
         /**
          * Returns a reference to the download manager
@@ -93,18 +85,19 @@ public class ClientJob implements Job {
          * @return a list of previous executions
          */
         List<JobExecution> getExecutions();
+
+        /**
+         * Returns the resource client instance that provides communication to the
+         * Filtered Resource Service.
+         *
+         * @return the resource client
+         */
+        ResourceClient getResourceClient();
     }
 
-    /**
-     * Helper method to create a {@code ClientJob} using a builder function
-     *
-     * @param func The builder function
-     * @return a newly created ClientJob instance
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    public static ClientJob createJob(final UnaryOperator<JobSetup.Builder> func) {
-        return createJob(func.apply(JobSetup.builder()).build());
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientJob.class);
+
+    private static final String EVENT_CAUGHT = "Caught event: {}";
 
     /**
      * Helper method to create a {@code ClientJob}
@@ -115,9 +108,16 @@ public class ClientJob implements Job {
     public static ClientJob createJob(final JobSetup setup) {
         return new ClientJob(setup);
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientJob.class);
-    private static final String EVENT_CAUGHT = "Caught event: {}";
+    /**
+     * Helper method to create a {@code ClientJob} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created ClientJob instance
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    public static ClientJob createJob(final UnaryOperator<JobSetup.Builder> func) {
+        return createJob(func.apply(JobSetup.builder()).build());
+    }
 
     private final JobSetup setup;
     private final Map<UUID, JobDownload> downloads;
@@ -134,6 +134,94 @@ public class ClientJob implements Job {
             .sequence(executions.size() + 1));
 
         this.executions.put(currentExecution.getId(), currentExecution);
+    }
+
+    /**
+     * Returns this jobs context
+     *
+     * @return this jobs context
+     */
+    public JobContext getContext() {
+        return this.setup.getContext();
+    }
+
+    /**
+     * Returns the token
+     *
+     * @return the token
+     */
+    public String getToken() {
+        return setup.getContext().getPalisadeResponse().getToken();
+    }
+
+    /**
+     * Handles a download failed event
+     *
+     * @param event The event to be handled
+     */
+    @Subscribe
+    public void onDownloadCompleted(final DownloadCompletedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
+        var prev = downloads.get(event.getId());
+        var next = prev.change(b -> b
+            .endTime(event.getTime())
+            .status(JobDownloadStatus.FAILED));
+        downloads.put(next.getId(), next);
+    }
+
+    /**
+     * Handles a download failed event
+     *
+     * @param event The event to be handled
+     */
+    @Subscribe
+    public void onDownloadFailed(final DownloadFailedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event, event.getCause());
+        var prev = downloads.get(event.getId());
+        var next = prev.change(b -> b
+            .endTime(event.getTime())
+            .status(JobDownloadStatus.FAILED)
+            .statusCode(event.getStatusCode()));
+        downloads.put(next.getId(), next);
+    }
+
+    /**
+     * Handles a download started
+     *
+     * @param event The event to be handled
+     */
+    @Subscribe
+    public void onDownloadStarted(final DownloadStartedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
+        var dl = createDownload(b -> b
+            .id(event.getId())
+            .resource(event.getResource())
+            .execution(currentExecution));
+        downloads.put(dl.getId(), dl);
+    }
+
+    /**
+     * Receives a {@code ResourcesExhaustedEvent} there are no more resources
+     *
+     * @param event The event to be handled
+     */
+    @Subscribe
+    public void onJobComplete(final ResourcesExhaustedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
+    }
+
+    /**
+     * Handles the {@code ResourceReadyEvent} by scheduling a download. This method
+     * will return immediately as the download will be queued.
+     *
+     * @param event The event to be handled
+     */
+    @SuppressWarnings("java:S3242")
+    @Subscribe
+    public void onScheduleDownload(final ResourceReadyEvent event) {
+        var resource = event.getResource();
+        var jobContext = setup.getContext();
+        setup.getDownloadManager().schedule(resource, jobContext);
     }
 
     @Override
@@ -157,94 +245,6 @@ public class ClientJob implements Job {
             // empty for the moment
         };
 
-    }
-
-    /**
-     * Handles a download started
-     *
-     * @param event The event to be handled
-     */
-    @Subscribe
-    public void onDownloadStarted(final DownloadStartedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event);
-        var dl = createDownload(b -> b
-            .id(event.getId())
-            .resource(event.getResource())
-            .execution(currentExecution));
-        downloads.put(dl.getId(), dl);
-    }
-
-    /**
-     * Handles a download failed event
-     *
-     * @param event The event to be handled
-     */
-    @Subscribe
-    public void onDownloadFailed(final DownloadFailedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event, event.getCause());
-        var prev = downloads.get(event.getId());
-        var next = prev.change(b -> b
-            .endTime(event.getTime())
-            .status(JobDownloadStatus.FAILED)
-            .statusCode(event.getStatusCode()));
-        downloads.put(next.getId(), next);
-    }
-
-    /**
-     * Handles a download failed event
-     *
-     * @param event The event to be handled
-     */
-    @Subscribe
-    public void onDownloadCompleted(final DownloadCompletedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event);
-        var prev = downloads.get(event.getId());
-        var next = prev.change(b -> b
-            .endTime(event.getTime())
-            .status(JobDownloadStatus.FAILED));
-        downloads.put(next.getId(), next);
-    }
-
-    /**
-     * Handles the {@code ResourceReadyEvent} by scheduling a download. This method
-     * will return immediately as the download will be queued.
-     *
-     * @param event The event to be handled
-     */
-    @SuppressWarnings("java:S3242")
-    @Subscribe
-    public void onScheduleDownload(final ResourceReadyEvent event) {
-        var resource = event.getResource();
-        var jobContext = setup.getContext();
-        setup.getDownloadManager().schedule(resource, jobContext);
-    }
-
-    /**
-     * Receives a {@code ResourcesExhaustedEvent} there are no more resources
-     *
-     * @param event The event to be handled
-     */
-    @Subscribe
-    public void onJobComplete(final ResourcesExhaustedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event);
-    }
-
-    /**
-     * Returns the token
-     *
-     * @return the token
-     */
-    public String getToken() {
-        return setup.getContext().getPalisadeResponse().getToken();
-    }
-
-    /**
-     * Returns this jobs context
-     *
-     * @return this jobs context
-     */
-    public JobContext getContext() {
-        return this.setup.getContext();
     }
 
 }

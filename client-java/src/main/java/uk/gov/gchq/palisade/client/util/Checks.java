@@ -18,13 +18,11 @@ package uk.gov.gchq.palisade.client.util;
 import java.util.IllegalFormatException;
 
 /**
- * @author dbell
+ * Checks just like Guava preconditions
+ *
+ * @since 0.5.0
  */
-public abstract class Checks {
-
-    private Checks() {
-        // should never be instantiated or subclassed
-    }
+public interface Checks {
 
     /**
      * Ensures that the provided parameter argument is not null.
@@ -34,7 +32,7 @@ public abstract class Checks {
      * @return the argument
      * @throws IllegalArgumentException if {@code argument} is null
      */
-    public static <T> T checkArgument(final T argument) {
+    static <T> T checkArgument(final T argument) {
         if (argument == null) {
             throw new IllegalArgumentException("Null argument");
         }
@@ -48,7 +46,7 @@ public abstract class Checks {
      * @param expression a boolean expression
      * @throws IllegalArgumentException if {@code expression} is false
      */
-    public static void checkArgument(final boolean expression) {
+    static void checkArgument(final boolean expression) {
         if (!expression) {
             throw new IllegalArgumentException();
         }
@@ -64,7 +62,7 @@ public abstract class Checks {
      *                     {@link String#valueOf(Object)}
      * @throws IllegalArgumentException if {@code expression} is false
      */
-    public static void checkArgument(final boolean expression, final Object errorMessage) {
+    static void checkArgument(final boolean expression, final Object errorMessage) {
         if (!expression) {
             throw new IllegalArgumentException(String.valueOf(errorMessage));
         }
@@ -85,7 +83,7 @@ public abstract class Checks {
      *                   {@link String#valueOf(Object)}.
      * @throws IllegalArgumentException if {@code expression} is false
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean expression,
         final String template,
         final Object... args) {
@@ -104,7 +102,7 @@ public abstract class Checks {
      * @param p1       the error template parameter
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(final boolean b, final String template, final char p1) {
+    static void checkArgument(final boolean b, final String template, final char p1) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1));
         }
@@ -120,7 +118,7 @@ public abstract class Checks {
      * @param p1       the error template parameter
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(final boolean b, final String template, final int p1) {
+    static void checkArgument(final boolean b, final String template, final int p1) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1));
         }
@@ -136,7 +134,7 @@ public abstract class Checks {
      * @param p1       the error template parameter
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(final boolean b, final String template, final long p1) {
+    static void checkArgument(final boolean b, final String template, final long p1) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1));
         }
@@ -152,7 +150,7 @@ public abstract class Checks {
      * @param p1       the error template parameter
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final Object p1) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1));
@@ -170,7 +168,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final char p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -188,7 +186,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final char p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -206,7 +204,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final char p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -224,7 +222,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final char p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -242,7 +240,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final int p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -260,7 +258,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final int p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -278,7 +276,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final int p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -296,7 +294,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final int p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -314,7 +312,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final long p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -332,7 +330,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final long p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -350,7 +348,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final long p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -368,7 +366,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final long p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -386,7 +384,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final Object p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -404,7 +402,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final Object p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -422,7 +420,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final Object p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -440,7 +438,7 @@ public abstract class Checks {
      * @param p2       the error template parameter 2
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b, final String template, final Object p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
@@ -459,7 +457,7 @@ public abstract class Checks {
      * @param p3       the error template parameter 3
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b,
         final String template,
         final Object p1,
@@ -483,7 +481,7 @@ public abstract class Checks {
      * @param p4       the error template parameter 4
      * @see #checkArgument(boolean, String, Object...) for details.
      */
-    public static void checkArgument(
+    static void checkArgument(
         final boolean b,
         final String template,
         final Object p1,

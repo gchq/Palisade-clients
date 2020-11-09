@@ -51,7 +51,7 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
  * @see DownloadManager
  * @since 0.5.0
  */
-public class Downloader implements ReceiverContext {
+public final class Downloader implements ReceiverContext {
 
     /**
      * Data class containing the setup for a {@code Downloader}
@@ -110,9 +110,6 @@ public class Downloader implements ReceiverContext {
         Map<String, Object> getProperties();
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Downloader.class);
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().build();
-
     /**
      * Helper method to create a {@code Downloader} using a builder function
      *
@@ -124,6 +121,11 @@ public class Downloader implements ReceiverContext {
         checkArgument(func);
         return new Downloader(func.apply(DownloaderSetup.builder()).build());
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Downloader.class);
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().build();
+    private static final int HTTP_STATUS_OK = 200;
+    private static final int HTTP_STATUS_NOT_FOUND = 200;
 
     private final DownloaderSetup setup;
 
@@ -153,9 +155,9 @@ public class Downloader implements ReceiverContext {
             var httpResponse = sendRequest(requestBody, uri);
 
             var statusCode = httpResponse.statusCode();
-            if (statusCode != 200) {
+            if (statusCode != HTTP_STATUS_OK) {
                 String msg;
-                if (statusCode == 404) {
+                if (statusCode == HTTP_STATUS_NOT_FOUND) {
                     msg = String.format("Resource \"%s\" not found", resource.getLeafResourceId());
                 } else {
                     msg = "Request to DataService failed";

@@ -23,10 +23,21 @@ package uk.gov.gchq.palisade.client.receiver;
 public class ReceiverException extends Exception {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Returns a new exception with the provided message
+     *
+     * @param message The message
+     */
     public ReceiverException(final String message) {
         super(message);
     }
 
+    /**
+     * Returns a new exception with the provided message and cause
+     *
+     * @param message The message
+     * @param cause   The cause
+     */
     public ReceiverException(final String message, final Throwable cause) {
         super(message, cause);
     }
