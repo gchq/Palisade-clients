@@ -1,0 +1,54 @@
+{
+  "token": "47237d5e-a8fd-46e3-930e-6640d06d0d32",
+  "sequence": 1,
+  "status": "COMPLETE",
+  "created": "2020-11-03T11:22:07+00:00",
+  "webSocketUrl": "ws://localhost:8081/",
+  "config" : {
+    "userId": "wandering_banshee",
+    "resourceId": "/path/to/my/resource",
+    "purpose": "machine_learning",
+    "receiver": {
+      "factoryClass": "uk.gov.gchq.palisade.client.LoggingReceiver",
+      "properties": {
+        "receiver.file.path": "/tmp"
+      }
+    },
+    "properties": {
+      "key": "value"
+    }
+  },
+  "properties": {
+    "service.url": "http://localhost:8081/",
+    "download.threads": 1,
+    "receiver.file.path": "/tmp"
+  },
+  "executions": [
+    {
+      "id": "id1",
+      "start": "2020-11-03T11:22:07+00:00",
+      "end": "2020-11-03T11:22:07+00:00",
+      "status": "ABORTED"
+    },
+    {
+      "id": "id2",
+      "start": "2020-11-03T11:22:07+00:00",
+      "end": "2020-11-03T11:22:07+00:00",
+      "status": "COMPLETE"
+    }
+  ],
+  "downloads": [
+    {
+      "id": "47237d5e-a8fd-46e3-930e-6640d06d0d33",
+      "executionId": "id1",
+      "resourceId": "/my/path/to/resource/node", 
+      "start": "2020-11-03T11:22:07+00:00",
+      "end": "2020-11-03T11:22:07+00:00",
+      "url": "url",
+      "path": "/tmp",
+      "filename": "myfile",
+      "duration": 45653469,
+      "size": 12356764
+    }
+  ]
+}
