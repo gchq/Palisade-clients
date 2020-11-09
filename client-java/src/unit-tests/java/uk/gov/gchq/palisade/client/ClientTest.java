@@ -61,7 +61,7 @@ class ClientTest {
 
         assertThat(properties).containsAllEntriesOf(Map.of(
             "service.url", "http://localhost:8081",
-            "download.threads", "8",
+            "download.threads", "" + NUM_THREADS,
             "receiver.file.path", "/tmp"));
 
         properties = client.getReceiverProperties();
