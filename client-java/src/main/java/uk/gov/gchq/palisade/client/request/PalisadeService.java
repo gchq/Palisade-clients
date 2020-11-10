@@ -73,7 +73,7 @@ public class PalisadeService implements PalisadeClient {
 
     @Override
     public CompletableFuture<PalisadeResponse> submitAsync(final PalisadeRequest palisadeRequest) {
-        checkArgument(palisadeRequest != null);
+        checkArgument(palisadeRequest);
         LOGGER.debug("Submitting request to Palisade: {}", palisadeRequest);
         String requestBody;
         try {

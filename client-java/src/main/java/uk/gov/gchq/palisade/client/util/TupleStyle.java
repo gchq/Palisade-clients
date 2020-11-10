@@ -37,5 +37,5 @@ import java.lang.annotation.Target;
         typeImmutable = "*", // No prefix or suffix for generated immutable type
         visibility = ImplementationVisibility.PUBLIC, // Generated class will be always public
         defaults = @Value.Immutable(builder = false))
-public @interface TupleStyle {
+public @interface TupleStyle { // empty
 }

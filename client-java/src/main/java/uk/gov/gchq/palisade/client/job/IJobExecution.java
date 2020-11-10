@@ -73,6 +73,11 @@ public interface IJobExecution {
         return JobExecution.builder().build();
     }
 
+    /**
+     * Returns the unique id of this execution
+     *
+     * @return the unique id
+     */
     @Value.Default
     default UUID getId() {
         return UUID.randomUUID();

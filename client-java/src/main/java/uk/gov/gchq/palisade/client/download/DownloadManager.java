@@ -20,7 +20,7 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.job.JobContext;
+import uk.gov.gchq.palisade.client.job.IJobContext;
 import uk.gov.gchq.palisade.client.resource.Resource;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
@@ -190,7 +190,7 @@ public final class DownloadManager implements DownloadManagerStatus {
      * @return the fownload id
      */
     @SuppressWarnings("java:S2221")
-    public UUID schedule(final Resource resource, final JobContext jobContext) {
+    public UUID schedule(final Resource resource, final IJobContext jobContext) {
 
         LOGGER.debug("### Scheduling resource: {}", resource);
 

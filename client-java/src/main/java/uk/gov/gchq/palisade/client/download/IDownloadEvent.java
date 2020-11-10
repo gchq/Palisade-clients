@@ -30,8 +30,18 @@ import java.util.UUID;
  */
 public interface IDownloadEvent {
 
+    /**
+     * Returns the unique download id
+     *
+     * @return the unique download id
+     */
     UUID getId();
 
+    /**
+     * Returns the time that this event was raised
+     *
+     * @return the time that this event was raised
+     */
     @Value.Derived
     default Instant getTime() {
         return Instant.now();

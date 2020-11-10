@@ -38,5 +38,5 @@ import java.lang.annotation.Target;
     visibility = ImplementationVisibility.PUBLIC, // Generated class will be always public
     defaults = @Value.Immutable(copy = false) // Disable copy methods by default
         )
-public @interface ImmutableStyle {
+public @interface ImmutableStyle { // empty
 }

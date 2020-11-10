@@ -95,7 +95,7 @@ public class ResourceClientListener implements Listener {
         return new ResourceClientListener(func.apply(ResourceClientListenrSetup.builder()).build());
     }
 
-    private final ResourceClientListenrSetup setup;
+    private final IResourceClientListenrSetup setup;
 
     /**
      * A {@code ResourceClient} manages the passing of messages to/from a websocket
@@ -103,7 +103,7 @@ public class ResourceClientListener implements Listener {
      *
      * @param setup The setup for this listener
      */
-    public ResourceClientListener(final ResourceClientListenrSetup setup) {
+    public ResourceClientListener(final IResourceClientListenrSetup setup) {
         this.setup = Checks.checkArgument(setup);
     }
 
@@ -119,7 +119,7 @@ public class ResourceClientListener implements Listener {
         return getSetup().getObjectMapper();
     }
 
-    ResourceClientListenrSetup getSetup() {
+    IResourceClientListenrSetup getSetup() {
         return setup;
     }
 

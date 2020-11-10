@@ -46,6 +46,11 @@ public interface IDownloadFailedEvent extends IDownloadEvent {
      */
     Exception getCause();
 
+    /**
+     * Returns the HTTP status code
+     *
+     * @return the HTTP status code
+     */
     int getStatusCode();
 
 }

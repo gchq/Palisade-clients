@@ -86,6 +86,7 @@ public interface IJobReceiver {
      * @param func The function to apply
      * @return a new instance
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     default JobReceiver change(final UnaryOperator<JobReceiver.Builder> func) {
         return func.apply(JobReceiver.builder().from(this)).build();
     }

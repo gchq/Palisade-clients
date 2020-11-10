@@ -493,6 +493,7 @@ public interface Checks {
         }
     }
 
+    @SuppressWarnings({ "java:S1176", "java:S1166" })
     private static String format(final String template, final Object... objects) {
         try {
             return String.format(template, objects);

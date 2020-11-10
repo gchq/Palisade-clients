@@ -50,6 +50,11 @@ public interface IJobDownload {
         return func.apply(JobDownload.builder()).build();
     }
 
+    /**
+     * Returns the unique id of this download
+     *
+     * @return the unique id
+     */
     @Value.Default
     default UUID getId() {
         return UUID.randomUUID();
@@ -119,6 +124,7 @@ public interface IJobDownload {
      * @param func The changer function
      * @return a new instance with changes applied
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     default JobDownload change(final UnaryOperator<JobDownload.Builder> func) {
         return func.apply(JobDownload.builder().from(this)).build();
     }

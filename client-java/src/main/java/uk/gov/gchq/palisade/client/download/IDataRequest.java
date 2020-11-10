@@ -48,6 +48,7 @@ public interface IDataRequest {
      * @param func The builder function
      * @return a newly created data request instance
      */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static DataRequest createDataRequest(final UnaryOperator<DataRequest.Builder> func) {
         return func.apply(DataRequest.builder()).build();
     }
