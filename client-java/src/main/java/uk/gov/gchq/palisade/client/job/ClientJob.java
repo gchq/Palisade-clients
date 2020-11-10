@@ -206,7 +206,7 @@ public final class ClientJob implements Job {
      *
      * @param event The event to be handled
      */
-    @SuppressWarnings("java:L210") // make static
+    @SuppressWarnings("java:S2325") // make static
     @Subscribe
     public void onJobComplete(final ResourcesExhaustedEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
