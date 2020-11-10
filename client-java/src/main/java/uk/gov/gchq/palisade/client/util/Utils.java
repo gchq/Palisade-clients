@@ -68,7 +68,7 @@ public interface Utils {
      * @param className The class name
      * @return a newly created instance of the provided class
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S2658" }) // dynamic class loading
     static <T> T newInstance(final String className) {
         try {
             return (T) Class.forName(className).getConstructor().newInstance();

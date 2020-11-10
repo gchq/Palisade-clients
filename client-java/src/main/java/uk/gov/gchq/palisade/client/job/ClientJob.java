@@ -96,29 +96,7 @@ public final class ClientJob implements Job {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientJob.class);
-
     private static final String EVENT_CAUGHT = "Caught event: {}";
-
-    /**
-     * Helper method to create a {@code ClientJob}
-     *
-     * @param setup The job setup
-     * @return a newly created ClientJob
-     */
-    public static ClientJob createJob(final JobSetup setup) {
-        return new ClientJob(setup);
-    }
-
-    /**
-     * Helper method to create a {@code ClientJob} using a builder function
-     *
-     * @param func The builder function
-     * @return a newly created ClientJob instance
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    public static ClientJob createJob(final UnaryOperator<JobSetup.Builder> func) {
-        return createJob(func.apply(JobSetup.builder()).build());
-    }
 
     private final JobSetup setup;
     private final Map<UUID, JobDownload> downloads;
@@ -135,6 +113,27 @@ public final class ClientJob implements Job {
             .sequence(executions.size() + 1));
 
         this.executions.put(currentExecution.getId(), currentExecution);
+    }
+
+    /**
+     * Helper method to create a {@code ClientJob} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created ClientJob instance
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    public static ClientJob createJob(final UnaryOperator<JobSetup.Builder> func) {
+        return createJob(func.apply(JobSetup.builder()).build());
+    }
+
+    /**
+     * Helper method to create a {@code ClientJob}
+     *
+     * @param setup The job setup
+     * @return a newly created ClientJob
+     */
+    public static ClientJob createJob(final JobSetup setup) {
+        return new ClientJob(setup);
     }
 
     /**

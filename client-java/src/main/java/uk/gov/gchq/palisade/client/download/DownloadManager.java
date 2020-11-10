@@ -64,17 +64,6 @@ public final class DownloadManager implements DownloadManagerStatus {
         ObjectMapper getObjectMapper();
     }
 
-    /**
-     * Helper method to create a {@code DownloadManager} using a builder function
-     *
-     * @param func The builder function
-     * @return a newly created data request instance
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    public static DownloadManager createDownloadManager(final UnaryOperator<DownloadManagerSetup.Builder> func) {
-        return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
 
     private static final int CORE_POOL_SIZE = 0; // ensure that unreferenced pools are reclaimed
@@ -82,6 +71,7 @@ public final class DownloadManager implements DownloadManagerStatus {
 
     private final ThreadPoolExecutor executor;
     private final DownloadManagerSetup setup;
+
 
     /**
      * Create a new DownloadManager with the the provided
@@ -99,6 +89,28 @@ public final class DownloadManager implements DownloadManagerStatus {
             new LinkedBlockingQueue<>(2));
         executor.allowCoreThreadTimeOut(true);
         LOGGER.debug("### Download manager created with thread pool size of {}", setup.getNumThreads());
+    }
+
+    /**
+     * Helper method to create a {@code DownloadManager} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created data request instance
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    private static DownloadManager createDownloadManager1(final UnaryOperator<DownloadManagerSetup.Builder> func) {
+        return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
+    }
+
+    /**
+     * Helper method to create a {@code DownloadManager} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created data request instance
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    public static DownloadManager createDownloadManager(final UnaryOperator<DownloadManagerSetup.Builder> func) {
+        return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
     }
 
     /**

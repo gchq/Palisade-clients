@@ -83,17 +83,6 @@ public class ResourceClientListener implements Listener {
     private static final int REASON_OK = 1001;
 
 
-    /**
-     * Helper method to create a {@link Message} using a builder function
-     *
-     * @param func The builder function
-     * @return a newly created {@code RequestId}
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    public static ResourceClientListener createResourceClientListenr(
-        final UnaryOperator<ResourceClientListenrSetup.Builder> func) {
-        return new ResourceClientListener(func.apply(ResourceClientListenrSetup.builder()).build());
-    }
 
     private final IResourceClientListenrSetup setup;
 
@@ -105,6 +94,18 @@ public class ResourceClientListener implements Listener {
      */
     public ResourceClientListener(final IResourceClientListenrSetup setup) {
         this.setup = Checks.checkArgument(setup);
+    }
+
+    /**
+     * Helper method to create a {@link Message} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    public static ResourceClientListener createResourceClientListenr(
+        final UnaryOperator<ResourceClientListenrSetup.Builder> func) {
+        return new ResourceClientListener(func.apply(ResourceClientListenrSetup.builder()).build());
     }
 
     DownloadManagerStatus getDownloadTracker() {
@@ -214,7 +215,7 @@ public class ResourceClientListener implements Listener {
             ws.sendText(text, true);
             LOGGER.debug("Sent: {}", message);
         } catch (IOException e) {
-            // TODO: we should add this fail to a result object
+            // we should add this fail to a result object
             LOGGER.warn("Failed to send message: {}", message, e);
         }
     }

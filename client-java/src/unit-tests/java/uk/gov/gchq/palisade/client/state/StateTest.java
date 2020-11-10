@@ -17,8 +17,8 @@ package uk.gov.gchq.palisade.client.state;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("java:S2187") // no tests yet
 class StateTest {
 
     private static ObjectMapper objectMapper;
@@ -28,8 +28,8 @@ class StateTest {
         objectMapper = new ObjectMapper().findAndRegisterModules();
     }
 
-    @Test
-    void test() throws Exception {
+//    @Test
+    void testStateSerialisation() throws Exception {
 
 //        var is = Thread.currentThread().getContextClassLoader().getResourceAsStream("state.json");
 //        var state1 = objectMapper.readValue(is, State.class);

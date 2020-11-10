@@ -72,17 +72,6 @@ public class ResourceClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceClient.class);
 
-    /**
-     * Helper method to create a {@link Message} using a builder function
-     *
-     * @param func The builder function
-     * @return a newly created {@code RequestId}
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    public static ResourceClient createResourceClient(final UnaryOperator<ResourceClientSetup.Builder> func) {
-        return new ResourceClient(func.apply(ResourceClientSetup.builder()).build());
-    }
-
     private final ResourceClientSetup setup;
 
     private WebSocket webSocket;
@@ -96,6 +85,17 @@ public class ResourceClient {
     public ResourceClient(final ResourceClientSetup setup) {
         this.setup = Checks.checkArgument(setup);
 
+    }
+
+    /**
+     * Helper method to create a {@link Message} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    public static ResourceClient createResourceClient(final UnaryOperator<ResourceClientSetup.Builder> func) {
+        return new ResourceClient(func.apply(ResourceClientSetup.builder()).build());
     }
 
     /**

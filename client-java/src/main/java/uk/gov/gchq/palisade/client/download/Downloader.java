@@ -116,6 +116,13 @@ public final class Downloader implements ReceiverContext {
     private static final int HTTP_STATUS_OK = 200;
     private static final int HTTP_STATUS_NOT_FOUND = 404;
 
+    private final DownloaderSetup setup;
+
+    private Downloader(final DownloaderSetup setup) {
+        assert setup != null : "Cannot create downloader without a setup!";
+        this.setup = setup;
+    }
+
     /**
      * Helper method to create a {@code Downloader} using a builder function
      *
@@ -126,6 +133,72 @@ public final class Downloader implements ReceiverContext {
     static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
         checkArgument(func);
         return new Downloader(func.apply(DownloaderSetup.builder()).build());
+    }
+
+    @Override
+    public Optional<Object> findProperty(final String key) {
+        checkArgument(key);
+        return Optional.ofNullable(setup.getProperties().get(key));
+    }
+
+    /**
+     * Returns the downloadId associated with this downloader
+     *
+     * @return the downloadId associated with this downloader
+     */
+    UUID getDownloadId() {
+        return setup.getId();
+    }
+
+    @Override
+    public Resource getResource() {
+        return setup.getResource();
+    }
+
+    /**
+     * Start the download process
+     *
+     * @return a download result after successful completion
+     * @throws DownloaderException if any error occurs
+     */
+    @SuppressWarnings("java:S2221")
+    public DownloadResult start() {
+
+        LOGGER.debug("Downloader Started");
+
+        var mapper = setup.getObjectMapper();
+        var resource = setup.getResource();
+        var receiver = setup.getReceiver();
+
+        try {
+
+            var uri = createUri(resource.getUrl(), "/read/chunked");
+            var requestBody = createBody(resource, mapper);
+            var httpResponse = sendRequest(requestBody, uri);
+
+            var statusCode = httpResponse.statusCode();
+            if (statusCode != HTTP_STATUS_OK) {
+                String msg;
+                if (statusCode == HTTP_STATUS_NOT_FOUND) {
+                    msg = String.format("Resource \"%s\" not found", resource.getLeafResourceId());
+                } else {
+                    msg = "Request to DataService failed";
+                }
+                throw new DownloaderException(msg, httpResponse.statusCode());
+            }
+
+            processStream(httpResponse.body(), receiver, this);
+
+            return createDownloadResult(b -> b.id(setup.getId()));
+
+        } catch (ReceiverException e) {
+            throw new DownloaderException("Caught exception from receiver", e);
+        } catch (DownloaderException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DownloaderException("Caught unknown exception", e);
+        }
+
     }
 
     private static String createBody(final Resource resource, final ObjectMapper objectMapper) {
@@ -198,79 +271,6 @@ public final class Downloader implements ReceiverContext {
         } catch (IOException | InterruptedException e1) {
             Thread.currentThread().interrupt();
             throw new DownloaderException("Error occurred making request to data service", e1);
-        }
-
-    }
-
-    private final DownloaderSetup setup;
-
-    private Downloader(final DownloaderSetup setup) {
-        assert setup != null : "Cannot create downloader without a setup!";
-        this.setup = setup;
-    }
-
-    @Override
-    public Optional<Object> findProperty(final String key) {
-        checkArgument(key);
-        return Optional.ofNullable(setup.getProperties().get(key));
-    }
-
-    /**
-     * Returns the downloadId associated with this downloader
-     *
-     * @return the downloadId associated with this downloader
-     */
-    UUID getDownloadId() {
-        return setup.getId();
-    }
-
-    @Override
-    public Resource getResource() {
-        return setup.getResource();
-    }
-
-    /**
-     * Start the download process
-     *
-     * @return a download result after successful completion
-     * @throws DownloaderException if any error occurs
-     */
-    @SuppressWarnings("java:S2221")
-    public DownloadResult start() {
-
-        LOGGER.debug("Downloader Started");
-
-        var mapper = setup.getObjectMapper();
-        var resource = setup.getResource();
-        var receiver = setup.getReceiver();
-
-        try {
-
-            var uri = createUri(resource.getUrl(), "/read/chunked");
-            var requestBody = createBody(resource, mapper);
-            var httpResponse = sendRequest(requestBody, uri);
-
-            var statusCode = httpResponse.statusCode();
-            if (statusCode != HTTP_STATUS_OK) {
-                String msg;
-                if (statusCode == HTTP_STATUS_NOT_FOUND) {
-                    msg = String.format("Resource \"%s\" not found", resource.getLeafResourceId());
-                } else {
-                    msg = "Request to DataService failed";
-                }
-                throw new DownloaderException(msg, httpResponse.statusCode());
-            }
-
-            processStream(httpResponse.body(), receiver, this);
-
-            return createDownloadResult(b -> b.id(setup.getId()));
-
-        } catch (ReceiverException e) {
-            throw new DownloaderException("Caught exception from receiver", e);
-        } catch (DownloaderException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DownloaderException("Caught unknown exception", e);
         }
 
     }
