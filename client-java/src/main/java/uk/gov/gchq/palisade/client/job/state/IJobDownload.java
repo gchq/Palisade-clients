@@ -158,4 +158,13 @@ public interface IJobDownload {
         return func.apply(JobDownload.builder().from(this)).build();
     }
 
+    default boolean hasEnded() {
+        var sts = getStatus();
+        return sts == JobDownloadStatus.FAILED || sts == JobDownloadStatus.COMPLETE;
+    }
+
+    default boolean hasNotEnded() {
+        return !hasEnded();
+    }
+
 }

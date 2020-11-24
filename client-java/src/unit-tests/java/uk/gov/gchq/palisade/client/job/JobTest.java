@@ -53,7 +53,6 @@ class JobTest {
         var properties = Map.<String, Object>of(
             Configuration.KEY_SERVICE_PS_PORT, embeddedServer.getPort(),
             Configuration.KEY_SERVICE_FRS_PORT, embeddedServer.getPort(),
-            Configuration.KEY_STATE_PATH, "/tmp",
             Configuration.KEY_RECEIVER_FILE_PATH, "/WOAH",
             Configuration.KEY_DOWNLOAD_THREADS, 1);
 

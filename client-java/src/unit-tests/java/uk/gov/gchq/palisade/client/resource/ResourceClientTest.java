@@ -76,7 +76,7 @@ public class ResourceClientTest {
     @Test
     void testMessageFlow() throws Exception {
 
-        // as soon as the client is started, the client will start to recive resources
+        // as soon as the client is started, the client will start to receive resources
 
         var future = startClient();
 
@@ -155,7 +155,7 @@ public class ResourceClientTest {
         var uri = new URI("ws://localhost:" + port + "/cluster/filteredResource/name");
         return ResourceClient
             .createResourceClient(b -> b
-                .baseUri(uri)
+                .baseUri("ws://localhost:" + port + "/cluster/filteredResource/name/%t")
                 .resourceClientListener(createResourceClientListenr(rcl -> rcl
                     .downloadManagerStatus(downloadTracker)
                     .eventBus(eventBus)

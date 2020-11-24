@@ -34,7 +34,6 @@ import uk.gov.gchq.palisade.client.util.Configuration;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
@@ -85,7 +84,7 @@ public class JavaClient implements Client {
 
     @Override
     public Result resume(final Path path, final Map<String, Object> configuration) {
-        var state = new JobStateService(objectMapper, path).createFrom(path, configuration);
+        var state = new JobStateService(objectMapper).createFrom(path, configuration);
         var receiver = createReceiver(state.getJobConfig().getReceiverClass());
         return submit(state, receiver);
     }
@@ -102,7 +101,7 @@ public class JavaClient implements Client {
         LOGGER.debug("Job configuration submitted: {}", jobRequest);
 
         var receiver = createReceiver(jobRequest.getReceiverClass());
-        var stateService = new JobStateService(objectMapper, Path.of("/tmp/pal-state-" + UUID.randomUUID()));
+        var stateService = new JobStateService(objectMapper);
         var state = stateService.createNew(jobRequest, configuration);
 
         return submit(state, receiver);

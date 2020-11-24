@@ -82,12 +82,12 @@ class DownloaderTest {
                 .token(token)
                 .url(BASE_URL))));
 
-        downloader.start();
+        var result = downloader.start();
 
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.
 
-        var actual = new FileInputStream(new File("/tmp/pal-" + token + "-" + filename));
+        var actual = new FileInputStream(new File(result.getProperties().get("path")));
         var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
 
         assertThat(streamsAreEqual(actual, expected)).isTrue();
@@ -111,12 +111,12 @@ class DownloaderTest {
                 .token(token)
                 .url(BASE_URL))));
 
-        downloader.start();
+        var result = downloader.start();
 
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.
 
-        var actual = new FileInputStream(new File("/tmp/pal-" + token + "-" + filename));
+        var actual = new FileInputStream(new File(result.getProperties().get("path")));
         var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
 
         assertThat(streamsAreEqual(actual, expected)).isTrue();

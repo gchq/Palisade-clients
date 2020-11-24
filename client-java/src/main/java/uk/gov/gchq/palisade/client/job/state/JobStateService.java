@@ -22,11 +22,14 @@ import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.util.Configuration;
+import uk.gov.gchq.palisade.client.util.Util;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * The job state service provideds loading and saving services for job states
@@ -38,17 +41,14 @@ public class JobStateService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobStateService.class);
 
     private final ObjectMapper objectMapper;
-    private final Path path;
 
     /**
      * Returns a newly created instance
      *
      * @param objectMapper The object mapper to use when (de)serialising the state.
-     * @param path         The path to store the state
      */
-    public JobStateService(final ObjectMapper objectMapper, final Path path) {
+    public JobStateService(final ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.path = path;
     }
 
     /**
@@ -91,11 +91,20 @@ public class JobStateService {
         }
     }
 
-    final void save(final ISavedJobState state) {
+    final void save(final ISavedJobState state, final String path) {
+
+        var replacementMap = Map.<String, Supplier<String>>of(
+            "%t", () -> state.getPalisadeResponse().getToken(),
+            "%s", () -> Util.timeStampFormat(Instant.now()));
+
+        var s = Util.replaceTokens(path, replacementMap);
+        var p = Path.of(s);
+
         try {
             var json = toJson(state);
-            var newPath = Files.write(path, json.getBytes());
-            LOGGER.debug("State ({}):\n{}", newPath, json);
+            Files.createDirectories(p.getParent());
+            var newPath = Files.write(p, json.getBytes());
+//            LOGGER.debug("State ({}):\n{}", newPath, json);
         } catch (IOException e) {
             throw new ClientException("Failed to save state", e);
         }

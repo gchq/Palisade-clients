@@ -155,15 +155,16 @@ public class Configuration {
             var url = Thread.currentThread().getContextClassLoader().getResource("palisade-client.yaml");
             var file = new File(url.toURI());
 
-            // lets try and flatten the map
+            // this will actually read the file into a nested object graph of maps (maps as
+            // values to keys etc)
+            var object = new ObjectMapper(new YAMLFactory()).readValue(file, Object.class);
 
-            ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
-            Object obj = yamlReader.readValue(file, Object.class);
+            // now we need to convert the map graph into json
+            var json = new ObjectMapper().writeValueAsString(object);
 
-            ObjectMapper jsonWriter = new ObjectMapper();
-            var json = jsonWriter.writeValueAsString(obj);
-
-            Map<String, Object> map = JsonFlattener.flattenAsMap(json);
+            // ... so that the flattener can create a single flat map of dot delimited keys:
+            // e.g. "file.reciever.path=/tmp"
+            var map = JsonFlattener.flattenAsMap(json);
 
             return new Configuration(map);
 

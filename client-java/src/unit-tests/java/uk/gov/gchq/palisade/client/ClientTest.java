@@ -62,7 +62,7 @@ class ClientTest {
         assertThat(properties).containsAllEntriesOf(Map.of(
             Configuration.KEY_SERVICE_HOST, "localhost",
             Configuration.KEY_SERVICE_PS_SCHEME, "http",
-            Configuration.KEY_RECEIVER_FILE_PATH, "/tmp"));
+            Configuration.KEY_RECEIVER_FILE_PATH, "/tmp/palisade/%t/downloads/palisade-download_%t_%s_%r"));
 
     }
 

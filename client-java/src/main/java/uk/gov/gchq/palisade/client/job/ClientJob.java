@@ -42,10 +42,9 @@ import uk.gov.gchq.palisade.client.resource.ResourceReadyEvent;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.request.IPalisadeRequest.createPalisadeRequest;
@@ -156,6 +155,10 @@ public final class ClientJob implements Job {
     @SuppressWarnings("java:S3242")
     public void onDownloadCompleted(final DownloadCompletedEvent event) {
         state.downloadCompleted(event.getId(), event.getTime(), event.getProperties());
+        if (this.remainingDownloadLatch != null) {
+            remainingDownloadLatch.countDown();
+            LOGGER.debug("Job is shutting down. Latch decremented");
+        }
     }
 
     /**
@@ -167,6 +170,10 @@ public final class ClientJob implements Job {
     @SuppressWarnings("java:S3242")
     public void onDownloadFailed(final DownloadFailedEvent event) {
         state.downloadFailed(event.getId(), event.getTime(), event.getStatusCode(), event.getCause());
+        if (this.remainingDownloadLatch != null) {
+            remainingDownloadLatch.countDown();
+            LOGGER.debug("Job is shutting down. Latch decremented");
+        }
     }
 
     /**
@@ -188,6 +195,9 @@ public final class ClientJob implements Job {
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     @SuppressWarnings("java:S3242")
     public void onDownloadScheduled(final DownloadScheduledEvent event) {
+        if (remainingDownloadLatch != null) {
+            throw new ClientException("Cannot schedule more downloads. this job is in the progress of shutting down");
+        }
         var resource = event.getResource();
         state.downloadScheduled(event.getId(), resource.getLeafResourceId(), resource.getUrl());
     }
@@ -201,7 +211,7 @@ public final class ClientJob implements Job {
      */
     @SuppressWarnings("java:S3242")
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public void onScheduleDownload(final ResourceReadyEvent event) {
+    public void onResourceReady(final ResourceReadyEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
         setup.getDownloadManager().schedule(
             event.getResource(),
@@ -247,7 +257,7 @@ public final class ClientJob implements Job {
         var downloadManager = setup.getDownloadManager();
         var objectMapper = setup.getObjectMapper();
 
-        var wsUri = createUri(setup.getState().getConfiguration().getFilteredResourceUri());
+        var wsUri = setup.getState().getConfiguration().getFilteredResourceUri();
 
         // we must register the event subscriptions in this job with the evnt bus
         // provided to us
@@ -262,6 +272,20 @@ public final class ClientJob implements Job {
                 .eventBus(eventBus)
                 .objectMapper(objectMapper))))
             .connect()
+            .thenCompose(s -> {
+                // we should not check to see if there is any download that has not completed
+                // Set the latch to the number of incomplete downloads
+                return CompletableFuture.runAsync(() -> {
+                    try {
+                        var count = (int) state.getIncompleteDownloadCount();
+                        LOGGER.debug("Waiting for {} downloads to complete", count);
+                        remainingDownloadLatch = new CountDownLatch(count);
+                        remainingDownloadLatch.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            })
             .thenApply(v -> state.createSavedState());
 
         state.downloadsStarted();
@@ -278,6 +302,8 @@ public final class ClientJob implements Job {
         };
 
     }
+
+    private CountDownLatch remainingDownloadLatch;
 
     IJobSetup getSetup() {
         return this.setup;
@@ -305,15 +331,6 @@ public final class ClientJob implements Job {
         return palisadeRequest;
 
     }
-
-    private URI createUri(final String uriString) {
-        try {
-            return new URI(uriString);
-        } catch (URISyntaxException e) {
-            throw new ClientException("URI \"" + uriString + "\" is invalid", e);
-        }
-    }
-
 
 }
 

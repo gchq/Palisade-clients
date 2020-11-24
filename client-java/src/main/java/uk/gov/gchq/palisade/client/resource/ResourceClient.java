@@ -21,12 +21,10 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.util.Checks;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.concurrent.CompletableFuture;
@@ -55,7 +53,7 @@ public class ResourceClient {
          *
          * @return the base web socket uri
          */
-        URI getBaseUri();
+        String getBaseUri();
 
         /**
          * Returns the listener that will handle communication to the server
@@ -153,7 +151,7 @@ public class ResourceClient {
      */
     public CompletableFuture<Void> connect() {
 
-        var uri = createUri(getBaseUri(), getToken());
+        var uri = getUri();
 
         LOGGER.debug("Connecting to websocket at: {}", uri);
 
@@ -185,8 +183,8 @@ public class ResourceClient {
         });
     }
 
-    private URI getBaseUri() {
-        return getSetup().getBaseUri();
+    private URI getUri() {
+        return URI.create(getSetup().getBaseUri().replace("%t", setup.getToken()));
     }
 
     private ResourceClientListener getListener() {
@@ -210,27 +208,27 @@ public class ResourceClient {
         return webSocket != null && !webSocket.isOutputClosed();
     }
 
-    private static URI createUri(final URI baseUri, final String endpoint) {
-
-        assert baseUri != null : "Need the base uri";
-        assert baseUri != null : "Need the uri endpoint to append to the base uri";
-
-        var baseUriStr = baseUri.toString();
-        var uri = new StringBuilder();
-        if (baseUriStr.endsWith("/")) {
-            uri.append(baseUriStr.substring(0, baseUriStr.length() - 2));
-        } else {
-            uri.append(baseUriStr);
-        }
-        if (!endpoint.startsWith("/")) {
-            uri.append("/");
-        }
-        uri.append(endpoint);
-        try {
-            return new URI(uri.toString());
-        } catch (URISyntaxException e) {
-            throw new ClientException("Invalid websocket uri: " + uri, e);
-        }
-    }
+//    private static URI createUri(final URI baseUri, final String endpoint) {
+//
+//        assert baseUri != null : "Need the base uri";
+//        assert baseUri != null : "Need the uri endpoint to append to the base uri";
+//
+//        var baseUriStr = baseUri.toString();
+//        var uri = new StringBuilder();
+//        if (baseUriStr.endsWith("/")) {
+//            uri.append(baseUriStr.substring(0, baseUriStr.length() - 2));
+//        } else {
+//            uri.append(baseUriStr);
+//        }
+//        if (!endpoint.startsWith("/")) {
+//            uri.append("/");
+//        }
+//        uri.append(endpoint);
+//        try {
+//            return new URI(uri.toString());
+//        } catch (URISyntaxException e) {
+//            throw new ClientException("Invalid websocket uri: " + uri, e);
+//        }
+//    }
 
 }

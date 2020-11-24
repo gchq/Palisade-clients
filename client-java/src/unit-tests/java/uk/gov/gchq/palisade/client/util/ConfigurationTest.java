@@ -33,7 +33,7 @@ class ConfigurationTest {
 
     @Test
     void testStatePath() {
-        assertThat(context.getStatePath()).isEqualTo("/tmp");
+        assertThat(context.getStatePath()).isEqualTo("/tmp/palisade/%t/palisade-state_%t_%s.json");
     }
 
     @Test
@@ -44,7 +44,7 @@ class ConfigurationTest {
     @Test
     void testFilteredResourceUri() {
         assertThat(context.getFilteredResourceUri())
-            .isEqualTo("ws://localhost:8081/cluster/filteredResource/name");
+            .isEqualTo("ws://localhost:8081/cluster/filteredResource/name/%t");
     }
 
     @Test
@@ -54,7 +54,7 @@ class ConfigurationTest {
 
     @Test
     void testReceiverFilePath() {
-        assertThat(context.getReceiverFilePath()).isEqualTo("/tmp");
+        assertThat(context.getReceiverFilePath()).isEqualTo("/tmp/palisade/%t/downloads/palisade-download_%t_%s_%r");
     }
 
     @Test

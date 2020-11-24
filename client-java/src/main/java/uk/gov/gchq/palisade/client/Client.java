@@ -99,7 +99,7 @@ public interface Client {
      */
     static Client create(final Map<String, Object> properties) {
 
-        var clientContext = Configuration.fromDefaults().merge(properties);
+        var configuration = Configuration.fromDefaults().merge(properties);
 
         var objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
@@ -110,11 +110,11 @@ public interface Client {
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         var downloadManager = createDownloadManager(b -> b
-            .numThreads(clientContext.getDownloadThreads())
+            .numThreads(configuration.getDownloadThreads())
             .objectMapper(objectMapper));
 
         return new JavaClient(
-            clientContext,
+            configuration,
             downloadManager,
             objectMapper);
 

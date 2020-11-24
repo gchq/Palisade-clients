@@ -21,11 +21,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.job.state.IJobRequest;
+import uk.gov.gchq.palisade.client.job.state.ISavedJobState;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,15 +72,23 @@ class FullTest {
          * "src/test/resources" and the download file is in "/tmp"
          */
         InputStream expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("pi.txt");
-        FileInputStream actual = new FileInputStream(new File("/tmp/pal-abcd-1-pi.txt"));
+        FileInputStream actual = new FileInputStream(findPath(state, "pi.txt"));
 
         assertThat(isEqual(actual, expected)).isTrue();
 
         expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("Selection_032.png");
-        actual = new FileInputStream(new File("/tmp/pal-abcd-1-Selection_032.png"));
+        actual = new FileInputStream(findPath(state, "Selection_032.png"));
 
         assertThat(isEqual(actual, expected)).isTrue();
 
+    }
+
+    private String findPath(final ISavedJobState state, final String resourceId) {
+        return state.getDownloads().stream()
+            .filter(dl -> dl.getResourceId().equals(resourceId))
+            .findFirst()
+            .map(dl -> dl.getProperties().get("path"))
+            .orElseThrow();
     }
 
     private static boolean isEqual(final InputStream i1, final InputStream i2) throws IOException {

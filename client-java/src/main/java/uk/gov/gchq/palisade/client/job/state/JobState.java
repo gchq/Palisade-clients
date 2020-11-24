@@ -15,6 +15,9 @@
  */
 package uk.gov.gchq.palisade.client.job.state;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.gov.gchq.palisade.client.job.JobDownloadStatus;
 import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateDownload;
 import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateExecution;
@@ -42,6 +45,7 @@ import static uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateExecuti
 import static uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobRequest.createStateJobConfig;
 import static uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStatePalisadeResponse.createStatePalisadeResponse;
 import static uk.gov.gchq.palisade.client.request.IPalisadeResponse.createPalisadeResponse;
+import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
  * The state of a job
@@ -50,6 +54,7 @@ import static uk.gov.gchq.palisade.client.request.IPalisadeResponse.createPalisa
  */
 public class JobState {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobStateService.class);
     private final JobStateService service;
 
     // this is the first ever run of this job. the sequence will be >0 if the job is
@@ -82,13 +87,14 @@ public class JobState {
      * Returns a newly create {@code JobState} instance initialised at the beginning
      * of its pipeline
      *
-     * @param service          The service to use when saving state.
-     * @param clientProperties The client (global) properties
+     * @param service       The service to use when saving state.
+     * @param jobRequest    The request for this job
+     * @param configuration The client (global) properties
      */
-    JobState(final JobStateService service, final IJobRequest jobConfig, final Configuration configuration) {
+    JobState(final JobStateService service, final IJobRequest jobRequest, final Configuration configuration) {
 
         this.service = service;
-        this.jobRequest = jobConfig;
+        this.jobRequest = jobRequest;
         this.configuration = configuration;
 
         this.sequence = 0;
@@ -117,8 +123,9 @@ public class JobState {
      * Returns a newly create {@code JobState} instance initialised with the
      * provided state
      *
-     * @param service The service to use when saving state.
-     * @param state   the state for this job
+     * @param service       The service to use when saving state.
+     * @param state         the state for this job
+     * @param configuration The job configuration
      */
     JobState(final JobStateService service, final ISavedJobState state, final Map<String, Object> configuration) {
 
@@ -286,6 +293,9 @@ public class JobState {
      * @param url        The url to be downloaded from
      */
     public void downloadScheduled(final UUID id, final String resourceId, final String url) {
+        checkArgument(id);
+        checkArgument(resourceId);
+        checkArgument(url);
         lock.lock();
         try {
             var dl = createDownload(b -> b
@@ -307,9 +317,14 @@ public class JobState {
      * @param start The start time
      */
     public void downloadStarted(final UUID id, final Instant start) {
+        checkArgument(id);
+        checkArgument(start);
         lock.lock();
         try {
             var prev = downloads.get(id);
+            if (prev == null) {
+                throw new IllegalStateException("No previous download found for id" + id + ". This should not happen");
+            }
             var next = prev.change(b -> b
                 .startTime(start)
                 .status(JobDownloadStatus.IN_PROGRESS));
@@ -328,17 +343,24 @@ public class JobState {
      * @param properties Any properties returned from the downloader
      */
     public void downloadCompleted(final UUID id, final Instant end, final Map<String, String> properties) {
+        checkArgument(id);
+        checkArgument(end);
         lock.lock();
         try {
             var prev = downloads.get(id);
             if (prev == null) {
-                throw new IllegalStateException("Should have a download in progress with id " + id);
+                throw new IllegalStateException("No previous download found for id" + id + ". This should not happen");
             }
-            var next = prev.change(b -> b
-                .endTime(end)
-                .duration(Duration.between(prev.getStartTime().get(), end).toMillis())
-                .status(JobDownloadStatus.COMPLETE)
-                .putAllProperties(properties));
+            LOGGER.debug("Previous download state: {}", prev);
+            var next = prev.change(b -> {
+                var prevStartDateOpt = prev.getStartTime();
+                var prevStartDate = prevStartDateOpt.get();
+                return b
+                    .endTime(end)
+                    .duration(Duration.between(prevStartDate, end).toMillis())
+                    .status(JobDownloadStatus.COMPLETE)
+                    .putAllProperties(properties);
+            });
             downloads.put(next.getId(), next);
             save();
         } finally {
@@ -379,6 +401,9 @@ public class JobState {
      * @param cause      The cause of the failure
      */
     public void downloadFailed(final UUID id, final Instant end, final int statusCode, final Exception cause) {
+        checkArgument(id);
+        checkArgument(end);
+        checkArgument(cause);
         lock.lock();
         try {
             var prev = downloads.get(id);
@@ -411,8 +436,15 @@ public class JobState {
             .downloads(downloads.values().stream().map(JobState::map).collect(Collectors.toList())));
     }
 
+    public long getIncompleteDownloadCount() {
+        return downloads.values().stream()
+            .filter(IJobDownload::hasNotEnded)
+            .count();
+    }
+
     private void save() {
-        service.save(createSavedState());
+
+        service.save(createSavedState(), configuration.getStatePath());
     }
 
     private static IStateJobRequest map(final IJobRequest jc) {
