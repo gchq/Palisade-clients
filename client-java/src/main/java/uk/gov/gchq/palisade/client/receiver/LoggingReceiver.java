@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * A receiver that saves an input stream to a file
@@ -29,8 +30,9 @@ public class LoggingReceiver implements Receiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingReceiver.class);
 
     @Override
-    public void process(final ReceiverContext receiverContext, final InputStream is) {
+    public IReceiverResult process(final ReceiverContext receiverContext, final InputStream is) {
         LOGGER.debug("Received: {}", receiverContext);
+        return Map::of;
     }
 
 }

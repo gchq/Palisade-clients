@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
 
 import static uk.gov.gchq.palisade.client.resource.MessageType.CTS;
 
-@ServerWebSocket("/name/{token}")
-public class WsEndpoint {
+@ServerWebSocket("/cluster/filteredResource/name/{token}")
+public class WsEndpointFilteredResource {
 
     public static class ResourceGenerator implements Iterable<Resource> {
 
@@ -67,11 +67,11 @@ public class WsEndpoint {
     @Inject
     EmbeddedServer embeddedServer;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WsEndpoint.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WsEndpointFilteredResource.class);
     private final WebSocketBroadcaster broadcaster;
     private Iterator<Resource> resources;
 
-    public WsEndpoint(final WebSocketBroadcaster broadcaster) {
+    public WsEndpointFilteredResource(final WebSocketBroadcaster broadcaster) {
         this.broadcaster = broadcaster;
     }
 
@@ -79,9 +79,7 @@ public class WsEndpoint {
     public void onOpen(final String token, final WebSocketSession session) {
         session.put("token", token);
         this.resources = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
-        if (resources.hasNext()) {
-            send(session, MessageType.RTS);
-        } else {
+        if (!resources.hasNext()) {
             send(session, MessageType.COMPLETE);
         }
         System.out.println("onOpen::" + session.getId());
@@ -92,8 +90,11 @@ public class WsEndpoint {
         LOGGER.debug("Recd: {}", inmsg);
         var type = inmsg.getType();
         if (type == CTS) {
-            sendResource(session, resources.next());
-            send(session, resources.hasNext() ? MessageType.RTS : MessageType.COMPLETE);
+            if (resources.hasNext()) {
+                sendResource(session, resources.next());
+            } else {
+                send(session, MessageType.COMPLETE);
+            }
         } else {
             LOGGER.warn("Unknown message type: {}", inmsg.getType());
         }

@@ -22,21 +22,21 @@ import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.download.DownloadManager;
 import uk.gov.gchq.palisade.client.job.ClientJob;
-import uk.gov.gchq.palisade.client.job.JobConfig;
-import uk.gov.gchq.palisade.client.request.PalisadeClient;
-import uk.gov.gchq.palisade.client.request.PalisadeRequest;
-import uk.gov.gchq.palisade.client.util.Utils;
+import uk.gov.gchq.palisade.client.job.Result;
+import uk.gov.gchq.palisade.client.job.state.IJobRequest;
+import uk.gov.gchq.palisade.client.job.state.JobRequest;
+import uk.gov.gchq.palisade.client.job.state.JobState;
+import uk.gov.gchq.palisade.client.job.state.JobStateService;
+import uk.gov.gchq.palisade.client.receiver.Receiver;
+import uk.gov.gchq.palisade.client.request.PalisadeService;
+import uk.gov.gchq.palisade.client.util.Configuration;
 
-import java.util.HashMap;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
-import static uk.gov.gchq.palisade.client.job.IJobContext.createJobContext;
-import static uk.gov.gchq.palisade.client.request.IPalisadeRequest.createPalisadeRequest;
-import static uk.gov.gchq.palisade.client.resource.ResourceClient.createResourceClient;
-import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListenr;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
@@ -53,116 +53,88 @@ public class JavaClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JavaClient.class);
 
-    private final Map<String, String> properties;
-    private final Map<String, String> receiverProperties;
-
-    private final PalisadeClient palisadeService;
+    private final Configuration configuration;
     private final DownloadManager downloadManager;
     private final ObjectMapper objectMapper;
 
     /**
      * Create a new JavaClient injected with required services.
      *
-     * @param properties      The global configuration
-     * @param palisadeService the service providing acces to Palisade
+     * @param configuration   The global configuration
      * @param downloadManager The download manager maintaining all downloads and
      *                        thread pools
      * @param objectMapper    The object mapper
      */
     public JavaClient(
-            final Map<String, String> properties,
-            final PalisadeClient palisadeService,
+            final Configuration configuration,
             final DownloadManager downloadManager,
             final ObjectMapper objectMapper) {
-
-        this.properties = checkArgument(properties);
+        this.configuration = checkArgument(configuration);
         this.objectMapper = checkArgument(objectMapper);
-        this.palisadeService = checkArgument(palisadeService);
         this.downloadManager = checkArgument(downloadManager);
-
-        this.receiverProperties = properties.entrySet().stream()
-            .filter(es -> es.getKey().startsWith("receiver."))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
-    Map<String, String> getProperties() {
-        return this.properties;
+    Configuration getConfiguration() {
+        return this.configuration;
     }
 
-    Map<String, String> getReceiverProperties() {
-        return this.receiverProperties;
+    @Override
+    public Result resume(final Path path) {
+        return resume(path, Map.of());
+    }
+
+    @Override
+    public Result resume(final Path path, final Map<String, Object> configuration) {
+        var state = new JobStateService(objectMapper, path).createFrom(path, configuration);
+        var receiver = createReceiver(state.getJobConfig().getReceiverClass());
+        return submit(state, receiver);
     }
 
     @Override
     @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    public Job createJob(final UnaryOperator<JobConfig.Builder> func) {
-        return createJob(func.apply(JobConfig.builder()).build());
+    public Result submit(final UnaryOperator<JobRequest.Builder> func) {
+        return submit(func.apply(JobRequest.builder()).build());
     }
 
     @Override
-    public Job createJob(final JobConfig jobConfig) {
+    public Result submit(final IJobRequest jobRequest) {
 
-        LOGGER.debug("Job configuration submitted: {}", jobConfig);
+        LOGGER.debug("Job configuration submitted: {}", jobRequest);
 
-        var palisadeResponse = palisadeService.submit(createRequest(jobConfig));
+        var receiver = createReceiver(jobRequest.getReceiverClass());
+        var stateService = new JobStateService(objectMapper, Path.of("/tmp/pal-state-" + UUID.randomUUID()));
+        var state = stateService.createNew(jobRequest, configuration);
 
-        var token = palisadeResponse.getToken();
-        var url = palisadeResponse.getUrl();
-        var eventBus = new EventBus();
-
-        var resourceClient = createResourceClient(rc -> rc
-            .baseUri(url)
-            .resourceClientListener(createResourceClientListenr(rcl -> rcl
-                .token(token)
-                .downloadManagerStatus(downloadManager)
-                .eventBus(eventBus)
-                .objectMapper(objectMapper))));
-
-        // override receiver properties
-
-        var moddedJobConfig = jobConfig.change(jc -> jc
-            .receiver(jobConfig.getReceiver().change(b -> b
-                .putAllProperties(
-                    Utils.overrideProperties(jobConfig.getReceiver().getProperties(), receiverProperties)))));
-
-        var receiver = jobConfig.getReceiver().getReciver();
-
-        var jobContext = createJobContext(b -> b
-            .eventBus(eventBus)
-            .objectMapper(objectMapper)
-            .receiver(receiver)
-            .jobConfig(moddedJobConfig)
-            .palisadeResponse(palisadeResponse));
-
-        // create the job
-        var job = ClientJob.createJob(b -> b
-            .resourceClient(resourceClient)
-            .downloadManager(downloadManager)
-            .context(jobContext));
-
-        LOGGER.debug("Job created for token: {}", token);
-
-        return job;
+        return submit(state, receiver);
     }
 
-    private static PalisadeRequest createRequest(final JobConfig jobConfig) {
+    private Result submit(final JobState state, final Receiver receiver) {
 
-        var userId = jobConfig.getUserId();
-        var purposeOpt = jobConfig.getPurpose();
-        var resourceId = jobConfig.getResourceId();
-        var properties = new HashMap<>(jobConfig.getProperties());
+        var palisadeService = new PalisadeService(objectMapper, state.getConfiguration().getPalisadeUri());
+        var eventBus = new EventBus();
 
-        purposeOpt.ifPresent(pp -> properties.put("PURPOSE", pp));
+        var job = ClientJob.createJob(b -> b
+            .state(state)
+            .palisadeClient(palisadeService)
+            .receiver(receiver)
+            .eventBus(eventBus)
+            .downloadManager(downloadManager)
+            .objectMapper(objectMapper)
+        );
+        return job.start();
+    }
 
-        var palisadeRequest = createPalisadeRequest(b -> b
-            .resourceId(resourceId)
-            .userId(userId)
-            .context(properties));
-
-        LOGGER.debug("new palisade request created from job config: {}", palisadeRequest);
-
-        return palisadeRequest;
-
+    private static final Receiver createReceiver(final Class<?> receiverClass) {
+        try {
+            return (Receiver) receiverClass.getConstructor().newInstance();
+        } catch (IllegalArgumentException  |
+                 IllegalAccessException    |
+                 InstantiationException    |
+                 InvocationTargetException |
+                 NoSuchMethodException     |
+                 SecurityException e) {
+            throw new ClientException("Failed to create instance of " + receiverClass + ": " + e.getMessage(), e);
+        }
     }
 
 }

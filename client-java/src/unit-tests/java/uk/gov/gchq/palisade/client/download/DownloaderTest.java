@@ -28,6 +28,7 @@ import uk.gov.gchq.palisade.client.receiver.Receiver;
 import uk.gov.gchq.palisade.client.receiver.ReceiverContext;
 import uk.gov.gchq.palisade.client.receiver.ReceiverException;
 import uk.gov.gchq.palisade.client.resource.IResource;
+import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
 
@@ -53,6 +54,7 @@ class DownloaderTest {
 
     private static Receiver receiver;
     private static ObjectMapper objectMapper;
+    private static Configuration configuration;
 
     @Inject
     EmbeddedServer embeddedServer;
@@ -61,6 +63,7 @@ class DownloaderTest {
     static void setupAll() {
         receiver = new FileReceiver();
         objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+        configuration = Configuration.fromDefaults();
     }
 
     @Test
@@ -72,7 +75,7 @@ class DownloaderTest {
 
         var downloader = Downloader.createDownloader(b -> b
             .objectMapper(objectMapper)
-            .properties(properties)
+            .configuration(configuration)
             .receiver(receiver)
             .resource(IResource.createResource(r -> r
                 .leafResourceId(filename)
@@ -101,7 +104,7 @@ class DownloaderTest {
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)
-            .properties(properties)
+            .configuration(configuration)
             .receiver(receiver)
             .resource(IResource.createResource(r -> r
                 .leafResourceId(filename)
@@ -129,10 +132,11 @@ class DownloaderTest {
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)
-            .properties(properties)
+            .configuration(configuration)
             .receiver(new Receiver() {
                 @Override
-                public void process(final ReceiverContext ctx, final InputStream is) throws ReceiverException {
+                public IReceiverResult process(final ReceiverContext ctx, final InputStream is)
+                    throws ReceiverException {
                     throw new IllegalArgumentException("test exception");
                 }
             })
@@ -159,7 +163,7 @@ class DownloaderTest {
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)
-            .properties(properties)
+            .configuration(configuration)
             .receiver(receiver)
             .resource(IResource.createResource(r -> r
                 .leafResourceId(filename)

@@ -35,7 +35,7 @@ class RequestSerialisationTest {
 
     @Test
     void testPalisadeResponseSserialisation() throws Exception {
-        PalisadeResponse expected = createPalisadeResponse(b -> b.token("blah").url("url"));
+        PalisadeResponse expected = createPalisadeResponse(b -> b.token("blah"));
         String string = objectMapper.writeValueAsString(expected);
         PalisadeResponse actual = objectMapper.readValue(string, PalisadeResponse.class);
         assertThat(actual).isEqualTo(expected);

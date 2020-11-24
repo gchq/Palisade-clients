@@ -18,8 +18,6 @@ package uk.gov.gchq.palisade.client.request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
@@ -32,16 +30,6 @@ class PalisadeServiceTest {
     @Inject ObjectMapper objectMapper;
     @Inject EmbeddedServer embeddedServer;
 
-    @BeforeEach
-    void setup() throws Exception {
-        embeddedServer.start();
-    }
-
-    @AfterEach
-    void tearDown() {
-        embeddedServer.stop();
-    }
-
     @Test
     void testSubmit() throws Exception {
 
@@ -51,13 +39,13 @@ class PalisadeServiceTest {
             .userId("user_id")
             .putContext("key", "value"));
 
-        var service = new PalisadeService(objectMapper, "http://localhost:" + port);
+        var service = new PalisadeService(objectMapper,
+            "http://localhost:" + port + "/cluster/palisade/registerDataRequest");
 
         var palisadeResponse = service.submit(palisadeRequest);
 
         assertThat(palisadeResponse).isNotNull();
         assertThat(palisadeResponse.getToken()).isEqualTo("abcd-1");
-        assertThat(palisadeResponse.getUrl()).isEqualTo("ws://localhost:" + port + "/name");
 
     }
 }

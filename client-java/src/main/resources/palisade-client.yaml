@@ -1,0 +1,27 @@
+service:
+  host: localhost
+  port: 8081
+  context: /cluster 
+  palisade:
+    scheme: http
+    port: 8081
+    context: /palisade
+    endpoint: /registerDataRequest
+  filteredResource:
+    scheme: ws
+    port: 8081
+    context: /filteredResource
+    endpoint: /name
+  data:
+    context: /data
+    endpoint: /read/chunked    
+state:
+  path: /tmp
+download:
+  threads: 2
+receiver:
+  file:
+    path: /tmp
+    class: uk.gov.gchq.palisade.client.receiver.FileReceiver
+    template: pal-%d-%r
+    

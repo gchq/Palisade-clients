@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package uk.gov.gchq.palisade.client.request;
-
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -55,15 +53,6 @@ public interface IPalisadeResponse extends Serializable {
     static PalisadeResponse createPalisadeResponse(final UnaryOperator<PalisadeResponse.Builder> func) {
         return func.apply(PalisadeResponse.builder()).build();
     }
-
-    /**
-     * Returns the url of the websocket endpoint to contact when waiting for
-     * resources
-     *
-     * @return the url of the websocket endpoint to contact when waiting for
-     * resources
-     */
-    String getUrl();
 
     /**
      * Returns the unique token representing this request/response pair

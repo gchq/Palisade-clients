@@ -20,13 +20,7 @@ package uk.gov.gchq.palisade.client;
  *
  * @since 0.5.0
  */
-public interface Job {
+public interface Job { // empty
 
-    /**
-     * Starts running this job
-     *
-     * @return The result
-     */
-    Result start();
 
 }

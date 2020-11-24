@@ -22,15 +22,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.Client;
-import uk.gov.gchq.palisade.client.JavaClient;
+import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobRequest;
+import uk.gov.gchq.palisade.client.receiver.FileReceiver;
+import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.job.IJobConfig.createJobConfig;
-import static uk.gov.gchq.palisade.client.job.IJobReceiver.createJobReceiver;
+import static uk.gov.gchq.palisade.client.job.state.IJobRequest.createJobRequest;
 
 @MicronautTest
 class JobTest {
@@ -49,37 +50,41 @@ class JobTest {
     @Test
     void testNewJobCreation() {
 
-        var client = (JavaClient) Client.create(Map.of(
-            "service.url", "http://localhost:" + embeddedServer.getPort(),
-            "download.threads", "1"));
+        var properties = Map.<String, Object>of(
+            Configuration.KEY_SERVICE_PS_PORT, embeddedServer.getPort(),
+            Configuration.KEY_SERVICE_FRS_PORT, embeddedServer.getPort(),
+            Configuration.KEY_STATE_PATH, "/tmp",
+            Configuration.KEY_RECEIVER_FILE_PATH, "/WOAH",
+            Configuration.KEY_DOWNLOAD_THREADS, 1);
 
-        var config = createJobConfig(b -> b
-            .purpose("purpose")
-            .resourceId("resource_id")
-            .userId("user_id"));
+        var client = Client.create(properties);
 
-        var job = (ClientJob) client.createJob(config);
-        var context = job.getContext();
-
-        var palisadeResponse = job.getContext().getPalisadeResponse();
-
-        assertThat(palisadeResponse).isNotNull();
-        assertThat(palisadeResponse.getToken()).isEqualTo("abcd-1");
-        assertThat(palisadeResponse.getUrl()).isEqualTo("ws://localhost:" + embeddedServer.getPort() + "/name");
-
-        var jobConfig = context.getJobConfig();
-
-        // the client adds the default properties in for the receiver
-
-        JobConfig expected = createJobConfig(b -> b
+        var config = createJobRequest(b -> b
             .purpose("purpose")
             .resourceId("resource_id")
             .userId("user_id")
-            .receiver(createJobReceiver(r -> r
-                .reciver(context.getReceiver())
-                .putProperty("receiver.file.path", "/tmp"))));
+            .receiverClass(FileReceiver.class)
+            .putProperty("request_key", "request_value"));
 
-        assertThat(jobConfig).isEqualTo(expected);
+        var state = client.submit(config).future().join();
+
+        var palisadeResponse = state.getPalisadeResponse();
+
+        assertThat(palisadeResponse).isNotNull();
+        assertThat(palisadeResponse.getToken()).isEqualTo("abcd-1");
+
+        var actualRequest = state.getRequest();
+
+        // the client adds the default properties in for the receiver
+
+        var expectedRequest = IStateJobRequest.createStateJobConfig(b -> b
+            .purpose("purpose")
+            .resourceId("resource_id")
+            .userId("user_id")
+            .receiverClass(FileReceiver.class.getCanonicalName())
+            .putProperty("request_key", "request_value"));
+
+        assertThat(actualRequest).isEqualTo(expectedRequest);
 
     }
 }

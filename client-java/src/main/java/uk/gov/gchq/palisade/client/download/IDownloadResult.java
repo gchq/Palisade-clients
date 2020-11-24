@@ -19,6 +19,7 @@ import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
@@ -50,5 +51,12 @@ public interface IDownloadResult {
      * @return the unique id of the download
      */
     UUID getId();
+
+    /**
+     * Returns any properties for this result
+     *
+     * @return any properties for this result
+     */
+    Map<String, String> getProperties();
 
 }

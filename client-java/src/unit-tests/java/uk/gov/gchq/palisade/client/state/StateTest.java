@@ -17,8 +17,14 @@ package uk.gov.gchq.palisade.client.state;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("java:S2187") // no tests yet
+import uk.gov.gchq.palisade.client.job.state.SavedJobState;
+
+import java.io.File;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 class StateTest {
 
     private static ObjectMapper objectMapper;
@@ -28,21 +34,23 @@ class StateTest {
         objectMapper = new ObjectMapper().findAndRegisterModules();
     }
 
-//    @Test
+    @Test
     void testStateSerialisation() throws Exception {
 
-//        var is = Thread.currentThread().getContextClassLoader().getResourceAsStream("state.json");
-//        var state1 = objectMapper.readValue(is, State.class);
-//
-//        assertThat(state1).isNotNull();
-//
-//        var json = objectMapper.writeValueAsString(state1);
-//
-//        assertThat(json).isNotNull();
-//
-//        var state2 = objectMapper.readValue(json, State.class);
-//
-//        assertThat(state2).isNotNull().isEqualTo(state1);
+        var url = Thread.currentThread().getContextClassLoader().getResource("state.json");
+        var file = new File(url.toURI());
+
+        var expected = objectMapper.readValue(file, SavedJobState.class);
+        var json = objectMapper.writeValueAsString(expected);
+        var actual = objectMapper.readValue(json, SavedJobState.class);
+
+        assertThat(actual).isNotNull().isEqualTo(expected);
+        assertThat(actual).isNotNull().usingRecursiveComparison().isEqualTo(expected);
+
+        actual = SavedJobState.builder().from(actual).sequence(2).build();
+
+        assertThat(actual).isNotNull().isNotEqualTo(expected);
+        assertThat(actual).isNotNull().usingRecursiveComparison().isNotEqualTo(expected);
 
     }
 

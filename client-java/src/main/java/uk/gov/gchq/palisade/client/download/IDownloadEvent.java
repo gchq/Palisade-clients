@@ -20,6 +20,7 @@ import org.immutables.value.Value;
 import uk.gov.gchq.palisade.client.resource.Resource;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -53,5 +54,12 @@ public interface IDownloadEvent {
      * @return the resource to be downloaded
      */
     Resource getResource();
+
+    /**
+     * Returns any properties for this event
+     *
+     * @return any properties for this event
+     */
+    Map<String, String> getProperties();
 
 }

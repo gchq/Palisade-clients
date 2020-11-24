@@ -1,0 +1,29 @@
+{
+  "sequence" : 0,
+  "status" : "DOWNLOADS_IN_PROGRESS",
+  "created" : "2020-11-19T08:27:36.140245Z",
+  "request" : {
+    "userId" : "user_id",
+    "resourceId" : "resource_id",
+    "purpose" : "purpose",
+    "receiverClass" : "uk.gov.gchq.palisade.client.receiver.FileReceiver",
+    "properties" : {
+      "key": "value"
+    }
+  },
+  "palisadeResponse" : {
+    "token" : "abcd-1"
+  },
+  "properties" : {
+    "receiver.file.path" : "/WOAH",
+    "service.url" : "http://localhost:32322",
+    "state.path" : "/tmp",
+    "download.threads" : "1"
+  },
+  "executions" : [ {
+    "id" : "1db0fd1f-9ee6-4d21-a707-e3aaa9f6224c",
+    "start" : "2020-11-19T08:27:36.140794Z",
+    "end" : null
+  } ],
+  "downloads" : [ ]
+}

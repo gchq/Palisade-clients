@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.ClientException;
-import uk.gov.gchq.palisade.client.util.Utils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -48,6 +47,9 @@ public class PalisadeService implements PalisadeClient {
 
     private final ObjectMapper objectMapper;
     private final String baseUri;
+
+    // Once created, an HttpClient instance is immutable, thus automatically
+    // thread-safe, and multiple requests can be sent with it
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     /**
@@ -73,22 +75,44 @@ public class PalisadeService implements PalisadeClient {
 
     @Override
     public CompletableFuture<PalisadeResponse> submitAsync(final PalisadeRequest palisadeRequest) {
+
         checkArgument(palisadeRequest);
+
         LOGGER.debug("Submitting request to Palisade: {}", palisadeRequest);
+
         String requestBody;
         try {
-            requestBody = objectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(palisadeRequest);
+            requestBody = objectMapper().writeValueAsString(palisadeRequest);
         } catch (JsonProcessingException e1) {
             throw new ClientException("Failed to parse request: " + palisadeRequest.toString(), e1);
         }
-        var uri = URI.create(Utils.appendPath(baseUri(), "/registerDataRequest"));
+
+        var uri = URI.create(baseUri);
+
+        LOGGER.debug("Submitting request to: {}", uri);
+
         var httpRequest = HttpRequest.newBuilder(uri)
             .setHeader("User-Agent", "Palisade Java Client")
             .header("Content-Type", "application/json")
             .POST(BodyPublishers.ofString(requestBody))
             .build();
+
         return httpClient
             .sendAsync(httpRequest, BodyHandlers.ofString())
+            .thenApply(resp -> {
+                int status = resp.statusCode();
+                LOGGER.debug("{}: {}", (status == 200 ? "Success" : "Error"), status);
+                if (status != 200) {
+                    String body;
+                    try {
+                        body = objectMapper.writeValueAsString(resp.body());
+                    } catch (Exception e) {
+                        body = "!failed to parse response body: " + resp.body();
+                    }
+                    throw new ClientException("Request to palisade service failed (" + status + "), response\n" + body);
+                }
+                return resp;
+            })
             .thenApply(HttpResponse::body)
             .thenApply(this::readValue);
     }
@@ -99,10 +123,6 @@ public class PalisadeService implements PalisadeClient {
         } catch (IOException ioe) {
             throw new CompletionException(ioe);
         }
-    }
-
-    private String baseUri() {
-        return this.baseUri;
     }
 
     private ObjectMapper objectMapper() {

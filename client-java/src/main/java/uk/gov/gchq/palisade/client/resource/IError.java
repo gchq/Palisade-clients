@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.download;
+package uk.gov.gchq.palisade.client.resource;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -21,50 +21,43 @@ import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
+import java.io.Serializable;
 import java.util.function.UnaryOperator;
 
 /**
- * An instance of a {@link DataRequest} represents a request to the data service
- * in order to initiate a download.
+ * The {@code Message} object is used in the communication between the client
+ * and the Filtered Resource Service over a WebSocket.
  * <p>
- * Note that the {@link DataRequest} class is created at compile time. The way
- * in which the class is created is determined by the {@code ImmutableStyle}.
- * The {@link JsonDeserialize} is so that Jackson can use the generated builder
- * upon deserialisation.
+ * Note that the {@code UserId} class is created at compile time. The way in
+ * which the class is created is determined by the {@code ImmutableStyle}. This
+ * class is also compatible with Jackson.
  *
+ * @see ResourceClient
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle
-@JsonDeserialize(as = DataRequest.class)
-@JsonSerialize(as = DataRequest.class)
-public interface IDataRequest {
+@JsonDeserialize(as = Error.class)
+@JsonSerialize(as = Error.class)
+public interface IError extends Serializable {
 
     /**
-     * Helper method to create a {@code DataRequest} using a builder function
+     * Helper method to create a {@link Error} using a builder function
      *
      * @param func The builder function
-     * @return a newly created data request instance
+     * @return a newly created {@code RequestId}
      */
     @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    static DataRequest createDataRequest(final UnaryOperator<DataRequest.Builder> func) {
-        return func.apply(DataRequest.builder()).build();
+    static Error create(final UnaryOperator<Error.Builder> func) {
+        return func.apply(Error.builder()).build();
     }
 
     /**
-     * Returns the token
+     * Returns the type of this message
      *
-     * @return the token
+     * @return the {@link MessageType}
      */
-    String getToken();
-
-    /**
-     * Returns the leaf resource to be downloaded
-     *
-     * @return the leaf resource to be downloaded
-     */
-    String getLeafResourceId();
-
+    MessageType getText();
 
 }

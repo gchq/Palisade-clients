@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.job;
+package uk.gov.gchq.palisade.client.job.state;
 
 import org.immutables.value.Value;
 
+import uk.gov.gchq.palisade.client.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
-import static uk.gov.gchq.palisade.client.job.IJobReceiver.createJobReceiver;
-
 /**
- * An instance of {@link JobConfig} is passed during the submission of a new
+ * An instance of {@link JobRequest} is passed during the submission of a new
  * request.
  * <p>
- * Note that the {@link JobConfig} class is created at compile time. The way in
+ * Note that the {@link JobRequest} class is created at compile time. The way in
  * which the class is created is determined by the {@code ImmutableStyle}.
  *
  * @see "https://immutables.github.io/style.html"
@@ -37,7 +36,7 @@ import static uk.gov.gchq.palisade.client.job.IJobReceiver.createJobReceiver;
  */
 @Value.Immutable
 @ImmutableStyle
-public interface IJobConfig {
+public interface IJobRequest {
 
     /**
      * Helper method to create a {@code JobConfig} using a builder function
@@ -46,8 +45,8 @@ public interface IJobConfig {
      * @return a newly created data request instance
      */
     @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    static JobConfig createJobConfig(final UnaryOperator<JobConfig.Builder> func) {
-        return func.apply(JobConfig.builder()).build();
+    static IJobRequest createJobRequest(final UnaryOperator<JobRequest.Builder> func) {
+        return func.apply(JobRequest.builder()).build();
     }
 
     /**
@@ -79,8 +78,8 @@ public interface IJobConfig {
      *         server
      */
     @Value.Default
-    default JobReceiver getReceiver() {
-        return createJobReceiver();
+    default Class<?> getReceiverClass() {
+        return FileReceiver.class;
     }
 
     /**
@@ -90,16 +89,5 @@ public interface IJobConfig {
      */
     Map<String, String> getProperties();
 
-    /**
-     * Returns a new instance which is created by copying this instance and then
-     * applying the changes provided by the supplied function
-     *
-     * @param func The function to apply
-     * @return a new instance
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    default JobConfig change(final UnaryOperator<JobConfig.Builder> func) {
-        return func.apply(JobConfig.builder().from(this)).build();
-    }
 
 }

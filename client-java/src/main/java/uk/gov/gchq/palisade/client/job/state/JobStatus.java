@@ -13,33 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.job;
+package uk.gov.gchq.palisade.client.job.state;
 
 /**
  * The status of a download
  *
  * @since 0.5.0
  */
-public enum JobDownloadStatus {
-
-    /**
-     * Download started, but not finished
-     */
-    WAITING,
-
-    /**
-     * Download started, but not finished
-     */
-    IN_PROGRESS,
+public enum JobStatus {
 
     /**
      * Completed successfully
      */
-    COMPLETE,
+    OPEN(10),
+
+    /**
+     * A request has been sent, but not received
+     */
+    REQUEST_SENT(15),
 
     /**
      * Download failed
      */
-    FAILED;
+    RESPONSE_RECEIVED(20),
+
+    /**
+     * Downloads are in progress
+     */
+    DOWNLOADS_IN_PROGRESS(30),
+
+    /**
+     * The job is complete
+     */
+    COMPLETE(40);
+
+    private final int sequence;
+
+    JobStatus(final int sequence) {
+        this.sequence = sequence;
+    }
+
+    /**
+     * Returns the sequence of this status
+     *
+     * @return the sequence of this status
+     */
+    public int getSequence() {
+        return this.sequence;
+    }
+
 }
 

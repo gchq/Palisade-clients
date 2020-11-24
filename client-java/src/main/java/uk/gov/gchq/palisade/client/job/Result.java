@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client;
+package uk.gov.gchq.palisade.client.job;
+
+import uk.gov.gchq.palisade.client.job.state.ISavedJobState;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A future result is returned from the client upon submitting a job
@@ -30,5 +34,14 @@ public interface Result {
      * Information provided will be information about each downloaded resource and
      * the path to the file if there is one.
      */
+
+    /**
+     * Returns a future that when successfully completed will return the final job
+     * state
+     *
+     * @return a future that when successfully completed will return the final job
+     *         state
+     */
+    CompletableFuture<ISavedJobState> future();
 
 }

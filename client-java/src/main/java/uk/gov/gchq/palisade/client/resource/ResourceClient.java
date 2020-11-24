@@ -15,16 +15,22 @@
  */
 package uk.gov.gchq.palisade.client.resource;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.util.Checks;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.UnaryOperator;
 
 /**
@@ -49,7 +55,7 @@ public class ResourceClient {
          *
          * @return the base web socket uri
          */
-        String getBaseUri();
+        URI getBaseUri();
 
         /**
          * Returns the listener that will handle communication to the server
@@ -71,8 +77,10 @@ public class ResourceClient {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceClient.class);
+    private static final String EVENT_CAUGHT = "---> Caught event: {}";
 
     private final ResourceClientSetup setup;
+    private final CountDownLatch latch;
 
     private WebSocket webSocket;
 
@@ -84,6 +92,7 @@ public class ResourceClient {
      */
     public ResourceClient(final ResourceClientSetup setup) {
         this.setup = Checks.checkArgument(setup);
+        this.latch = new CountDownLatch(1);
 
     }
 
@@ -99,14 +108,42 @@ public class ResourceClient {
     }
 
     /**
-     * Closes this resource client and the underlying socket connection
+     * Requests the closure of this resource client, return a completeable future,
+     * that when complete will signify the successful closure.
+     *
+     * @return a completeable future
      */
-    public void close() {
+    public CompletableFuture<Void> close() {
+        LOGGER.debug("closing websocket!");
         // this will close the output side of the websocket
-        webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "");
         // until the listener receives and onClose(), the input side of the websocket is
         // till open. this client should abort the websocket if no data arrives after
         // around 30 seconds. Not sure how to do this yet.
+        return webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "")
+            .thenRun(() -> {
+                LOGGER.debug("Websocket output is now closed");
+                latch.countDown(); // release completeable future
+            });
+    }
+
+    /**
+     * Receives a {@code ResourcesExhaustedEvent} there are no more resources
+     *
+     * @param event The event to be handled
+     */
+    @SuppressWarnings("java:S2325") // make static
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onNoMoreResources(final ResourcesExhaustedEvent event) {
+
+        LOGGER.debug(EVENT_CAUGHT, event);
+
+        /*
+         * Tasks: 1. Stop the resource client 2. Update any completable future instance
+         * as completed and signal
+         */
+
+        latch.countDown();
+
     }
 
     /**
@@ -114,9 +151,9 @@ public class ResourceClient {
      *
      * @return this for fluent usage
      */
-    public ResourceClient connect() {
+    public CompletableFuture<Void> connect() {
 
-        var uri = URI.create(getBaseUri() + "/" + getToken());
+        var uri = createUri(getBaseUri(), getToken());
 
         LOGGER.debug("Connecting to websocket at: {}", uri);
 
@@ -124,6 +161,11 @@ public class ResourceClient {
             throw new IllegalStateException(
                 "open() has already been called and this client has been closed. Create a new instance.");
         }
+
+        // register this resource client with the same eventbus that the listener uses
+        // this is so we can get notified when there are no more resources
+
+        setup.getResourceClientListener().getEventBus().register(this);
 
         this.webSocket = HttpClient
             .newHttpClient()
@@ -133,10 +175,17 @@ public class ResourceClient {
 
         LOGGER.debug("Websocket created to handle token: {}", getToken());
 
-        return this;
+        return CompletableFuture.runAsync(() -> {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // swallow
+            }
+        });
     }
 
-    private String getBaseUri() {
+    private URI getBaseUri() {
         return getSetup().getBaseUri();
     }
 
@@ -159,6 +208,29 @@ public class ResourceClient {
      */
     public boolean isOpen() {
         return webSocket != null && !webSocket.isOutputClosed();
+    }
+
+    private static URI createUri(final URI baseUri, final String endpoint) {
+
+        assert baseUri != null : "Need the base uri";
+        assert baseUri != null : "Need the uri endpoint to append to the base uri";
+
+        var baseUriStr = baseUri.toString();
+        var uri = new StringBuilder();
+        if (baseUriStr.endsWith("/")) {
+            uri.append(baseUriStr.substring(0, baseUriStr.length() - 2));
+        } else {
+            uri.append(baseUriStr);
+        }
+        if (!endpoint.startsWith("/")) {
+            uri.append("/");
+        }
+        uri.append(endpoint);
+        try {
+            return new URI(uri.toString());
+        } catch (URISyntaxException e) {
+            throw new ClientException("Invalid websocket uri: " + uri, e);
+        }
     }
 
 }

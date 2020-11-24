@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
+import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
 
@@ -42,10 +43,6 @@ import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static uk.gov.gchq.palisade.client.download.DownloadManager.createDownloadManager;
-import static uk.gov.gchq.palisade.client.job.IJobConfig.createJobConfig;
-import static uk.gov.gchq.palisade.client.job.IJobContext.createJobContext;
-import static uk.gov.gchq.palisade.client.job.IJobReceiver.createJobReceiver;
-import static uk.gov.gchq.palisade.client.request.IPalisadeResponse.createPalisadeResponse;
 import static uk.gov.gchq.palisade.client.resource.IResource.createResource;
 
 /**
@@ -66,6 +63,7 @@ public class DownloadManagerTest {
 
     private static ObjectMapper objectMapper;
     private static EventBus eventBus;
+    private static Configuration configuration;
 
     private DownloadManager downloadManager;
     private List<Object> events;
@@ -75,9 +73,9 @@ public class DownloadManagerTest {
 
     @BeforeAll
     static void setupAll() {
-        LOGGER.debug("setupAll");
         objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
         eventBus = EventBus.getDefault();
+        configuration = Configuration.fromDefaults();
     }
 
     @BeforeEach
@@ -115,28 +113,24 @@ public class DownloadManagerTest {
             .token(TOKEN)
             .url(BASE_URL));
 
-        var jobContext = createJobContext(ctx -> ctx
-            .eventBus(eventBus)
-            .objectMapper(objectMapper)
-            .receiver(new FileReceiver())
-            .jobConfig(createJobConfig(jc -> jc
-                .purpose("purpose")
-                .resourceId("resource_id")
-                .userId("user_id")
-                .receiver(createJobReceiver(rf -> rf
-                    .putProperty("receiver.file.path", "/tmp")))))
-            .palisadeResponse(createPalisadeResponse(pr -> pr
-                .token(TOKEN)
-                .url("http://localhost:8081"))));
+        var downloadId = downloadManager.schedule(
+            resource,
+            eventBus,
+            new FileReceiver(),
+            configuration);
 
-        var downloadId = downloadManager.schedule(resource, jobContext);
-
-        await().atMost(ofSeconds(5)).until(() -> events.size() == 2);
-        assertThat(events).hasSize(2);
+        await().atMost(ofSeconds(5)).until(() -> events.size() == 3);
+        assertThat(events).hasSize(3);
 
         // the first event caught should be a download started
 
         var eventObject = events.get(0);
+        assertThat(eventObject).isInstanceOf(DownloadScheduledEvent.class);
+        var scheduledEvent = (DownloadScheduledEvent) eventObject;
+        assertThat(scheduledEvent.getId()).isEqualTo(downloadId);
+        assertThat(scheduledEvent.getResource()).isEqualTo(resource);
+
+        eventObject = events.get(1);
         assertThat(eventObject).isInstanceOf(DownloadStartedEvent.class);
         var startedEvent = (DownloadStartedEvent) eventObject;
         assertThat(startedEvent.getId()).isEqualTo(downloadId);
@@ -144,7 +138,7 @@ public class DownloadManagerTest {
 
         // the second event caught should be a download completed
 
-        eventObject = events.get(1);
+        eventObject = events.get(2);
         assertThat(eventObject).isInstanceOf(DownloadCompletedEvent.class);
         var completedEvent = (DownloadCompletedEvent) eventObject;
         assertThat(completedEvent.getId()).isEqualTo(downloadId);
@@ -162,28 +156,26 @@ public class DownloadManagerTest {
             .token(TOKEN)
             .url(BASE_URL));
 
-        var jobContext = createJobContext(ctx -> ctx
-            .eventBus(eventBus)
-            .objectMapper(objectMapper)
-            .receiver(new FileReceiver())
-            .jobConfig(createJobConfig(jc -> jc
-                .purpose("purpose")
-                .resourceId("resource_id")
-                .userId("user_id")
-                .receiver(createJobReceiver(rf -> rf
-                    .putProperty("receiver.file.path", "/tmp")))))
-            .palisadeResponse(createPalisadeResponse(pr -> pr
-                .token(TOKEN)
-                .url("http://localhost:8081"))));
+        var downloadId = downloadManager.schedule(
+            resource,
+            eventBus,
+            new FileReceiver(),
+            configuration);
 
-        var downloadId = downloadManager.schedule(resource, jobContext);
+        await().atMost(ofSeconds(5)).until(() -> events.size() == 3);
+        assertThat(events).hasSize(3);
 
-        await().atMost(ofSeconds(5)).until(() -> events.size() == 2);
-        assertThat(events).hasSize(2);
-
-        // the first event caught should be a download started
+        // the first event caught should be a download scheduled
 
         var eventObject = events.get(0);
+        assertThat(eventObject).isInstanceOf(DownloadScheduledEvent.class);
+        var scheduledEvent = (DownloadScheduledEvent) eventObject;
+        assertThat(scheduledEvent.getId()).isEqualTo(downloadId);
+        assertThat(scheduledEvent.getResource()).isEqualTo(resource);
+
+        // the second event caught should be a download started
+
+        eventObject = events.get(1);
         assertThat(eventObject).isInstanceOf(DownloadStartedEvent.class);
         var startedEvent = (DownloadStartedEvent) eventObject;
         assertThat(startedEvent.getId()).isEqualTo(downloadId);
@@ -191,7 +183,7 @@ public class DownloadManagerTest {
 
         // the second event caught should be a download completed
 
-        eventObject = events.get(1);
+        eventObject = events.get(2);
         assertThat(eventObject).isInstanceOf(DownloadFailedEvent.class);
         var failedEvent = (DownloadFailedEvent) eventObject;
         assertThat(failedEvent.getId()).isEqualTo(downloadId);
@@ -215,6 +207,11 @@ public class DownloadManagerTest {
 
     @Subscribe
     public void handleFailed(final DownloadFailedEvent e) {
+        this.events.add(e);
+    }
+
+    @Subscribe
+    public void handleScheduled(final DownloadScheduledEvent e) {
         this.events.add(e);
     }
 

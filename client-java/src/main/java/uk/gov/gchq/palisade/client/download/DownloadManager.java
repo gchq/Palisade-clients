@@ -16,14 +16,17 @@
 package uk.gov.gchq.palisade.client.download;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.greenrobot.eventbus.EventBus;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.job.IJobContext;
+import uk.gov.gchq.palisade.client.receiver.Receiver;
 import uk.gov.gchq.palisade.client.resource.Resource;
+import uk.gov.gchq.palisade.client.util.Configuration;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -70,8 +73,8 @@ public final class DownloadManager implements DownloadManagerStatus {
     private static final int KEEP_ALIVE_SECONDS = 10;
 
     private final ThreadPoolExecutor executor;
+    private final LinkedBlockingQueue<Runnable> buffer;
     private final DownloadManagerSetup setup;
-
 
     /**
      * Create a new DownloadManager with the the provided
@@ -81,25 +84,15 @@ public final class DownloadManager implements DownloadManagerStatus {
      */
     private DownloadManager(final DownloadManagerSetup downloadManagerSetup) {
         this.setup = checkArgument(downloadManagerSetup);
+        this.buffer = new LinkedBlockingQueue<>();
         this.executor = new ThreadPoolExecutor(
             CORE_POOL_SIZE,
             setup.getNumThreads(),
             KEEP_ALIVE_SECONDS,
             TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(2));
+            this.buffer);
         executor.allowCoreThreadTimeOut(true);
         LOGGER.debug("### Download manager created with thread pool size of {}", setup.getNumThreads());
-    }
-
-    /**
-     * Helper method to create a {@code DownloadManager} using a builder function
-     *
-     * @param func The builder function
-     * @return a newly created data request instance
-     */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    private static DownloadManager createDownloadManager1(final UnaryOperator<DownloadManagerSetup.Builder> func) {
-        return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
     }
 
     /**
@@ -137,7 +130,7 @@ public final class DownloadManager implements DownloadManagerStatus {
 
     @Override
     public int getAvaliableSlots() {
-        return executor.getMaximumPoolSize() - executor.getActiveCount();
+        return buffer.remainingCapacity();
     }
 
     /**
@@ -197,41 +190,46 @@ public final class DownloadManager implements DownloadManagerStatus {
     /**
      * Schedule the provided resource for download
      *
-     * @param resource   The resource describing the data to be downloaded.
-     * @param jobContext The job context
-     * @return the fownload id
+     * @param resource      The resource describing the data to be downloaded.
+     * @param eventbus      The event bus to be use when posting download events
+     * @param receiver      The receiver instance which will be passed the
+     *                      dowbnloaded input stream for processing
+     * @param configuration The job configuration
+     * @return the download id
      */
     @SuppressWarnings("java:S2221")
-    public UUID schedule(final Resource resource, final IJobContext jobContext) {
+    public UUID schedule(
+            final Resource resource,
+            final EventBus eventbus,
+            final Receiver receiver,
+            final Configuration configuration) {
 
         LOGGER.debug("### Scheduling resource: {}", resource);
 
-        var bus = jobContext.getEventBus();
-
         var downloader = createDownloader(b -> b
             .resource(resource)
-            .receiver(jobContext.getJobConfig().getReceiver().getReciver())
+            .receiver(receiver)
             .objectMapper(setup.getObjectMapper())
-            .properties(jobContext.getJobConfig().getReceiver().getProperties()));
+            .configuration(configuration));
 
         var downloadId = downloader.getDownloadId();
+
+        eventbus.post(DownloadScheduledEvent.of(downloadId, resource, Map.of()));
 
         // The downloader is wrapped here so as to catch ALL exceptions that may be
         // thrown. They are handled within the runnable as no exceptions may be thrown
         // outside the executor.
 
         Runnable runner = () -> {
-            bus.post(DownloadStartedEvent.of(downloadId, resource));
+            eventbus.post(DownloadStartedEvent.of(downloadId, resource, Map.of()));
             try {
                 var result = downloader.start();
-                bus.post(DownloadCompletedEvent.of(downloadId, resource, result));
+                eventbus.post(DownloadCompletedEvent.of(downloadId, resource, result.getProperties(), result));
             } catch (DownloaderException e) {
-                bus.post(DownloadFailedEvent.of(downloadId, resource, e, e.getStatusCode()));
+                eventbus.post(DownloadFailedEvent.of(downloadId, resource, Map.of(), e, e.getStatusCode()));
             } catch (Exception e) {
                 LOGGER.error("Unknown exception caught. Please check code as this should never happen", e);
-                bus.post(DownloadFailedEvent.of(downloadId, resource, e, -1));
-            } finally {
-                LOGGER.debug("Downloader ended");
+                eventbus.post(DownloadFailedEvent.of(downloadId, resource, Map.of(), e, -1));
             }
         };
 

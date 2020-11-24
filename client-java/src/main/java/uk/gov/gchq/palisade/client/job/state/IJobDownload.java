@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.job;
+package uk.gov.gchq.palisade.client.job.state;
 
 import org.immutables.value.Value;
 
-import uk.gov.gchq.palisade.client.resource.Resource;
+import uk.gov.gchq.palisade.client.job.JobDownloadStatus;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
@@ -46,7 +47,7 @@ public interface IJobDownload {
      * @return a newly created data request instance
      */
     @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    static JobDownload createDownload(final UnaryOperator<JobDownload.Builder> func) {
+    static IJobDownload createDownload(final UnaryOperator<JobDownload.Builder> func) {
         return func.apply(JobDownload.builder()).build();
     }
 
@@ -65,17 +66,24 @@ public interface IJobDownload {
      *
      * @return the execuction containing this download
      */
-    JobExecution getExecution();
+    IJobExecution getExecution();
 
     /**
-     * Returns the time this download was started
+     * Returns the time this download was scheduled
+     *
+     * @return the time this download was scheduled
+     */
+    @Value.Default
+    default Instant getScheduledTime() {
+        return Instant.now();
+    }
+
+    /**
+     * Returns the time this download was started or empty if waiting
      *
      * @return the time this download was started
      */
-    @Value.Default
-    default Instant getStartedTime() {
-        return Instant.now();
-    }
+    Optional<Instant> getStartTime();
 
     /**
      * Returns the download status
@@ -84,7 +92,7 @@ public interface IJobDownload {
      */
     @Value.Default
     default JobDownloadStatus getStatus() {
-        return JobDownloadStatus.IN_PROGRESS;
+        return JobDownloadStatus.WAITING;
     }
 
     /**
@@ -95,11 +103,32 @@ public interface IJobDownload {
     Optional<Instant> getEndTime();
 
     /**
-     * Returns details of the resource being downloaded
+     * Returns the id of the resource
      *
-     * @return details of the resource being downloaded
+     * @return the id of the resource
      */
-    Resource getResource();
+    String getResourceId();
+
+    /**
+     * Returns the download url
+     *
+     * @return the download url
+     */
+    String getUrl();
+
+    /**
+     * Returns the properties
+     *
+     * @return the properties
+     */
+    Map<String, String> getProperties();
+
+    /**
+     * Returns the duration or empty if not ended
+     *
+     * @return the duration
+     */
+    Optional<Long> getDuration();
 
     /**
      * Returns the cause of the download failure or empty if none

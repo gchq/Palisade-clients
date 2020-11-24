@@ -29,6 +29,7 @@ import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 import java.io.IOException;
 import java.net.http.WebSocket;
 import java.net.http.WebSocket.Listener;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.UnaryOperator;
 
@@ -128,27 +129,17 @@ public class ResourceClientListener implements Listener {
         return getSetup().getToken();
     }
 
+    private void handleError(final Message message) {
+        LOGGER.debug("handle error for token {}, message: {}", getToken(), message);
+        var body = message.getBody().orElseThrow(() -> new MissingResourceException(message));
+        var error = getObjectMapper().convertValue(body, Error.class);
+        post(ErrorEvent.of(error));
+    }
+
     private void handleComplete(final WebSocket ws) {
         LOGGER.debug("handle Complete for token {}", getToken());
         ws.sendClose(REASON_OK, "complete (token=" + getToken() + ")");
         post(ResourcesExhaustedEvent.of(getToken()));
-    }
-
-    private void handleReadyToSend(final WebSocket ws) {
-        LOGGER.debug("handle RTS for token {}", getToken());
-        // This is a quite crude way of waiting for download slots to become available
-        // Should implement a better way, but this will do for now.
-        while (!getDownloadTracker().hasAvailableSlots()) {
-            try {
-                LOGGER.debug("no download slots available, waiting");
-                Thread.sleep(ONE_SECOND);
-            } catch (InterruptedException e) { // just swallow this
-                Thread.currentThread().interrupt();
-                LOGGER.warn("This thread was sleeping, when it was interrupted: {}", e.getMessage());
-                // we'll loop round to see if there are any available slots
-            }
-        }
-        sendMessage(ws, b -> b.type(MessageType.CTS));
     }
 
     private void handleResource(final Message message) {
@@ -168,6 +159,7 @@ public class ResourceClientListener implements Listener {
     public void onOpen(final WebSocket ws) {
         Listener.super.onOpen(ws);
         LOGGER.debug("WebSocket Listener has been opened for requests.");
+        sendMessage(ws, b -> b.type(MessageType.CTS));
     }
 
     @Override
@@ -175,31 +167,51 @@ public class ResourceClientListener implements Listener {
 
         var text = data.toString();
 
+        ws.request(1); // omit this and no methods are called listener
+
         Message message;
         try {
-
             message = getObjectMapper().readValue(text, Message.class);
-
-            LOGGER.debug("Recd: {}", message);
-
-            var type = message.getType();
-
-            if (type == MessageType.RTS) {
-                handleReadyToSend(ws);
-            } else if (type == MessageType.RESOURCE) {
-                handleResource(message);
-            } else if (type == MessageType.COMPLETE) {
-                handleComplete(ws);
-            } else {
-                // ignore the unsupported message
-                LOGGER.warn("Ignoring unsupported {} message type", type);
-            }
-
         } catch (JsonProcessingException e) {
             onError(ws, e);
+            return null;
         }
 
-        return Listener.super.onText(ws, data, last);
+        LOGGER.debug("Recd: {}", message);
+
+        var type = message.getType();
+
+        if (type == MessageType.RESOURCE) {
+            handleResource(message);
+        } else if (type == MessageType.COMPLETE) {
+            handleComplete(ws);
+        } else if (type == MessageType.ERROR) {
+            handleError(message);
+        } else {
+            // ignore the unsupported message
+            LOGGER.warn("Ignoring unsupported {} message type", type);
+        }
+
+        LOGGER.debug("Testing if CTS can be sent for token {}", getToken());
+
+        // This is a quite crude way of waiting for download slots to become available
+        // Should implement a better way, but this will do for now.
+
+        while (!getDownloadTracker().hasAvailableSlots()) {
+            try {
+                LOGGER.debug("No download slots available, waiting");
+                Thread.sleep(ONE_SECOND);
+            } catch (InterruptedException e) { // just swallow this
+                Thread.currentThread().interrupt();
+                LOGGER.warn("This thread was sleeping, when it was interrupted: {}", e.getMessage());
+                // we'll loop round to see if there are any available slots
+            }
+        }
+
+        sendMessage(ws, b -> b.type(MessageType.CTS));
+
+        return null;
+
     }
 
     private void post(final Object event) {
@@ -208,15 +220,17 @@ public class ResourceClientListener implements Listener {
     }
 
     @SuppressWarnings({ "java:S3242", "java:S1135" }) // I REALLY want to use UnaryOperator here SonarQube!!!
-    private void sendMessage(final WebSocket ws, final UnaryOperator<Message.Builder> func) {
+    private CompletableFuture<WebSocket> sendMessage(final WebSocket ws, final UnaryOperator<Message.Builder> func) {
         var message = func.apply(Message.builder().putHeader("token", getToken())).build();
         try {
             var text = getObjectMapper().writeValueAsString(message);
-            ws.sendText(text, true);
+            var future = ws.sendText(text, true);
             LOGGER.debug("Sent: {}", message);
+            return future;
         } catch (IOException e) {
             // we should add this fail to a result object
             LOGGER.warn("Failed to send message: {}", message, e);
+            return null;
         }
     }
 

@@ -30,13 +30,14 @@ import uk.gov.gchq.palisade.client.download.DownloadManagerStatus;
 
 import javax.inject.Inject;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
-import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.awaitility.Awaitility.await;
 import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListenr;
 
 /**
@@ -77,12 +78,12 @@ public class ResourceClientTest {
 
         // as soon as the client is started, the client will start to recive resources
 
-        startClient();
+        var future = startClient();
 
         // There are two resources so we should have 3 events (2 resource and 1
         // complete)
 
-        await().atMost(ofSeconds(5)).until(() -> events.size() == 3);
+        future.get(5, TimeUnit.SECONDS);
         assertThat(events).hasSize(3);
 
         var event0 = getIfInstanceOf(events.get(0), ResourceReadyEvent.class);
@@ -100,6 +101,7 @@ public class ResourceClientTest {
         assertThat(event2)
             .extracting("token")
             .isEqualTo(TOKEN);
+
 
     }
 
@@ -149,10 +151,11 @@ public class ResourceClientTest {
         return (T) o;
     }
 
-    private ResourceClient startClient() throws Exception {
+    private CompletableFuture<Void> startClient() throws Exception {
+        var uri = new URI("ws://localhost:" + port + "/cluster/filteredResource/name");
         return ResourceClient
             .createResourceClient(b -> b
-                .baseUri("ws://localhost:" + port + "/name")
+                .baseUri(uri)
                 .resourceClientListener(createResourceClientListenr(rcl -> rcl
                     .downloadManagerStatus(downloadTracker)
                     .eventBus(eventBus)

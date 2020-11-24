@@ -1,0 +1,122 @@
+/*
+ * Copyright 2020 Crown Copyright
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package uk.gov.gchq.palisade.client.job.state;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.gov.gchq.palisade.client.ClientException;
+import uk.gov.gchq.palisade.client.util.Configuration;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
+/**
+ * The job state service provideds loading and saving services for job states
+ *
+ * @since 0.5.0
+ */
+public class JobStateService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobStateService.class);
+
+    private final ObjectMapper objectMapper;
+    private final Path path;
+
+    /**
+     * Returns a newly created instance
+     *
+     * @param objectMapper The object mapper to use when (de)serialising the state.
+     * @param path         The path to store the state
+     */
+    public JobStateService(final ObjectMapper objectMapper, final Path path) {
+        this.objectMapper = objectMapper;
+        this.path = path;
+    }
+
+    /**
+     * Returns a newly created {@code JobState} with the provided job config and
+     * properties
+     *
+     * @param jobConfig     The job config
+     * @param configuration The client configuration
+     * @return a newly created {@code JobState}
+     */
+    public JobState createNew(final IJobRequest jobConfig, final Configuration configuration) {
+        return new JobState(this, jobConfig, configuration);
+    }
+
+
+    /**
+     * Returns newly created {@code JobState} from the provided path to a state file
+     *
+     * @param fromPath The path to load state from
+     * @return newly created {@code JobState}
+     */
+    public JobState createFrom(final Path fromPath) {
+        return createFrom(fromPath, Map.of());
+    }
+
+    /**
+     * Returns newly created {@code JobState} from the provided path to a state file
+     *
+     * @param fromPath      The path to load state from
+     * @param configuration The override configuration
+     * @return newly created {@code JobState}
+     */
+    public JobState createFrom(final Path fromPath, final Map<String, Object> configuration) {
+        try {
+            var json = new String(Files.readAllBytes(fromPath));
+            var state = fromJson(json);
+            return new JobState(this, state, configuration);
+        } catch (IOException e) {
+            throw new ClientException("Failed to load state", e);
+        }
+    }
+
+    final void save(final ISavedJobState state) {
+        try {
+            var json = toJson(state);
+            var newPath = Files.write(path, json.getBytes());
+            LOGGER.debug("State ({}):\n{}", newPath, json);
+        } catch (IOException e) {
+            throw new ClientException("Failed to save state", e);
+        }
+    }
+
+
+    private String toJson(final ISavedJobState state) {
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(state);
+        } catch (JsonProcessingException e) {
+            throw new ClientException("Failed to serialise state", e);
+        }
+
+    }
+
+    private ISavedJobState fromJson(final String json) {
+        try {
+            return objectMapper.readValue(json, SavedJobState.class);
+        } catch (JsonProcessingException e) {
+            throw new ClientException("Failed to deserialise state", e);
+        }
+    }
+
+}

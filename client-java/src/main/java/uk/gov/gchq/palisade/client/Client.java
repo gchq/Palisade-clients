@@ -16,12 +16,16 @@
 package uk.gov.gchq.palisade.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import uk.gov.gchq.palisade.client.job.JobConfig;
-import uk.gov.gchq.palisade.client.request.PalisadeService;
+import uk.gov.gchq.palisade.client.job.Result;
+import uk.gov.gchq.palisade.client.job.state.IJobRequest;
+import uk.gov.gchq.palisade.client.job.state.JobRequest;
+import uk.gov.gchq.palisade.client.util.Configuration;
 
-import java.util.HashMap;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
@@ -45,7 +49,7 @@ public interface Client {
      */
     @SuppressWarnings("java:S3242")
     // I REALLY want to use UnaryOperator here SonarQube!!!
-    Job createJob(UnaryOperator<JobConfig.Builder> func);
+    Result submit(UnaryOperator<JobRequest.Builder> func);
 
     /**
      * Returns a newly constructed {@code Job} using the provided configuration,
@@ -54,7 +58,27 @@ public interface Client {
      * @param jobConfig The configuration for the job
      * @return a newly constructed {@code Job} using the provided configuration
      */
-    Job createJob(JobConfig jobConfig);
+    Result submit(IJobRequest jobConfig);
+
+    /**
+     * Returns a newly constructed {@code Job} using the provided configuration,
+     * which will resume from the point provided in the configuration
+     *
+     * @param path to the job state to resume from
+     * @return a newly constructed {@code Job} using the provided configuration
+     */
+    Result resume(Path path);
+
+    /**
+     * Returns a newly constructed {@code Job} using the provided path to a saved
+     * state and a map of configuration overrides to be applied.
+     *
+     * @param path          to the job state to resume from
+     * @param configuration A map of attributes to be applied after the saved state
+     *                      has been loaded
+     * @return a newly constructed {@code Job} using the provided configuration
+     */
+    Result resume(Path path, Map<String, Object> configuration);
 
     /**
      * Returns a newly created {@code JavaClient} using all configuration defaults
@@ -73,30 +97,28 @@ public interface Client {
      * @return a newly created {@code JavaClient} using the provided property
      * overrides
      */
-    static Client create(final Map<String, String> properties) {
+    static Client create(final Map<String, Object> properties) {
 
-        var objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+        var clientContext = Configuration.fromDefaults().merge(properties);
 
-        var props = new HashMap<>(properties);
-
-        props.computeIfAbsent("receiver.file.path", k -> "/tmp");
-        var threads = props.computeIfAbsent("download.threads", k -> "" + Runtime.getRuntime().availableProcessors());
-        var url = props.computeIfAbsent("service.url", k -> "http://localhost:8081");
+        var objectMapper = new ObjectMapper()
+            .registerModule(new Jdk8Module())
+            .registerModule(new JavaTimeModule())
+//            .setSerializationInclusion(Include.NON_NULL)
+//            .setSerializationInclusion(Include.NON_ABSENT)
+//            .setSerializationInclusion(Include.NON_EMPTY)
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         var downloadManager = createDownloadManager(b -> b
-            .numThreads(Integer.parseInt(threads))
+            .numThreads(clientContext.getDownloadThreads())
             .objectMapper(objectMapper));
 
-        var palisadeService = new PalisadeService(objectMapper, url);
-
-        // == Finally the Java Client itself
-
         return new JavaClient(
-            props,
-            palisadeService,
+            clientContext,
             downloadManager,
             objectMapper);
 
     }
+
 
 }

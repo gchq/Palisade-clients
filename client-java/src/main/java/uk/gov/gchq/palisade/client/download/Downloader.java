@@ -22,9 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.receiver.Receiver;
+import uk.gov.gchq.palisade.client.receiver.Receiver.IReceiverResult;
 import uk.gov.gchq.palisade.client.receiver.ReceiverContext;
 import uk.gov.gchq.palisade.client.receiver.ReceiverException;
 import uk.gov.gchq.palisade.client.resource.Resource;
+import uk.gov.gchq.palisade.client.util.Configuration;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.io.IOException;
@@ -35,7 +37,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
@@ -90,7 +91,7 @@ public final class Downloader implements ReceiverContext {
          * @return a map of properties which will be provided to the Receiver via a
          *         {@code ReceiverContext} instance
          */
-        Map<String, Object> getProperties();
+        Configuration getConfiguration();
 
         /**
          * Returns the {@code Receiver} instance which will be used to process the
@@ -138,7 +139,7 @@ public final class Downloader implements ReceiverContext {
     @Override
     public Optional<Object> findProperty(final String key) {
         checkArgument(key);
-        return Optional.ofNullable(setup.getProperties().get(key));
+        return setup.getConfiguration().find(key);
     }
 
     /**
@@ -172,7 +173,7 @@ public final class Downloader implements ReceiverContext {
 
         try {
 
-            var uri = createUri(resource.getUrl(), "/read/chunked");
+            var uri = createUri(resource.getUrl(), setup.getConfiguration().getDataPath());
             var requestBody = createBody(resource, mapper);
             var httpResponse = sendRequest(requestBody, uri);
 
@@ -187,16 +188,20 @@ public final class Downloader implements ReceiverContext {
                 throw new DownloaderException(msg, httpResponse.statusCode());
             }
 
-            processStream(httpResponse.body(), receiver, this);
+            var recieverResult = processStream(httpResponse.body(), receiver, this);
 
-            return createDownloadResult(b -> b.id(setup.getId()));
+            return createDownloadResult(b -> b
+                .id(setup.getId())
+                .properties(recieverResult.getProperties()));
 
         } catch (ReceiverException e) {
-            throw new DownloaderException("Caught exception from receiver", e);
+            throw new DownloaderException("Caught exception from receiver: " + e.getMessage(), e);
         } catch (DownloaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DownloaderException("Caught unknown exception", e);
+            throw new DownloaderException("Caught unknown exception: " + e.getMessage(), e);
+        } finally {
+            LOGGER.debug("Downloader Ended");
         }
 
     }
@@ -236,7 +241,7 @@ public final class Downloader implements ReceiverContext {
         return URI.create(uri.toString());
     }
 
-    private static void processStream(final InputStream is, final Receiver rc, final ReceiverContext rcCtx)
+    private static IReceiverResult processStream(final InputStream is, final Receiver rc, final ReceiverContext rcCtx)
         throws ReceiverException {
 
         assert is != null : "Need an inputstream for the reciver to process";
@@ -244,9 +249,9 @@ public final class Downloader implements ReceiverContext {
         assert rcCtx != null : "Need a receiver context which provides access to other services";
 
         try (is) {
-            rc.process(rcCtx, is);
+            return rc.process(rcCtx, is);
         } catch (Exception e) {
-            throw new ReceiverException("Caught unexpected error", e);
+            throw new ReceiverException("Caught unexpected error: " + e.getMessage(), e);
         }
 
     }
@@ -262,7 +267,7 @@ public final class Downloader implements ReceiverContext {
             .POST(BodyPublishers.ofString(requestBody))
             .build();
 
-        LOGGER.debug("Sending request:\n{}", requestBody);
+        LOGGER.debug("Sending request to {} :\n{}", uri, requestBody);
 
         try {
             var httpResponse = HTTP_CLIENT.send(httpRequest, BodyHandlers.ofInputStream());

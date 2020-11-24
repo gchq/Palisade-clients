@@ -15,31 +15,25 @@
  */
 package uk.gov.gchq.palisade.client.job;
 
+import org.immutables.value.Value;
+
+import uk.gov.gchq.palisade.client.util.TupleStyle;
+
 /**
- * The status of a download
+ * A {@code DownloadStartedEvent} is posted when a download has started
+ * <p>
+ * Note that the {@code DownloadStartedEvent} class is generated at compile
+ * time. The generated class does not use a builder but uses "Tuple Style". For
+ * example, an instance can be generated in the following way. <pre>
+ * {@code
+ *   var event = DownloadStartedEvent.of("token", resource);
+ * }
+ * </pre>
  *
+ * @see "https://immutables.github.io/style.html"
  * @since 0.5.0
  */
-public enum JobDownloadStatus {
-
-    /**
-     * Download started, but not finished
-     */
-    WAITING,
-
-    /**
-     * Download started, but not finished
-     */
-    IN_PROGRESS,
-
-    /**
-     * Completed successfully
-     */
-    COMPLETE,
-
-    /**
-     * Download failed
-     */
-    FAILED;
+@Value.Immutable
+@TupleStyle
+public interface IJobCompletedEvent { // empty
 }
-

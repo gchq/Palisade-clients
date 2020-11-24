@@ -15,30 +15,41 @@
  */
 package uk.gov.gchq.palisade.client.job;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.Job;
-import uk.gov.gchq.palisade.client.Result;
 import uk.gov.gchq.palisade.client.download.DownloadCompletedEvent;
 import uk.gov.gchq.palisade.client.download.DownloadFailedEvent;
 import uk.gov.gchq.palisade.client.download.DownloadManager;
+import uk.gov.gchq.palisade.client.download.DownloadScheduledEvent;
 import uk.gov.gchq.palisade.client.download.DownloadStartedEvent;
+import uk.gov.gchq.palisade.client.job.state.IJobRequest;
+import uk.gov.gchq.palisade.client.job.state.ISavedJobState;
+import uk.gov.gchq.palisade.client.job.state.JobState;
+import uk.gov.gchq.palisade.client.receiver.Receiver;
+import uk.gov.gchq.palisade.client.request.PalisadeClient;
+import uk.gov.gchq.palisade.client.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.resource.ErrorEvent;
 import uk.gov.gchq.palisade.client.resource.ResourceClient;
 import uk.gov.gchq.palisade.client.resource.ResourceReadyEvent;
-import uk.gov.gchq.palisade.client.resource.ResourcesExhaustedEvent;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
 
-import static java.util.stream.Collectors.toMap;
-import static uk.gov.gchq.palisade.client.job.IJobDownload.createDownload;
+import static uk.gov.gchq.palisade.client.request.IPalisadeRequest.createPalisadeRequest;
+import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListenr;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
@@ -62,7 +73,14 @@ public final class ClientJob implements Job {
          *
          * @return the job context
          */
-        JobContext getContext();
+        JobState getState();
+
+        /**
+         * Returns the palisade client
+         *
+         * @return the palisade client
+         */
+        PalisadeClient getPalisadeClient();
 
         /**
          * Returns a reference to the download manager
@@ -72,47 +90,40 @@ public final class ClientJob implements Job {
         DownloadManager getDownloadManager();
 
         /**
-         * Returns a list of previous downloads that may have been run in a previous
-         * execution
+         * Returns the object mapper
          *
-         * @return a list of previous downloads
+         * @return the object mapper
          */
-        List<JobDownload> getDownloads();
+        ObjectMapper getObjectMapper();
 
         /**
-         * Returns a list of previous executions
+         * Returns the event bus specific to this context. Other jobs will have their
+         * own eventbus.
          *
-         * @return a list of previous executions
+         * @return the event bus specific to this context
          */
-        List<JobExecution> getExecutions();
+        EventBus getEventBus();
 
         /**
-         * Returns the resource client instance that provides communication to the
-         * Filtered Resource Service.
+         * Returns the receiver that will handle the downloads
          *
-         * @return the resource client
+         * @return the receiver that will handle the downloads
          */
-        ResourceClient getResourceClient();
+        Receiver getReceiver();
+
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientJob.class);
-    private static final String EVENT_CAUGHT = "Caught event: {}";
+    private static final String EVENT_CAUGHT = "---> Caught event: {}";
 
-    private final JobSetup setup;
-    private final Map<UUID, JobDownload> downloads;
-    private final Map<UUID, JobExecution> executions;
-    private final JobExecution currentExecution;
+    private final IJobSetup setup;
+    private final JobState state;
+
+    @SuppressWarnings("java:S1450")
 
     private ClientJob(final JobSetup setup) {
-
         this.setup = checkArgument(setup);
-        this.downloads = setup.getDownloads().stream().collect(toMap(JobDownload::getId, dl -> dl));
-        this.executions = setup.getExecutions().stream().collect(toMap(JobExecution::getId, ex -> ex));
-
-        this.currentExecution = IJobExecution.createJobExecution(e -> e
-            .sequence(executions.size() + 1));
-
-        this.executions.put(currentExecution.getId(), currentExecution);
+        this.state = setup.getState();
     }
 
     /**
@@ -137,36 +148,14 @@ public final class ClientJob implements Job {
     }
 
     /**
-     * Returns this jobs context
-     *
-     * @return this jobs context
-     */
-    public JobContext getContext() {
-        return this.setup.getContext();
-    }
-
-    /**
-     * Returns the token
-     *
-     * @return the token
-     */
-    public String getToken() {
-        return setup.getContext().getPalisadeResponse().getToken();
-    }
-
-    /**
      * Handles a download failed event
      *
      * @param event The event to be handled
      */
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    @SuppressWarnings("java:S3242")
     public void onDownloadCompleted(final DownloadCompletedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event);
-        var prev = downloads.get(event.getId());
-        var next = prev.change(b -> b
-            .endTime(event.getTime())
-            .status(JobDownloadStatus.FAILED));
-        downloads.put(next.getId(), next);
+        state.downloadCompleted(event.getId(), event.getTime(), event.getProperties());
     }
 
     /**
@@ -174,15 +163,10 @@ public final class ClientJob implements Job {
      *
      * @param event The event to be handled
      */
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    @SuppressWarnings("java:S3242")
     public void onDownloadFailed(final DownloadFailedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event, event.getCause());
-        var prev = downloads.get(event.getId());
-        var next = prev.change(b -> b
-            .endTime(event.getTime())
-            .status(JobDownloadStatus.FAILED)
-            .statusCode(event.getStatusCode()));
-        downloads.put(next.getId(), next);
+        state.downloadFailed(event.getId(), event.getTime(), event.getStatusCode(), event.getCause());
     }
 
     /**
@@ -190,26 +174,24 @@ public final class ClientJob implements Job {
      *
      * @param event The event to be handled
      */
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    @SuppressWarnings("java:S3242")
     public void onDownloadStarted(final DownloadStartedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event);
-        var dl = createDownload(b -> b
-            .id(event.getId())
-            .resource(event.getResource())
-            .execution(currentExecution));
-        downloads.put(dl.getId(), dl);
+        state.downloadStarted(event.getId(), event.getTime());
     }
 
     /**
-     * Receives a {@code ResourcesExhaustedEvent} there are no more resources
+     * Handles a download scheduled event
      *
      * @param event The event to be handled
      */
-    @SuppressWarnings("java:S2325") // make static
-    @Subscribe
-    public void onJobComplete(final ResourcesExhaustedEvent event) {
-        LOGGER.debug(EVENT_CAUGHT, event);
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    @SuppressWarnings("java:S3242")
+    public void onDownloadScheduled(final DownloadScheduledEvent event) {
+        var resource = event.getResource();
+        state.downloadScheduled(event.getId(), resource.getLeafResourceId(), resource.getUrl());
     }
+
 
     /**
      * Handles the {@code ResourceReadyEvent} by scheduling a download. This method
@@ -218,34 +200,120 @@ public final class ClientJob implements Job {
      * @param event The event to be handled
      */
     @SuppressWarnings("java:S3242")
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     public void onScheduleDownload(final ResourceReadyEvent event) {
-        var resource = event.getResource();
-        var jobContext = setup.getContext();
-        setup.getDownloadManager().schedule(resource, jobContext);
+        LOGGER.debug(EVENT_CAUGHT, event);
+        setup.getDownloadManager().schedule(
+            event.getResource(),
+            setup.getEventBus(),
+            setup.getReceiver(),
+            setup.getState().getConfiguration());
     }
 
-    @Override
+    /**
+     * Handles the {@code ResourceReadyEvent} by scheduling a download. This method
+     * will return immediately as the download will be queued.
+     *
+     * @param event The event to be handled
+     */
+    @SuppressWarnings("java:S2325")
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onError(final ErrorEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
+        var error = event.getError();
+        LOGGER.debug("Job received an error: {}", error);
+    }
+
+    /**
+     * Start this job
+     *
+     * @return this for chaining
+     */
     public Result start() {
+
+        // create request and call the palisade service
+
+        IJobRequest jobConfig = state.getJobConfig();
+
+        var future = setup.getPalisadeClient().submitAsync(createRequest(jobConfig));
+        state.requestSent(jobConfig);
+        var palisadeResponse = future.join();
+        state.responseReceived(palisadeResponse);
+
+        // create the resource client that will handle the websocket communication
+
+        var token = palisadeResponse.getToken();
+        var eventBus = setup.getEventBus();
+        var downloadManager = setup.getDownloadManager();
+        var objectMapper = setup.getObjectMapper();
+
+        var wsUri = createUri(setup.getState().getConfiguration().getFilteredResourceUri());
 
         // we must register the event subscriptions in this job with the evnt bus
         // provided to us
 
-        setup.getContext().getEventBus().register(this);
+        eventBus.register(this);
 
-        // now we connect. This will connect to the server and start to receive
-        // resources
+        CompletableFuture<ISavedJobState> future1 = ResourceClient.createResourceClient(rc -> rc
+            .baseUri(wsUri)
+            .resourceClientListener(createResourceClientListenr(rcl -> rcl
+                .token(token)
+                .downloadManagerStatus(downloadManager)
+                .eventBus(eventBus)
+                .objectMapper(objectMapper))))
+            .connect()
+            .thenApply(v -> state.createSavedState());
 
-        setup.getResourceClient().connect();
+        state.downloadsStarted();
 
-        LOGGER.debug("Job created for token: {}", getToken());
+        LOGGER.debug("Job created for token: {}", token);
 
         // return an expty result for now
 
         return new Result() {
-            // empty for the moment
+            @Override
+            public CompletableFuture<ISavedJobState> future() {
+                return future1;
+            }
         };
 
     }
 
+    IJobSetup getSetup() {
+        return this.setup;
+    }
+
+    JobState getState() {
+        return this.state;
+    }
+
+    private static PalisadeRequest createRequest(final IJobRequest jobConfig) {
+
+        var userId = jobConfig.getUserId();
+        var purposeOpt = jobConfig.getPurpose();
+        var resourceId = jobConfig.getResourceId();
+        var properties = new HashMap<>(jobConfig.getProperties());
+        properties.put("PURPOSE", purposeOpt.orElse("client_request"));
+
+        var palisadeRequest = createPalisadeRequest(b -> b
+            .resourceId(resourceId)
+            .userId(userId)
+            .context(properties));
+
+        LOGGER.debug("new palisade request created from job config: {}", palisadeRequest);
+
+        return palisadeRequest;
+
+    }
+
+    private URI createUri(final String uriString) {
+        try {
+            return new URI(uriString);
+        } catch (URISyntaxException e) {
+            throw new ClientException("URI \"" + uriString + "\" is invalid", e);
+        }
+    }
+
+
 }
+

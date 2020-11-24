@@ -20,7 +20,6 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import uk.gov.gchq.palisade.client.job.state.IJobRequest;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
@@ -32,6 +31,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,7 +40,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author dbell
  */
 @MicronautTest
-class FullTest {
+class ResumeTest {
+
+    private static final String STATE_NO_DOWNLOADS = "resume/palisade-state_1_no-downloads.json";
 
     @Inject
     EmbeddedServer embeddedServer;
@@ -49,22 +51,24 @@ class FullTest {
 
     @BeforeEach
     void setup() throws Exception {
-        client = Client.create(Map.of(
-            Configuration.KEY_SERVICE_PS_PORT, embeddedServer.getPort(),
-            Configuration.KEY_SERVICE_FRS_PORT, embeddedServer.getPort(),
-            Configuration.KEY_DOWNLOAD_THREADS, 2));
+        client = Client.create();
     }
 
     @Test
-    void testFull() throws Exception {
+    void testFullResume() throws Exception {
 
-        IJobRequest jobRequest = IJobRequest.createJobRequest(b -> b
-            .userId("user_id")
-            .resourceId("pi.txt")
-            .purpose("purpose"));
+        var url = Thread.currentThread().getContextClassLoader().getResource(STATE_NO_DOWNLOADS);
+        var path = Paths.get(url.toURI());
 
-        // lets start the ball rolling
-        var result = client.submit(jobRequest);
+        // when resuming in this unit test, there will be a different port for the
+        // embedded server. we need to provide that to as part of the resume call so
+        // that it can override those read in from the previous state.
+
+        var result = client.resume(path, Map.of(
+            Configuration.KEY_SERVICE_PS_PORT, embeddedServer.getPort(),
+            Configuration.KEY_SERVICE_FRS_PORT, embeddedServer.getPort(),
+            Configuration.KEY_DOWNLOAD_THREADS, 2));
+
         var state = result.future().join();
 
         /*

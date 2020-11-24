@@ -28,65 +28,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.download.DataRequest;
-import uk.gov.gchq.palisade.client.request.IPalisadeResponse;
-import uk.gov.gchq.palisade.client.request.PalisadeRequest;
-import uk.gov.gchq.palisade.client.request.PalisadeResponse;
 
 import java.io.InputStream;
 
 /**
  * A controller containing our test endpoints
  */
-@Controller()
-public class HttpEndpoints {
+@Controller("data")
+public class HttpEndpointData {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HttpEndpoints.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointData.class);
 
     private final String host;
     private final int port;
 
-    public HttpEndpoints(final EmbeddedServer embeddedServer) {
+    public HttpEndpointData(final EmbeddedServer embeddedServer) {
         host = embeddedServer.getHost();
         port = embeddedServer.getPort();
     }
-
-    /**
-     * Returns a test response from the provide test request
-     *
-     * @param request The test request
-     * @return a test response from the provide test request
-     */
-    @Post("/registerDataRequest")
-    @Produces(MediaType.APPLICATION_JSON)
-    public HttpResponse<PalisadeResponse> registerDataRequest(@Body final PalisadeRequest request) {
-        LOG.debug("### Test endpoint {} received body: {}", "/registerDataRequest", request);
-        return HttpResponse
-            .ok(IPalisadeResponse.createPalisadeResponse(b -> b
-                .url("ws://localhost:" + port + "/name")
-                .token("abcd-1")))
-            .contentType(MediaType.APPLICATION_JSON_TYPE);
-    }
-
-//    /**
-//     * Returns an http response containing an inputstream. so cool :)
-//     *
-//     * @param request The request
-//     * @return an http response containing an inputstream. so cool :)
-//     */
-//    @Post("/read/chunked")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-//    public HttpResponse<byte[]> getTest(@Body final DataRequest request) {
-//        LOG.debug("### Test endpoint {} contected, with body: {}", "/read/chunked", request);
-//        var reply = "OneTwo";
-//         var is = new ByteArrayInputStream(reply.getBytes(StandardCharsets.UTF_8));
-//         var octet_stream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
-////         var sf = new StreamedFile(is, octet_stream);
-//         return HttpResponse
-//             .ok(reply.getBytes())
-//             .contentType(octet_stream)
-//             .header("Content-Disposition", "inline");
-//    }
 
     /**
      * Returns an http response containing an inputstream. so cool :)

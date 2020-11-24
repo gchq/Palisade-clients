@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.job;
+package uk.gov.gchq.palisade.client.job.state;
 
 import org.immutables.value.Value;
 
@@ -25,10 +25,11 @@ import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 /**
- * An instance of {@link JobConfig} is passed during the creation of a new Job.
+ * An instance of {code JobExecution} is passed during the creation of a new
+ * Job.
  * <p>
- * Note that the {@link JobConfig} class is created at compile time. The way in
- * which the class is created is determined by the {@code ImmutableStyle}.
+ * Note that the {@code JobExecution} class is created at compile time. The way
+ * in which the class is created is determined by the {@code ImmutableStyle}.
  *
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0
