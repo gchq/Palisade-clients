@@ -21,6 +21,7 @@ package uk.gov.gchq.palisade.clients.catclient;
 //TODO INSTEAD THE RESTFUL INTERFACE SHOULD BE USED
 //TODO we should be using feign annotation to do this
 
+@SuppressWarnings({ "java:S1135", "java:S125", "java:S1123", "java:S1133" })
 @Deprecated
 public class CatClient {
 //

@@ -51,6 +51,7 @@ import static java.util.Objects.requireNonNull;
  * In order to do this, we create a DataRequestResponse for each Resource and send it to the data service
  * created by the corresponding ConnectionDetail object.
  */
+@SuppressWarnings("java:S1135")
 public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeRecordReader.class);
 
@@ -102,7 +103,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     /**
      * No-arg constructor.
      */
-    public PalisadeRecordReader() {
+    public PalisadeRecordReader() { // noop
     }
 
     /**
@@ -174,6 +175,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      * @throws java.util.concurrent.CompletionException if the next source of data suffered a failure on establishing
      *                                                  data stream
      */
+    @SuppressWarnings("java:S125")
     private boolean moveToNextResource() {
         //do we have a resource iterator?
         if (resIt == null) {

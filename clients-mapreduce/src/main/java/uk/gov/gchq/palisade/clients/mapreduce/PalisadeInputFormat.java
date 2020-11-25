@@ -44,6 +44,7 @@ import java.util.Objects;
  *
  * @param <V> The value type for the map task
  */
+@SuppressWarnings({ "java:S125", "java:S1123", "java:S1135", "java:S1068", "java:S1213", "java:S1176" })
 public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
     /**
      * Hadoop configuration key for storing requests to be processed.
@@ -367,6 +368,7 @@ public class PalisadeInputFormat<V> extends InputFormat<LeafResource, V> {
 
     @Override
     @Generated
+    @SuppressWarnings("java:S1168")
     public List<InputSplit> getSplits(final JobContext jobContext) {
         return null;
     }

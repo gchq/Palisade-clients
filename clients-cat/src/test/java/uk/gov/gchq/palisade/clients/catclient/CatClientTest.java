@@ -29,6 +29,7 @@ import java.io.PrintStream;
 
 
 @Deprecated
+@SuppressWarnings({ "java:S2699" })
 public class CatClientTest {
 
     // mock creation

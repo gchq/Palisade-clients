@@ -309,7 +309,7 @@ public final class Configuration {
      * @return an optional typed clazz, containing the value for the provided key or
      *         empty if not found
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S1172" })
     public <T> Optional<T> find(final String key, final Class<T> clazz) {
         return Optional.ofNullable((T) properties.get(key));
     }
@@ -336,7 +336,7 @@ public final class Configuration {
      * @return a value for the provided key
      * @throws ConfigurationException if the key is not found
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S1172" })
     public <T> T get(final String key, final Class<T> clazz) {
         return (T) get(key);
     }
