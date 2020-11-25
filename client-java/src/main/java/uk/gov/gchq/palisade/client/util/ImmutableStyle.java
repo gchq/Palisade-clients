@@ -32,11 +32,11 @@ import java.lang.annotation.Target;
 @Target({ElementType.PACKAGE, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS) // Make it class retention for incremental compilation
 @Value.Style(
-        depluralize = true,
-        typeAbstract = {"I*"}, // 'I' prefix will be detected and trimmed
-        typeImmutable = "*", // No prefix or suffix for generated immutable type
+    depluralize = true,
+    typeAbstract = {"I*"}, // 'I' prefix will be detected and trimmed
+    typeImmutable = "*", // No prefix or suffix for generated immutable type
     visibility = ImplementationVisibility.PUBLIC, // Generated class will be always public
     defaults = @Value.Immutable(copy = false) // Disable copy methods by default
-        )
+)
 public @interface ImmutableStyle { // empty
 }

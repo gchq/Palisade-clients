@@ -21,7 +21,6 @@ import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
-import io.micronaut.runtime.server.EmbeddedServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +36,6 @@ import static uk.gov.gchq.palisade.client.request.IPalisadeResponse.createPalisa
 public class HttpEndpointPalisade {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointPalisade.class);
-
-    private final String host;
-    private final int port;
-
-    public HttpEndpointPalisade(final EmbeddedServer embeddedServer) {
-        host = embeddedServer.getHost();
-        port = embeddedServer.getPort();
-    }
 
     /**
      * Returns a test response from the provide test request

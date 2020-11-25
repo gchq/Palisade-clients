@@ -30,7 +30,6 @@ import uk.gov.gchq.palisade.client.download.DownloadManagerStatus;
 
 import javax.inject.Inject;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -152,7 +151,6 @@ public class ResourceClientTest {
     }
 
     private CompletableFuture<Void> startClient() throws Exception {
-        var uri = new URI("ws://localhost:" + port + "/cluster/filteredResource/name");
         return ResourceClient
             .createResourceClient(b -> b
                 .baseUri("ws://localhost:" + port + "/cluster/filteredResource/name/%t")

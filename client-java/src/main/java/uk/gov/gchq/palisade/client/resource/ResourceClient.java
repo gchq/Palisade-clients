@@ -208,27 +208,4 @@ public class ResourceClient {
         return webSocket != null && !webSocket.isOutputClosed();
     }
 
-//    private static URI createUri(final URI baseUri, final String endpoint) {
-//
-//        assert baseUri != null : "Need the base uri";
-//        assert baseUri != null : "Need the uri endpoint to append to the base uri";
-//
-//        var baseUriStr = baseUri.toString();
-//        var uri = new StringBuilder();
-//        if (baseUriStr.endsWith("/")) {
-//            uri.append(baseUriStr.substring(0, baseUriStr.length() - 2));
-//        } else {
-//            uri.append(baseUriStr);
-//        }
-//        if (!endpoint.startsWith("/")) {
-//            uri.append("/");
-//        }
-//        uri.append(endpoint);
-//        try {
-//            return new URI(uri.toString());
-//        } catch (URISyntaxException e) {
-//            throw new ClientException("Invalid websocket uri: " + uri, e);
-//        }
-//    }
-
 }

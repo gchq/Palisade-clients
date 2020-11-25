@@ -37,58 +37,6 @@ import java.util.function.UnaryOperator;
  * Note that the {@code PalisadeRequest} class is created at compile time. The
  * way in which the class is created is determined by the
  * {@code ImmutableStyle}. This class is also compatible with Jackson.
- * <p>
- * Example state once serialised: <pre>
- * {@code
- * {
- *   "token": "47237d5e-a8fd-46e3-930e-6640d06d0d32",
- *   "sequence": 1,
- *   "status": "COMPLETE",
- *   "created": "blah",
- *   "userId": "wandering_banshee",
- *   "resourceId": "/path/to/my/resource",
- *   "purpose": "machine_learning",
- *   "receiver": {
- *     "factoryClass": "uk.gov.gchq.palisade.client.java.LoggingReceiver",
- *     "properties": {
- *       "key": "value"
- *     }
- *   },
- *   "properties": {
- *     "service.url": "http://localhost:8081/",
- *     "download.threads": 1,
- *     "receiver.file.path": "/tmp"
- *   },
- *   "executions": [
- *     {
- *       "id": "id1",
- *       "start": "2020-11-03T11:22:07+00:00",
- *       "end": "2020-11-03T11:22:07+00:00",
- *       "status": "ABORTED"
- *     },
- *     {
- *       "id": "id2",
- *       "start": "2020-11-03T11:22:07+00:00",
- *       "end": "2020-11-03T11:22:07+00:00",
- *       "status": "COMPLETE"
- *     }
- *   ],
- *   "downloads": [
- *     {
- *       "resourceId": "/my/path/to/resource/node",
- *       "executionId": "id1",
- *       "start": "2020-11-03T11:22:07+00:00",
- *       "end": "2020-11-03T11:22:07+00:00",
- *       "url": "url",
- *       "path": "/tmp",
- *       "filename": "myfile",
- *       "duration": 45653469,
- *       "size": 12356764
- *     }
- *   ]
- * }
- * }
- * </pre>
  *
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0

@@ -17,8 +17,6 @@ package uk.gov.gchq.palisade.client.job;
 
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.Client;
@@ -38,14 +36,6 @@ class JobTest {
 
     @Inject
     EmbeddedServer embeddedServer;
-
-    @BeforeEach
-    void setup() throws Exception {
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
 
     @Test
     void testNewJobCreation() {

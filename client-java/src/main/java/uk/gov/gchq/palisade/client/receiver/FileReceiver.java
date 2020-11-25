@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  *
  * @since 0.5.0
  */
-public class FileReceiver implements Receiver {
+public class FileReceiver extends AbstractReceiver {
 
     private static final String FILE_PATH_KEY = "receiver.file.path";
 
@@ -59,9 +59,9 @@ public class FileReceiver implements Receiver {
             var len = Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
 
             return () -> Map.of(
-                IReceiverResult.PATH_KEY, path.toAbsolutePath().toString(),
-                IReceiverResult.BYTES_KEY, "" + len,
-                IReceiverResult.FILENAME_KEY, path.getFileName().toString());
+                PATH_KEY, path.toAbsolutePath().toString(),
+                BYTES_KEY, "" + len,
+                FILENAME_KEY, path.getFileName().toString());
 
         } catch (IOException e) {
             throw new ReceiverException("Failed to write downloaded resource to " + path, e);

@@ -31,7 +31,6 @@ import uk.gov.gchq.palisade.client.download.DownloadManager;
 import uk.gov.gchq.palisade.client.download.DownloadScheduledEvent;
 import uk.gov.gchq.palisade.client.download.DownloadStartedEvent;
 import uk.gov.gchq.palisade.client.job.state.IJobRequest;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState;
 import uk.gov.gchq.palisade.client.job.state.JobState;
 import uk.gov.gchq.palisade.client.receiver.Receiver;
 import uk.gov.gchq.palisade.client.request.PalisadeClient;
@@ -118,9 +117,14 @@ public final class ClientJob implements Job {
     private final IJobSetup setup;
     private final JobState state;
 
-    @SuppressWarnings("java:S1450")
+    /*
+     * This latch is only created once there are no more resources to download. The
+     * number to count down will be the number of outstanding downloads to complete.
+     */
+    private CountDownLatch remainingDownloadLatch;
 
     private ClientJob(final JobSetup setup) {
+        assert setup != null : "state cannot be null";
         this.setup = checkArgument(setup);
         this.state = setup.getState();
     }
@@ -133,6 +137,7 @@ public final class ClientJob implements Job {
      */
     @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     public static ClientJob createJob(final UnaryOperator<JobSetup.Builder> func) {
+        checkArgument(func, "Must supply a function to create a job");
         return createJob(func.apply(JobSetup.builder()).build());
     }
 
@@ -143,11 +148,14 @@ public final class ClientJob implements Job {
      * @return a newly created ClientJob
      */
     public static ClientJob createJob(final JobSetup setup) {
+        checkArgument(setup, "Must supply a the setup for the job");
         return new ClientJob(setup);
     }
 
     /**
-     * Handles a download failed event
+     * Handles the event that signifies that a download has completed normally. The
+     * internal state is updated. If the resource client for this job has completed,
+     * then the number of downloads outstanding is decremented.
      *
      * @param event The event to be handled
      */
@@ -162,7 +170,9 @@ public final class ClientJob implements Job {
     }
 
     /**
-     * Handles a download failed event
+     * Handles the event that signifies that a download has completed abnormally.
+     * The internal state is updated. If the resource client for this job has
+     * completed, then the number of downloads outstanding is decremented.
      *
      * @param event The event to be handled
      */
@@ -177,7 +187,8 @@ public final class ClientJob implements Job {
     }
 
     /**
-     * Handles a download started
+     * Handles the event that signifies that a download has started. The internal
+     * state is updated.
      *
      * @param event The event to be handled
      */
@@ -188,7 +199,8 @@ public final class ClientJob implements Job {
     }
 
     /**
-     * Handles a download scheduled event
+     * Handles the event that signifies that a download has been scheduled. The
+     * internal state is updated.
      *
      * @param event The event to be handled
      */
@@ -221,8 +233,8 @@ public final class ClientJob implements Job {
     }
 
     /**
-     * Handles the {@code ResourceReadyEvent} by scheduling a download. This method
-     * will return immediately as the download will be queued.
+     * Handles the {@code ErrorEvent}. This method will, for now, simply log the
+     * error. The exact function of this methoid is to be decided.
      *
      * @param event The event to be handled
      */
@@ -235,9 +247,11 @@ public final class ClientJob implements Job {
     }
 
     /**
-     * Start this job
+     * Start this job which involves making a request to the palisade service which
+     * is successful, will then creates and starts the {@code ResourceClient} which
+     * controls the retrieval of resource metadata. This method will not block.
      *
-     * @return this for chaining
+     * @return the result containing a future to retrieve the fiunal state
      */
     public Result start() {
 
@@ -264,18 +278,29 @@ public final class ClientJob implements Job {
 
         eventBus.register(this);
 
-        CompletableFuture<ISavedJobState> future1 = ResourceClient.createResourceClient(rc -> rc
+        // this resource client handles the communication to the filtered resource
+        // service via a websocket
+
+        var resourceClient = ResourceClient.createResourceClient(rc -> rc
             .baseUri(wsUri)
             .resourceClientListener(createResourceClientListenr(rcl -> rcl
                 .token(token)
                 .downloadManagerStatus(downloadManager)
                 .eventBus(eventBus)
-                .objectMapper(objectMapper))))
+                .objectMapper(objectMapper))));
+
+        // this future will complete only when the resource client (websocket
+        // controller) and the job has completed. The job knows the point at which there
+        // are no more resources, so creates a latch which counts down the remaining
+        // uncompleted jobs. Once these are ended (fail/success), the latch is removed
+        // and this future completes.
+
+        var future1 = resourceClient
             .connect()
-            .thenCompose(s -> {
+            .thenCompose((final Void s) ->
                 // we should not check to see if there is any download that has not completed
                 // Set the latch to the number of incomplete downloads
-                return CompletableFuture.runAsync(() -> {
+                CompletableFuture.runAsync(() -> {
                     try {
                         var count = (int) state.getIncompleteDownloadCount();
                         LOGGER.debug("Waiting for {} downloads to complete", count);
@@ -284,34 +309,21 @@ public final class ClientJob implements Job {
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
-                });
-            })
-            .thenApply(v -> state.createSavedState());
+
+                })
+            .thenApply(v -> state.createSavedState()));
 
         state.downloadsStarted();
 
         LOGGER.debug("Job created for token: {}", token);
 
-        // return an expty result for now
+        // return the result. Upon returning the result, the code will not block. The
+        // caller will need to retrieve the future and join.
 
-        return new Result() {
-            @Override
-            public CompletableFuture<ISavedJobState> future() {
-                return future1;
-            }
-        };
+        return () -> future1;
 
     }
 
-    private CountDownLatch remainingDownloadLatch;
-
-    IJobSetup getSetup() {
-        return this.setup;
-    }
-
-    JobState getState() {
-        return this.state;
-    }
 
     private static PalisadeRequest createRequest(final IJobRequest jobConfig) {
 

@@ -39,16 +39,15 @@ import static uk.gov.gchq.palisade.client.download.DownloadManager.createDownloa
 public interface Client {
 
     /**
-     * Returns a newly constructed {@code Job} using the provided configuration
-     * function, which is used to submit a request to the Palisade service
+     * Submits a request via the provided builder function to Palisade and returns a
+     * result object through which a status object can be retrieved
      *
      * @param func The function applied to the {@code JobConfig.Builder} which
      *             provided the configuration
-     * @return a newly constructed {@code Job} using the provided configuration
-     * function
+     * @return a result object through which a status object can be retrieved
+     * @throws ClientException if any error is encountered
      */
     @SuppressWarnings("java:S3242")
-    // I REALLY want to use UnaryOperator here SonarQube!!!
     Result submit(UnaryOperator<JobRequest.Builder> func);
 
     /**

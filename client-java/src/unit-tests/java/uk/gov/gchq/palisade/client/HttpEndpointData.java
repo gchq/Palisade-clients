@@ -23,7 +23,6 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.server.types.files.StreamedFile;
-import io.micronaut.runtime.server.EmbeddedServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,14 +37,6 @@ import java.io.InputStream;
 public class HttpEndpointData {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointData.class);
-
-    private final String host;
-    private final int port;
-
-    public HttpEndpointData(final EmbeddedServer embeddedServer) {
-        host = embeddedServer.getHost();
-        port = embeddedServer.getPort();
-    }
 
     /**
      * Returns an http response containing an inputstream. so cool :)

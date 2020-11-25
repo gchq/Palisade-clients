@@ -44,6 +44,7 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 public class PalisadeService implements PalisadeClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeService.class);
+    private static final int HTTP_OK = 200;
 
     private final ObjectMapper objectMapper;
     private final String baseUri;
@@ -73,6 +74,7 @@ public class PalisadeService implements PalisadeClient {
         return palisadeResponse;
     }
 
+    @SuppressWarnings({ "java:S1774", "java:S2211", "java:S2221", "java:S1166" })
     @Override
     public CompletableFuture<PalisadeResponse> submitAsync(final PalisadeRequest palisadeRequest) {
 
@@ -101,13 +103,14 @@ public class PalisadeService implements PalisadeClient {
             .sendAsync(httpRequest, BodyHandlers.ofString())
             .thenApply(resp -> {
                 int status = resp.statusCode();
-                LOGGER.debug("{}: {}", (status == 200 ? "Success" : "Error"), status);
-                if (status != 200) {
+                LOGGER.debug("{}: {}", (status == HTTP_OK ? "Success" : "Error"), status);
+                if (status != HTTP_OK) {
                     String body;
                     try {
                         body = objectMapper.writeValueAsString(resp.body());
                     } catch (Exception e) {
                         body = "!failed to parse response body: " + resp.body();
+                        // swallow
                     }
                     throw new ClientException("Request to palisade service failed (" + status + "), response\n" + body);
                 }

@@ -158,11 +158,21 @@ public interface IJobDownload {
         return func.apply(JobDownload.builder().from(this)).build();
     }
 
+    /**
+     * Returns true if this download has not completed yet
+     *
+     * @return true if this download has not completed yet
+     */
     default boolean hasEnded() {
         var sts = getStatus();
         return sts == JobDownloadStatus.FAILED || sts == JobDownloadStatus.COMPLETE;
     }
 
+    /**
+     * Returns true if this download has not ended
+     *
+     * @return true if this download has not ended
+     */
     default boolean hasNotEnded() {
         return !hasEnded();
     }

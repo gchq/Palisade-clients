@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -71,7 +70,6 @@ class DownloaderTest {
 
         var token = "abcd-1";
         var filename = "pi.txt";
-        var properties = Map.of("receiver.file.path", "/tmp");
 
         var downloader = Downloader.createDownloader(b -> b
             .objectMapper(objectMapper)
@@ -100,7 +98,6 @@ class DownloaderTest {
 
         var token = "abcd-1";
         var filename = "pi.txt";
-        var properties = Map.of("receiver.file.path", "/tmp");
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)
@@ -128,7 +125,6 @@ class DownloaderTest {
 
         var token = "abcd-1";
         var filename = "Selection_032.png";
-        var properties = Map.of("receiver.file.path", "/tmp");
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)
@@ -159,7 +155,6 @@ class DownloaderTest {
 
         var token = "abcd-1";
         var filename = "doesnotexist";
-        var properties = Map.of("receiver.file.path", "/tmp");
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)

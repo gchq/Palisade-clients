@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ClientTest {
 
-    private static final int PORT = 8083;
     private static final String HOST = "clusterhost";
     private static final String HTTP = "http";
     private static final int NUM_THREADS = 16;

@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  *
  * @since 0.5.0
  */
-public abstract class Util {
+public final class Util {
 
     private Util() {
         // cannot instantiate
@@ -64,4 +64,22 @@ public abstract class Util {
     public static String timeStampFormat(final TemporalAccessor accessor) {
         return DATE_STAMP_FORMATTER.format(accessor);
     }
+
+    /**
+     * Returns a new string with leading and trailing slashes removed
+     *
+     * @param path The path
+     * @return a new string with leading and trailing slashes removed
+     */
+    public static String trimSlashes(final String path) {
+        String result = path.trim();
+        if (result.startsWith("/")) {
+            result = result.substring(1, result.length());
+        }
+        if (result.endsWith("/")) {
+            result = result.substring(0, result.length() - 1);
+        }
+        return result;
+    }
+
 }

@@ -54,7 +54,7 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
  */
 public class JobState {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobStateService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobState.class);
     private final JobStateService service;
 
     // this is the first ever run of this job. the sequence will be >0 if the job is
@@ -138,7 +138,7 @@ public class JobState {
         this.created = state.getCreated();
         this.configuration = Configuration.from(state.getProperties()).merge(configuration);
 
-        this.jobRequest = IJobRequest.createJobRequest(b -> {
+        this.jobRequest = IJobRequest.createJobRequest((final JobRequest.Builder b) -> {
             var req = state.getRequest();
             return b
                 .properties(req.getProperties())
@@ -352,15 +352,11 @@ public class JobState {
                 throw new IllegalStateException("No previous download found for id" + id + ". This should not happen");
             }
             LOGGER.debug("Previous download state: {}", prev);
-            var next = prev.change(b -> {
-                var prevStartDateOpt = prev.getStartTime();
-                var prevStartDate = prevStartDateOpt.get();
-                return b
-                    .endTime(end)
-                    .duration(Duration.between(prevStartDate, end).toMillis())
-                    .status(JobDownloadStatus.COMPLETE)
-                    .putAllProperties(properties);
-            });
+            var next = prev.change(b -> b
+                .endTime(end)
+                .duration(Duration.between(prev.getStartTime().get(), end).toMillis())
+                .status(JobDownloadStatus.COMPLETE)
+                .putAllProperties(properties));
             downloads.put(next.getId(), next);
             save();
         } finally {

@@ -28,13 +28,54 @@ public interface Checks {
      * Ensures that the provided parameter argument is not null.
      *
      * @param <T>      The type of argument
-     * @param argument a boolean expression
+     * @param argument the instance test
      * @return the argument
      * @throws IllegalArgumentException if {@code argument} is null
      */
     static <T> T checkArgument(final T argument) {
         if (argument == null) {
             throw new IllegalArgumentException("Null argument");
+        }
+        return argument;
+    }
+
+    /**
+     * Ensures that the provided parameter argument is not null.
+     *
+     * @param <T>          The type of argument
+     * @param argument     the instance test
+     * @param errorMessage the exception message to use if the check fails; will be
+     *                     converted to a string using
+     *                     {@link String#valueOf(Object)}
+     * @return the argument
+     * @throws IllegalArgumentException if {@code argument} is null
+     */
+    static <T> T checkArgument(final T argument, final Object errorMessage) {
+        if (argument == null) {
+            throw new IllegalArgumentException(String.valueOf(errorMessage));
+        }
+        return argument;
+    }
+
+    /**
+     * Ensures that the provided parameter argument is not null.
+     *
+     * @param <T>      The type of argument
+     * @param argument the instance test
+     * @param template a template for the exception message should the check fail.
+     *                 The message is formed by passing the template and argument to
+     *                 {@code String.format}. The difference is that if an
+     *                 formatting error occurs, then the unmodified template will be
+     *                 returned.
+     * @param args     the arguments to be substituted into the message template.
+     *                 Arguments are converted to strings using
+     *                 {@link String#valueOf(Object)}.
+     * @return the argument
+     * @throws IllegalArgumentException if {@code argument} is null
+     */
+    static <T> T checkArgument(final T argument, final String template, final Object... args) {
+        if (argument == null) {
+            throw new IllegalArgumentException(format(template, args));
         }
         return argument;
     }

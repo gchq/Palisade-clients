@@ -39,14 +39,31 @@ import java.util.stream.Collectors;
 
 import static uk.gov.gchq.palisade.client.resource.MessageType.CTS;
 
+/**
+ * Test websocket endpoint
+ *
+ * @since 0.5.0
+ */
 @ServerWebSocket("/cluster/filteredResource/name/{token}")
 public class WsEndpointFilteredResource {
 
+    /**
+     * Generates test resources
+     *
+     * @since 0.5.0
+     */
     public static class ResourceGenerator implements Iterable<Resource> {
 
         private static final List<String> FILENAMES = List.of("pi.txt", "Selection_032.png");
         private final List<Resource> resources;
 
+        /**
+         * Creates a new {@code ResourceGenerator} with the provided {@code token} and
+         * {@code port}
+         *
+         * @param token the token
+         * @param port  the port
+         */
         public ResourceGenerator(final String token, final int port) {
             var url = "http://localhost:" + port;
             resources = FILENAMES.stream()
@@ -68,13 +85,27 @@ public class WsEndpointFilteredResource {
     EmbeddedServer embeddedServer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WsEndpointFilteredResource.class);
+    @SuppressWarnings("unused")
     private final WebSocketBroadcaster broadcaster;
     private Iterator<Resource> resources;
 
+    /**
+     * Create a new {@code WsEndpointFilteredResource} with the provided
+     * {@code broadcaster}
+     *
+     * @param broadcaster the web socket broadcaster
+     */
     public WsEndpointFilteredResource(final WebSocketBroadcaster broadcaster) {
         this.broadcaster = broadcaster;
     }
 
+    /**
+     * Called when the websocket is opened
+     *
+     * @param token   The token which is passed in as a query parameter on the HTTP
+     *                request
+     * @param session The web socket session
+     */
     @OnOpen
     public void onOpen(final String token, final WebSocketSession session) {
         session.put("token", token);
@@ -85,6 +116,12 @@ public class WsEndpointFilteredResource {
         System.out.println("onOpen::" + session.getId());
     }
 
+    /**
+     * Called when a new message arrives
+     *
+     * @param inmsg   The incoming message
+     * @param session The web socket session
+     */
     @OnMessage
     public void onMessage(final Message inmsg, final WebSocketSession session) {
         LOGGER.debug("Recd: {}", inmsg);
@@ -100,6 +137,11 @@ public class WsEndpointFilteredResource {
         }
     }
 
+    /**
+     * Called when the websocket closes
+     *
+     * @param session The websocket session that is to close
+     */
     @OnClose
     public void onClose(final WebSocketSession session) {
         System.out.println("onClose::" + session.getId());

@@ -25,6 +25,7 @@ import uk.gov.gchq.palisade.client.util.Configuration;
 import uk.gov.gchq.palisade.client.util.Util;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -83,7 +84,7 @@ public class JobStateService {
      */
     public JobState createFrom(final Path fromPath, final Map<String, Object> configuration) {
         try {
-            var json = new String(Files.readAllBytes(fromPath));
+            var json = new String(Files.readAllBytes(fromPath), StandardCharsets.UTF_8);
             var state = fromJson(json);
             return new JobState(this, state, configuration);
         } catch (IOException e) {
@@ -92,6 +93,8 @@ public class JobStateService {
     }
 
     final void save(final ISavedJobState state, final String path) {
+
+        LOGGER.debug("Saving state to: {}", path);
 
         var replacementMap = Map.<String, Supplier<String>>of(
             "%t", () -> state.getPalisadeResponse().getToken(),
@@ -103,8 +106,7 @@ public class JobStateService {
         try {
             var json = toJson(state);
             Files.createDirectories(p.getParent());
-            var newPath = Files.write(p, json.getBytes());
-//            LOGGER.debug("State ({}):\n{}", newPath, json);
+            Files.writeString(p, json, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ClientException("Failed to save state", e);
         }

@@ -36,21 +36,6 @@ public interface Receiver {
     public interface IReceiverResult {
 
         /**
-         * Property key for the number of bytes downloaded
-         */
-        String BYTES_KEY = "bytes";
-
-        /**
-         * Property key for the path where downloads are saved
-         */
-        String PATH_KEY = "path";
-
-        /**
-         * Property key for the filename
-         */
-        String FILENAME_KEY = "filename";
-
-        /**
          * Returns the type of this message
          *
          * @return the {@link MessageType}

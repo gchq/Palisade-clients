@@ -195,26 +195,61 @@ public class DownloadManagerTest {
 
     }
 
+    /**
+     * Handles the provided event. Any method annotated with {@code Subscribe} must
+     * be public and be in a plublic class. This is a requirement of the
+     * {@code EventBus}
+     *
+     * @param e the event
+     */
     @Subscribe
     public void handleStarted(final DownloadStartedEvent e) {
         this.events.add(e);
     }
 
+    /**
+     * Handles the provided event. Any method annotated with {@code Subscribe} must
+     * be public and be in a plublic class. This is a requirement of the
+     * {@code EventBus}
+     *
+     * @param e the event
+     */
     @Subscribe
     public void handleCompleted(final DownloadCompletedEvent e) {
         this.events.add(e);
     }
 
+    /**
+     * Handles the provided event. Any method annotated with {@code Subscribe} must
+     * be public and be in a plublic class. This is a requirement of the
+     * {@code EventBus}
+     *
+     * @param e the event
+     */
     @Subscribe
     public void handleFailed(final DownloadFailedEvent e) {
         this.events.add(e);
     }
 
+    /**
+     * Handles the provided event. Any method annotated with {@code Subscribe} must
+     * be public and be in a plublic class. This is a requirement of the
+     * {@code EventBus}
+     *
+     * @param e the event
+     */
     @Subscribe
     public void handleScheduled(final DownloadScheduledEvent e) {
         this.events.add(e);
     }
 
+    /**
+     * Handles the provided event. Any method annotated with {@code Subscribe} must
+     * be public and be in a plublic class. This is a requirement of the
+     * {@code EventBus}
+     *
+     * @param e the event
+     */
     @Subscribe
     public void handleNoSubscriber(final NoSubscriberEvent e) {
         this.events.add(e);

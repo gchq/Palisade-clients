@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static uk.gov.gchq.palisade.client.util.Util.trimSlashes;
+
 /**
  * A configuration object holds the job configuration
  *
@@ -228,7 +230,7 @@ public class Configuration {
         var endpoint = getProperty(KEY_SERVICE_PS_ENDPOINT);
 
         return String.format("%s://%s:%s/%s/%s/%s",
-            scheme, host, port, stripSlashes(cluster), stripSlashes(context), stripSlashes(endpoint));
+            scheme, host, port, trimSlashes(cluster), trimSlashes(context), trimSlashes(endpoint));
 
     }
 
@@ -247,7 +249,7 @@ public class Configuration {
         var endpoint = getProperty(KEY_SERVICE_FRS_ENDPOINT);
 
         return String.format("%s://%s:%s/%s/%s/%s",
-            scheme, host, port, stripSlashes(cluster), stripSlashes(context), stripSlashes(endpoint));
+            scheme, host, port, trimSlashes(cluster), trimSlashes(context), trimSlashes(endpoint));
 
     }
 
@@ -259,8 +261,7 @@ public class Configuration {
     public String getDataPath() {
         var context = getProperty(KEY_SERVICE_DS_CONTEXT);
         var endpoint = getProperty(KEY_SERVICE_DS_ENDPOINT);
-        var pathString = String.format("%s/%s", stripSlashes(context), stripSlashes(endpoint));
-        return pathString;
+        return String.format("%s/%s", trimSlashes(context), trimSlashes(endpoint));
     }
 
     /**
@@ -349,22 +350,11 @@ public class Configuration {
         return this.properties;
     }
 
-    private String stripSlashes(final String path) {
-        String result = path;
-        if (result.startsWith("/")) {
-            result = result.substring(1, result.length());
-        }
-        if (result.endsWith("/")) {
-            result = result.substring(0, result.length() - 1);
-        }
-        return result;
-    }
-
     private String getProperty(final String key) {
         return getProperty(key, String.class);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S1172" })
     private <T> T getProperty(final String key, final Class<T> clazz) {
         return (T) properties.get(key);
     }
