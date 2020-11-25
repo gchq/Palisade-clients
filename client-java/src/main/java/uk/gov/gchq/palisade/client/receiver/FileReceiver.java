@@ -35,6 +35,13 @@ public class FileReceiver extends AbstractReceiver {
 
     private static final String FILE_PATH_KEY = "receiver.file.path";
 
+    /**
+     * Create the new instance
+     */
+    public FileReceiver() {
+        super();
+    }
+
     @Override
     public IReceiverResult process(final ReceiverContext ctx, final InputStream is) throws ReceiverException {
 

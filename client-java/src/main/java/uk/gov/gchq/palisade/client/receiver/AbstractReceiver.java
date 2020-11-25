@@ -37,5 +37,11 @@ public abstract class AbstractReceiver implements Receiver {
      */
     public static final String FILENAME_KEY = "filename";
 
+    /**
+     * Create the instance
+     */
+    @SuppressWarnings("java:S1118")
+    public AbstractReceiver() {
+    }
 
 }

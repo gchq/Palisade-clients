@@ -35,7 +35,7 @@ import static uk.gov.gchq.palisade.client.util.Util.trimSlashes;
  *
  * @since 0.5.0
  */
-public class Configuration {
+public final class Configuration {
 
     /**
      * The domain/host to connect to
@@ -141,7 +141,7 @@ public class Configuration {
      * @return a new configuration instance with the default overriden by values
      *         from the provided map
      */
-    public static final Configuration from(final Map<String, Object> properties) {
+    public static Configuration from(final Map<String, Object> properties) {
         return fromDefaults().merge(properties);
     }
 
@@ -150,7 +150,7 @@ public class Configuration {
      *
      * @return a new configuration instance loaded with all defaults
      */
-    public static final Configuration fromDefaults() {
+    public static Configuration fromDefaults() {
 
         try {
 

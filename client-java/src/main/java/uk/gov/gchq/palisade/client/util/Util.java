@@ -28,13 +28,13 @@ import java.util.function.Supplier;
  */
 public final class Util {
 
-    private Util() {
-        // cannot instantiate
-    }
-
     private static final DateTimeFormatter DATE_STAMP_FORMATTER = DateTimeFormatter
         .ofPattern("yyyyMMdd-HHmmss")
         .withZone(ZoneId.systemDefault());
+
+    private Util() {
+        // cannot instantiate
+    }
 
     /**
      * Replaces tokens in the provide template by using the functions provided. This
