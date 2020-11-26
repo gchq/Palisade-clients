@@ -18,8 +18,6 @@ package uk.gov.gchq.palisade.client.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.wnameless.json.flattener.JsonFlattener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.ClientException;
 
@@ -128,8 +126,6 @@ public final class Configuration {
      * receiver file template
      */
     public static final String KEY_RECEIVER_FILE_TEMPLATE = "receiver.file.template";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
     private final Map<String, Object> properties;
 

@@ -81,8 +81,6 @@ public class ResourceClientListener implements Listener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceClientListener.class);
     private static final long ONE_SECOND = 1000L;
-    private static final int REASON_OK = 1001;
-
 
 
     private final IResourceClientListenrSetup setup;
@@ -136,7 +134,7 @@ public class ResourceClientListener implements Listener {
         post(ErrorEvent.of(error));
     }
 
-    private void handleComplete(final WebSocket ws) {
+    private void handleComplete() {
         LOGGER.debug("handle Complete for token {}", getToken());
         post(ResourcesExhaustedEvent.of(getToken()));
     }
@@ -183,7 +181,7 @@ public class ResourceClientListener implements Listener {
         if (type == MessageType.RESOURCE) {
             handleResource(message);
         } else if (type == MessageType.COMPLETE) {
-            handleComplete(ws);
+            handleComplete();
         } else if (type == MessageType.ERROR) {
             handleError(message);
         } else {

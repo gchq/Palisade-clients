@@ -119,8 +119,7 @@ public final class DownloadManager implements DownloadManagerStatus {
      */
     public boolean awaitTermination(final long timeout, final TimeUnit unit) throws InterruptedException {
         LOGGER.debug("Awaiting for download manager to terminate for {} {} ", timeout, unit);
-        var terminated = executor.awaitTermination(timeout, unit);
-        return terminated;
+        return executor.awaitTermination(timeout, unit);
     }
 
     @Override

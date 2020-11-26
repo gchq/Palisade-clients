@@ -85,6 +85,14 @@ public final class Util {
         return result;
     }
 
+    /**
+     * Returns a map containing a copy of the provided {@code input}, but with
+     * expression values replaced.
+     *
+     * @param input The map to modify
+     * @return a map containing a copy of the provided {@code input}, but with
+     *         expression values replaced.
+     */
     public static Map<String, Object> substituteVariables(final Map<String, Object> input) {
         var result = new HashMap<>(input);
         for (Entry<String, Object> entry : input.entrySet()) {

@@ -32,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.UnaryOperator;
 
 /**
- * An instance of this class manages the comunications to the Filtered Resource
+ * An instance of this class manages the communications to the Filtered Resource
  * Server via webn sockets
  *
  * @since 0.5.0
@@ -80,7 +80,6 @@ public class ResourceClient {
     private final ResourceClientSetup setup;
     private final CountDownLatch latch;
 
-    private WebSocket webSocket;
 
     /**
      * A {@code ResourceClient} manages the passing of messages to/from a websocket
@@ -142,7 +141,7 @@ public class ResourceClient {
 
         setup.getResourceClientListener().getEventBus().register(this);
 
-        this.webSocket = HttpClient
+        var webSocket = HttpClient
             .newHttpClient()
             .newWebSocketBuilder()
             .buildAsync(uri, getListener())
