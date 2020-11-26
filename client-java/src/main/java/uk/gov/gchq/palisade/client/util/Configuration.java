@@ -18,6 +18,8 @@ package uk.gov.gchq.palisade.client.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.wnameless.json.flattener.JsonFlattener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.ClientException;
 
@@ -127,6 +129,8 @@ public final class Configuration {
      */
     public static final String KEY_RECEIVER_FILE_TEMPLATE = "receiver.file.template";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
+
     private final Map<String, Object> properties;
 
     private Configuration(final Map<String, Object> properties) {
@@ -168,6 +172,8 @@ public final class Configuration {
             // e.g. "file.reciever.path=/tmp"
             var map = JsonFlattener.flattenAsMap(json);
 
+            map = Util.substituteVariables(map);
+
             return new Configuration(map);
 
         } catch (IOException e) {
@@ -177,6 +183,7 @@ public final class Configuration {
         }
 
     }
+
 
     /**
      * Returns a new configuration with the provided configuration merged into this
@@ -200,9 +207,10 @@ public final class Configuration {
         if (overrides == null || overrides.isEmpty()) {
             return this;
         }
-        var p = new HashMap<String, Object>();
+        Map<String, Object> p = new HashMap<>();
         p.putAll(this.properties);
         p.putAll(overrides);
+        p = Util.substituteVariables(p);
         return new Configuration(p);
     }
 

@@ -23,7 +23,7 @@ import uk.gov.gchq.palisade.client.ClientException;
  *
  * @since 0.5.0
  */
-public class MissingResourceException extends ClientException {
+public class MissingMessageBodyException extends ClientException {
 
     private static final long serialVersionUID = 6617992103641504671L;
 
@@ -35,7 +35,7 @@ public class MissingResourceException extends ClientException {
      *
      * @param resourceMessage The offending message
      */
-    public MissingResourceException(final Message resourceMessage) {
+    public MissingMessageBodyException(final Message resourceMessage) {
         super("Recieved a message with a missing resource. Message was: " + resourceMessage);
         this.resourceMessage = resourceMessage;
     }

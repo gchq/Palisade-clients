@@ -15,10 +15,13 @@
  */
 package uk.gov.gchq.palisade.client.util;
 
+import java.net.URI;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
 
 /**
@@ -80,6 +83,42 @@ public final class Util {
             result = result.substring(0, result.length() - 1);
         }
         return result;
+    }
+
+    public static Map<String, Object> substituteVariables(final Map<String, Object> input) {
+        var result = new HashMap<>(input);
+        for (Entry<String, Object> entry : input.entrySet()) {
+            var expr = entry.getValue().toString().trim();
+            if (expr.startsWith("${") && expr.endsWith("}")) {
+                var key = expr.substring(2, expr.length() - 1);
+                var repl = input.get(key);
+                if (repl != null) {
+                    result.put(entry.getKey(), repl);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a uri from the provide base path and endpoint(s)
+     *
+     * @param baseUri   the base uri
+     * @param endpoint  the endpoint
+     * @param endpoints further endpoints
+     * @return a uri from the provide base path and endpoint(s)
+     */
+    public static URI createUri(final String baseUri, final String endpoint, final String... endpoints) {
+
+        var uri = new StringBuilder(trimSlashes(baseUri))
+            .append("/")
+            .append(trimSlashes(endpoint));
+
+        for (String string : endpoints) {
+            uri.append("/").append(trimSlashes(string));
+        }
+
+        return URI.create(uri.toString());
     }
 
 }

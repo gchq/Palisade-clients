@@ -80,7 +80,7 @@ class JobStateServiceTest {
     }
 
     @Test
-    void testCreateFrom() throws Exception {
+    void testCreateFromNoDownloads() throws Exception {
 
         var jobConfig = createJobRequest(b -> b
             .userId("user_id")
@@ -102,6 +102,38 @@ class JobStateServiceTest {
         assertThat(state).isNotNull();
         assertThat(state.getCreated()).isNotNull();
         assertThat(state.getDownloads()).isEmpty();
+        assertThat(state.getPalisadeResponse().get()).isEqualTo(palisadeResponse);
+        assertThat(state.getExecutions()).hasSize(2);
+        assertThat(state.getSequence()).isEqualTo(0);
+        assertThat(state.getStatus()).isEqualTo(JobStatus.DOWNLOADS_IN_PROGRESS);
+        assertThat(state.getJobConfig()).isEqualTo(jobConfig);
+        assertThat(state.getCurrentExecution()).isNotNull();
+        assertThat(state.getExecutions().get(state.getCurrentExecution().getId()))
+            .isEqualTo(state.getCurrentExecution());
+
+    }
+
+    @Test
+    void testCreateFromWithDownloads() throws Exception {
+
+        var jobConfig = createJobRequest(b -> b
+            .userId("user_id")
+            .resourceId("resource_id")
+            .purpose("purpose")
+            .receiverClass(FileReceiver.class)
+            .putProperty("key", "value"));
+
+        var palisadeResponse = IPalisadeResponse.createPalisadeResponse(b -> b.token("abcd-1"));
+
+        var url = Thread.currentThread().getContextClassLoader()
+            .getResource("resume/palisade-state_1_with-downloads.json");
+        var path = Paths.get(url.toURI());
+
+        var state = service.createFrom(path);
+
+        assertThat(state).isNotNull();
+        assertThat(state.getCreated()).isNotNull();
+        assertThat(state.getDownloads()).isNotEmpty().hasSize(2);
         assertThat(state.getPalisadeResponse().get()).isEqualTo(palisadeResponse);
         assertThat(state.getExecutions()).hasSize(2);
         assertThat(state.getSequence()).isEqualTo(0);

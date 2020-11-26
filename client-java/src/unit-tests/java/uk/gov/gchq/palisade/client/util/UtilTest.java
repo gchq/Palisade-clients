@@ -40,4 +40,40 @@ class UtilTest {
         assertThat(path).isEqualTo(("/my/path/t-" + token + "/s-" + now + ".json"));
     }
 
+    @Test
+    void testSubstituteWholeVariables() {
+
+        var original = Map.<String, Object>of(
+            "key1", "theValue",
+            "key2", "${key1}",
+            "key3", "${key1}");
+
+        var substitued = Util.substituteVariables(original);
+
+        assertThat(substitued).containsAllEntriesOf(Map.of(
+            "key1", "theValue",
+            "key2", "theValue",
+            "key3", "theValue"));
+
+    }
+
+    @Test
+    void testCreateUriFromBasePathAndEndpoint() {
+        assertThat(Util.createUri("http://me", "endpoint").toString()).isEqualTo("http://me/endpoint");
+        assertThat(Util.createUri("http://me/", "endpoint").toString()).isEqualTo("http://me/endpoint");
+        assertThat(Util.createUri("http://me", "endpoint/").toString()).isEqualTo("http://me/endpoint");
+        assertThat(Util.createUri("http://me", "/endpoint/").toString()).isEqualTo("http://me/endpoint");
+    }
+
+    @Test
+    void testCreateUriFromBasePathAndEndpoints() {
+        assertThat(Util.createUri("http://me", "endpoint1", "endpoint2").toString())
+            .isEqualTo("http://me/endpoint1/endpoint2");
+        assertThat(Util.createUri("http://me/", "endpoint1", "/endpoint2").toString())
+            .isEqualTo("http://me/endpoint1/endpoint2");
+        assertThat(Util.createUri("http://me", "endpoint1/", "endpoint2/").toString())
+            .isEqualTo("http://me/endpoint1/endpoint2");
+        assertThat(Util.createUri("http://me", "/endpoint1/", "/endpoint2/").toString())
+            .isEqualTo("http://me/endpoint1/endpoint2");
+    }
 }

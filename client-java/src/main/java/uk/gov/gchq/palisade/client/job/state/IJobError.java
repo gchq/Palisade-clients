@@ -13,51 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.resource;
+package uk.gov.gchq.palisade.client.job.state;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
-import java.io.Serializable;
 import java.util.function.UnaryOperator;
 
 /**
- * The {@code Message} object is used in the communication between the client
- * and the Filtered Resource Service over a WebSocket.
+ * An instance of {@link JobError} is passed during the submission of a new
+ * request.
  * <p>
- * Note that the {@code UserId} class is created at compile time. The way in
- * which the class is created is determined by the {@code ImmutableStyle}. This
- * class is also compatible with Jackson.
+ * Note that the {@link JobError} class is created at compile time. The way in
+ * which the class is created is determined by the {@code ImmutableStyle}.
  *
- * @see ResourceClient
  * @see "https://immutables.github.io/style.html"
  * @since 0.5.0
  */
 @Value.Immutable
 @ImmutableStyle
-@JsonDeserialize(as = Error.class)
-@JsonSerialize(as = Error.class)
-public interface IError extends Serializable {
+public interface IJobError {
 
     /**
-     * Helper method to create a {@link Error} using a builder function
+     * Helper method to create a {@code JobConfig} using a builder function
      *
      * @param func The builder function
-     * @return a newly created {@code RequestId}
+     * @return a newly created data request instance
      */
     @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    static Error create(final UnaryOperator<Error.Builder> func) {
-        return func.apply(Error.builder()).build();
+    static IJobError createJobError(final UnaryOperator<JobError.Builder> func) {
+        return func.apply(JobError.builder()).build();
     }
 
     /**
-     * Returns the type of this message
+     * Returns the user id
      *
-     * @return the {@link MessageType}
+     * @return the user id
      */
     String getText();
+
 
 }

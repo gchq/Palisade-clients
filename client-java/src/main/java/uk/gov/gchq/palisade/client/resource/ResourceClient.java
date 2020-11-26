@@ -108,20 +108,10 @@ public class ResourceClient {
     /**
      * Requests the closure of this resource client, return a completeable future,
      * that when complete will signify the successful closure.
-     *
-     * @return a completeable future
      */
-    public CompletableFuture<Void> close() {
-        LOGGER.debug("closing websocket!");
-        // this will close the output side of the websocket
-        // until the listener receives and onClose(), the input side of the websocket is
-        // till open. this client should abort the websocket if no data arrives after
-        // around 30 seconds. Not sure how to do this yet.
-        return webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "")
-            .thenRun(() -> {
-                LOGGER.debug("Websocket output is now closed");
-                latch.countDown(); // release completeable future
-            });
+    public void close() {
+        LOGGER.debug("closing resource client!");
+        latch.countDown(); // release completeable future
     }
 
     /**
@@ -132,16 +122,8 @@ public class ResourceClient {
     @SuppressWarnings("java:S2325") // make static
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     public void onNoMoreResources(final ResourcesExhaustedEvent event) {
-
         LOGGER.debug(EVENT_CAUGHT, event);
-
-        /*
-         * Tasks: 1. Stop the resource client 2. Update any completable future instance
-         * as completed and signal
-         */
-
         latch.countDown();
-
     }
 
     /**
@@ -154,11 +136,6 @@ public class ResourceClient {
         var uri = getUri();
 
         LOGGER.debug("Connecting to websocket at: {}", uri);
-
-        if (webSocket != null && webSocket.isOutputClosed()) {
-            throw new IllegalStateException(
-                "open() has already been called and this client has been closed. Create a new instance.");
-        }
 
         // register this resource client with the same eventbus that the listener uses
         // this is so we can get notified when there are no more resources
@@ -173,14 +150,22 @@ public class ResourceClient {
 
         LOGGER.debug("Websocket created to handle token: {}", getToken());
 
-        return CompletableFuture.runAsync(() -> {
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                // swallow
-            }
-        });
+        return CompletableFuture
+            .runAsync(this::awaitNoMoreResources)
+            .thenCompose(v -> webSocket.sendClose(WebSocket.NORMAL_CLOSURE, ""))
+            .thenRun(() -> {
+                LOGGER.debug("Websocket output is now closed");
+                latch.countDown(); // release completeable future
+            });
+    }
+
+    private void awaitNoMoreResources() {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            // swallow
+        }
     }
 
     private URI getUri() {
@@ -197,15 +182,6 @@ public class ResourceClient {
 
     private String getToken() {
         return getSetup().getToken();
-    }
-
-    /**
-     * Returns true if this resource client is still open
-     *
-     * @return true if this resource client is still open
-     */
-    public boolean isOpen() {
-        return webSocket != null && !webSocket.isOutputClosed();
     }
 
 }

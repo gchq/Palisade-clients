@@ -18,48 +18,63 @@ package uk.gov.gchq.palisade.client.util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ConfigurationTest {
 
-    private Configuration context;
+    private Configuration defaultConfig;
 
     @BeforeEach
     void setUp() throws Exception {
-        this.context = Configuration.from(Map.of());
+        this.defaultConfig = Configuration.from(Map.of());
+    }
+
+    @Test
+    void testPalisadePortWasSubstituted() {
+        assertThat(defaultConfig.get("service.palisade.port", BigDecimal.class))
+            .isEqualByComparingTo(new BigDecimal("8081"));
+    }
+
+    @Test
+    void testFilteredResourcePortWasSubstituted() {
+        assertThat(defaultConfig.get("service.filteredResource.port", BigDecimal.class))
+            .isEqualByComparingTo(new BigDecimal("8081"));
     }
 
     @Test
     void testStatePath() {
-        assertThat(context.getStatePath()).isEqualTo("/tmp/palisade/%t/palisade-state_%t_%s.json");
+        assertThat(defaultConfig.getStatePath()).isEqualTo("/tmp/palisade/%t/palisade-state_%t_%s.json");
     }
 
     @Test
     void testPalisadeUri() {
-        assertThat(context.getPalisadeUri()).isEqualTo("http://localhost:8081/cluster/palisade/registerDataRequest");
+        assertThat(defaultConfig.getPalisadeUri())
+            .isEqualTo("http://localhost:8081/cluster/palisade/registerDataRequest");
     }
 
     @Test
     void testFilteredResourceUri() {
-        assertThat(context.getFilteredResourceUri())
+        assertThat(defaultConfig.getFilteredResourceUri())
             .isEqualTo("ws://localhost:8081/cluster/filteredResource/name/%t");
     }
 
     @Test
     void testDownloadThreads() {
-        assertThat(context.getDownloadThreads()).isEqualTo(2);
+        assertThat(defaultConfig.getDownloadThreads()).isEqualTo(2);
     }
 
     @Test
     void testReceiverFilePath() {
-        assertThat(context.getReceiverFilePath()).isEqualTo("/tmp/palisade/%t/downloads/palisade-download_%t_%s_%r");
+        assertThat(defaultConfig.getReceiverFilePath())
+            .isEqualTo("/tmp/palisade/%t/downloads/palisade-download_%t_%s_%r");
     }
 
     @Test
     void testDataPath() {
-        assertThat(context.getDataPath()).isEqualTo("data/read/chunked");
+        assertThat(defaultConfig.getDataPath()).isEqualTo("data/read/chunked");
     }
 
 }

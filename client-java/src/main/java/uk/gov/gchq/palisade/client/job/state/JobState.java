@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.palisade.client.job.JobDownloadStatus;
 import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateDownload;
 import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateExecution;
+import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobError;
 import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobRequest;
 import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStatePalisadeResponse;
 import uk.gov.gchq.palisade.client.request.IPalisadeResponse;
@@ -40,10 +41,6 @@ import java.util.stream.Collectors;
 
 import static uk.gov.gchq.palisade.client.job.state.IJobDownload.createDownload;
 import static uk.gov.gchq.palisade.client.job.state.IJobExecution.createJobExecution;
-import static uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateDownload.createStateDownload;
-import static uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateExecution.createStateExecution;
-import static uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobRequest.createStateJobConfig;
-import static uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStatePalisadeResponse.createStatePalisadeResponse;
 import static uk.gov.gchq.palisade.client.request.IPalisadeResponse.createPalisadeResponse;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
@@ -112,17 +109,6 @@ public class JobState {
      * Returns a newly create {@code JobState} instance initialised with the
      * provided state
      *
-     * @param service The service to use when saving state.
-     * @param state   the state for this job
-     */
-    JobState(final JobStateService service, final ISavedJobState state) {
-        this(service, state, Map.of());
-    }
-
-    /**
-     * Returns a newly create {@code JobState} instance initialised with the
-     * provided state
-     *
      * @param service       The service to use when saving state.
      * @param state         the state for this job
      * @param configuration The job configuration
@@ -158,7 +144,10 @@ public class JobState {
                 .map(ex -> createJobExecution(b -> b
                     .endTime(ex.getEnd())
                     .startTime(ex.getStart())
-                    .id(UUID.fromString(ex.getId()))))
+                    .id(UUID.fromString(ex.getId()))
+                    .errors(ex.getErrors().stream()
+                        .map(err -> IJobError.createJobError(c -> c.text(err.getText())))
+                        .collect(Collectors.toList()))))
                 .forEach(ex -> executions.put(ex.getId(), ex));
 
             state.getDownloads()
@@ -243,28 +232,15 @@ public class JobState {
     }
 
     /**
-     * Adds the provided execution to this state and sets it as current
-     *
-     * @param jobExecution The execution to add and activate
+     * Indicates to this state that downloads have commenced, but none have been
+     * downloaded yet
      */
-    public void addExecution(final IJobExecution jobExecution) {
+    public void start() {
         lock.lock();
         try {
-            executions.put(jobExecution.getId(), jobExecution);
-            this.currentExecution = jobExecution;
-            save();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Indicates that this state is complete
-     */
-    public void complete() {
-        lock.lock();
-        try {
-            this.status = JobStatus.COMPLETE;
+            this.status = JobStatus.DOWNLOADS_IN_PROGRESS;
+            currentExecution = IJobExecution.createJobExecution(b -> b);
+            executions.put(currentExecution.getId(), currentExecution);
             save();
         } finally {
             lock.unlock();
@@ -275,10 +251,30 @@ public class JobState {
      * Indicates to this state that downloads have commenced, but none have been
      * downloaded yet
      */
-    public void downloadsStarted() {
+    public void finish() {
         lock.lock();
         try {
-            this.status = JobStatus.DOWNLOADS_IN_PROGRESS;
+            status = JobStatus.COMPLETE;
+            currentExecution = this.currentExecution.change(b -> b.endTime(Instant.now()));
+            executions.put(currentExecution.getId(), currentExecution);
+            save();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Indicates to this state that downloads have commenced, but none have been
+     * downloaded yet
+     *
+     * @param text The error text
+     */
+    public void error(final String text) {
+        lock.lock();
+        try {
+            var error = IJobError.createJobError(e -> e.text(text));
+            currentExecution = this.currentExecution.change(b -> b.addError(error));
+            executions.put(currentExecution.getId(), currentExecution);
             save();
         } finally {
             lock.unlock();
@@ -322,9 +318,6 @@ public class JobState {
         lock.lock();
         try {
             var prev = downloads.get(id);
-            if (prev == null) {
-                throw new IllegalStateException("No previous download found for id" + id + ". This should not happen");
-            }
             var next = prev.change(b -> b
                 .startTime(start)
                 .status(JobDownloadStatus.IN_PROGRESS));
@@ -348,9 +341,6 @@ public class JobState {
         lock.lock();
         try {
             var prev = downloads.get(id);
-            if (prev == null) {
-                throw new IllegalStateException("No previous download found for id" + id + ". This should not happen");
-            }
             LOGGER.debug("Previous download state: {}", prev);
             var next = prev.change(b -> b
                 .endTime(end)
@@ -439,12 +429,11 @@ public class JobState {
     }
 
     private void save() {
-
         service.save(createSavedState(), configuration.getStatePath());
     }
 
     private static IStateJobRequest map(final IJobRequest jc) {
-        return createStateJobConfig(b -> b
+        return IStateJobRequest.createStateJobConfig(b -> b
             .userId(jc.getUserId())
             .purpose(jc.getPurpose())
             .resourceId(jc.getResourceId())
@@ -453,19 +442,25 @@ public class JobState {
     }
 
     private static IStatePalisadeResponse map(final IPalisadeResponse jc) {
-        return createStatePalisadeResponse(b -> b
+        return IStatePalisadeResponse.createStatePalisadeResponse(b -> b
             .token(jc.getToken()));
     }
 
     private static IStateExecution map(final IJobExecution ex) {
-        return createStateExecution(b -> b
+        return IStateExecution.createStateExecution(b -> b
             .id(ex.getId().toString())
             .start(ex.getStartTime())
-            .end(ex.getEndTime()));
+            .end(ex.getEndTime())
+            .errors(ex.getErrors().stream().map(JobState::map).collect(Collectors.toList())));
+    }
+
+    private static IStateJobError map(final IJobError e) {
+        return IStateJobError.createStateJobError(b -> b
+            .text(e.getText()));
     }
 
     private static IStateDownload map(final IJobDownload dl) {
-        return createStateDownload(b -> b
+        return IStateDownload.createStateDownload(b -> b
             .id(dl.getId().toString())
             .status(dl.getStatus())
             .statusCode(dl.getStatusCode())

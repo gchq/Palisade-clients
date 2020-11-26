@@ -131,20 +131,19 @@ public class ResourceClientListener implements Listener {
 
     private void handleError(final Message message) {
         LOGGER.debug("handle error for token {}, message: {}", getToken(), message);
-        var body = message.getBody().orElseThrow(() -> new MissingResourceException(message));
+        var body = message.getBody().orElseThrow(() -> new MissingMessageBodyException(message));
         var error = getObjectMapper().convertValue(body, Error.class);
         post(ErrorEvent.of(error));
     }
 
     private void handleComplete(final WebSocket ws) {
         LOGGER.debug("handle Complete for token {}", getToken());
-        ws.sendClose(REASON_OK, "complete (token=" + getToken() + ")");
         post(ResourcesExhaustedEvent.of(getToken()));
     }
 
     private void handleResource(final Message message) {
         LOGGER.debug("handle resource for token {}, message: {}", getToken(), message);
-        var body = message.getBody().orElseThrow(() -> new MissingResourceException(message));
+        var body = message.getBody().orElseThrow(() -> new MissingMessageBodyException(message));
         var resource = getObjectMapper().convertValue(body, Resource.class);
         post(ResourceReadyEvent.of(resource));
     }
@@ -192,23 +191,26 @@ public class ResourceClientListener implements Listener {
             LOGGER.warn("Ignoring unsupported {} message type", type);
         }
 
-        LOGGER.debug("Testing if CTS can be sent for token {}", getToken());
+        if (type != MessageType.COMPLETE) {
 
-        // This is a quite crude way of waiting for download slots to become available
-        // Should implement a better way, but this will do for now.
+            LOGGER.debug("Testing if CTS can be sent for token {}", getToken());
 
-        while (!getDownloadTracker().hasAvailableSlots()) {
-            try {
-                LOGGER.debug("No download slots available, waiting");
-                Thread.sleep(ONE_SECOND);
-            } catch (InterruptedException e) { // just swallow this
-                Thread.currentThread().interrupt();
-                LOGGER.warn("This thread was sleeping, when it was interrupted: {}", e.getMessage());
-                // we'll loop round to see if there are any available slots
+            // This is a quite crude way of waiting for download slots to become available
+            // Should implement a better way, but this will do for now.
+
+            while (!getDownloadTracker().hasAvailableSlots()) {
+                try {
+                    LOGGER.debug("No download slots available, waiting");
+                    Thread.sleep(ONE_SECOND);
+                } catch (InterruptedException e) { // just swallow this
+                    Thread.currentThread().interrupt();
+                    LOGGER.warn("This thread was sleeping, when it was interrupted: {}", e.getMessage());
+                    // we'll loop round to see if there are any available slots
+                }
             }
-        }
 
-        sendMessage(ws, b -> b.type(MessageType.CTS));
+            sendMessage(ws, b -> b.type(MessageType.CTS));
+        }
 
         return null;
 

@@ -20,6 +20,7 @@ import org.immutables.value.Value;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
@@ -109,6 +110,24 @@ public interface IJobExecution {
     @Value.Default
     default int getSequence() {
         return 1;
+    }
+
+    /**
+     * Returns a list if errors that occurred during this execution
+     *
+     * @return a list if errors that occurred during this execution
+     */
+    List<IJobError> getErrors();
+
+    /**
+     * Returns a new instance with changes applied from the provided function
+     *
+     * @param func The changer function
+     * @return a new instance with changes applied
+     */
+    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+    default JobExecution change(final UnaryOperator<JobExecution.Builder> func) {
+        return func.apply(JobExecution.builder().from(this)).build();
     }
 
 }

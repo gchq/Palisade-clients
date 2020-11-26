@@ -15,7 +15,6 @@
  */
 package uk.gov.gchq.palisade.client.download;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -28,6 +27,7 @@ import uk.gov.gchq.palisade.client.receiver.ReceiverException;
 import uk.gov.gchq.palisade.client.resource.Resource;
 import uk.gov.gchq.palisade.client.util.Configuration;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
+import uk.gov.gchq.palisade.client.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -173,11 +173,17 @@ public final class Downloader implements ReceiverContext {
 
         try {
 
-            var uri = createUri(resource.getUrl(), setup.getConfiguration().getDataPath());
-            var requestBody = createBody(resource, mapper);
+            var uri = Util.createUri(resource.getUrl(), setup.getConfiguration().getDataPath());
+
+            var requestBody = mapper
+                .writeValueAsString(createDataRequest(b -> b
+                    .token(resource.getToken())
+                    .leafResourceId(resource.getLeafResourceId())));
+
             var httpResponse = sendRequest(requestBody, uri);
 
             var statusCode = httpResponse.statusCode();
+
             if (statusCode != HTTP_STATUS_OK) {
                 String msg;
                 if (statusCode == HTTP_STATUS_NOT_FOUND) {
@@ -185,7 +191,7 @@ public final class Downloader implements ReceiverContext {
                 } else {
                     msg = "Request to DataService failed";
                 }
-                throw new DownloaderException(msg, httpResponse.statusCode());
+                throw new DownloaderException(msg, statusCode);
             }
 
             var recieverResult = processStream(httpResponse.body(), receiver, this);
@@ -206,48 +212,8 @@ public final class Downloader implements ReceiverContext {
 
     }
 
-    private static String createBody(final Resource resource, final ObjectMapper objectMapper) {
-
-        assert resource != null : "Need a resource to create a request from";
-        assert resource != null : "Need an object mapper to convert request object to a json string";
-
-        var dataRequest = createDataRequest(b -> b
-            .token(resource.getToken())
-            .leafResourceId(resource.getLeafResourceId()));
-
-        try {
-            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dataRequest);
-        } catch (JsonProcessingException e1) {
-            throw new DownloaderException("Failed to parse request body", e1);
-        }
-
-    }
-
-    private static URI createUri(final String baseUri, final String endpoint) {
-
-        assert baseUri != null : "Need the base uri";
-        assert baseUri != null : "Need the uri endpoint to append to the base uri";
-
-        var uri = new StringBuilder();
-        if (baseUri.endsWith("/")) {
-            uri.append(baseUri.substring(0, baseUri.length() - 2));
-        } else {
-            uri.append(baseUri);
-        }
-        if (!endpoint.startsWith("/")) {
-            uri.append("/");
-        }
-        uri.append(endpoint);
-        return URI.create(uri.toString());
-    }
-
     private static IReceiverResult processStream(final InputStream is, final Receiver rc, final ReceiverContext rcCtx)
         throws ReceiverException {
-
-        assert is != null : "Need an inputstream for the reciver to process";
-        assert rc != null : "Need a receiver to process the inmput stream";
-        assert rcCtx != null : "Need a receiver context which provides access to other services";
-
         try (is) {
             return rc.process(rcCtx, is);
         } catch (Exception e) {
@@ -257,9 +223,6 @@ public final class Downloader implements ReceiverContext {
     }
 
     private static HttpResponse<InputStream> sendRequest(final String requestBody, final URI uri) {
-
-        assert requestBody != null : "Need a request body to send";
-        assert uri != null : "Need a URI so we know where to send the request";
 
         var httpRequest = HttpRequest.newBuilder(uri)
             .setHeader("User-Agent", "Palisade Java Client")

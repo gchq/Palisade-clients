@@ -150,6 +150,38 @@ public interface ISavedJobState extends Serializable {
     }
 
     /**
+     * The palisade response
+     *
+     * @since 0.5.0
+     */
+    @Value.Immutable
+    @ImmutableStyle
+    @JsonDeserialize(as = StateJobError.class)
+    @JsonSerialize(as = StateJobError.class)
+    public interface IStateJobError {
+
+        /**
+         * Helper method to create a {@code StatePalisadeResponse} using a builder
+         * function
+         *
+         * @param func The builder function
+         * @return a newly created data request instance
+         */
+        @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
+        static IStateJobError createStateJobError(final UnaryOperator<StateJobError.Builder> func) {
+            return func.apply(StateJobError.builder()).build();
+        }
+
+        /**
+         * Returns the error text
+         *
+         * @return the error text
+         */
+        String getText();
+
+    }
+
+    /**
      * Job Configuration
      *
      * @since 0.5.0
@@ -250,6 +282,13 @@ public interface ISavedJobState extends Serializable {
          * @return the end time
          */
         Optional<Instant> getEnd();
+
+        /**
+         * Returns the list of errors for this execution
+         *
+         * @return the list of errors for this execution
+         */
+        List<IStateJobError> getErrors();
 
     }
 

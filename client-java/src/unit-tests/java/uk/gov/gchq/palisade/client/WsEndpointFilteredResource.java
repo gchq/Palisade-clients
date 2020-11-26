@@ -25,11 +25,11 @@ import io.micronaut.websocket.annotation.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.resource.IError;
 import uk.gov.gchq.palisade.client.resource.IMessage;
 import uk.gov.gchq.palisade.client.resource.IResource;
 import uk.gov.gchq.palisade.client.resource.Message;
 import uk.gov.gchq.palisade.client.resource.MessageType;
-import uk.gov.gchq.palisade.client.resource.Resource;
 
 import javax.inject.Inject;
 
@@ -52,10 +52,11 @@ public class WsEndpointFilteredResource {
      *
      * @since 0.5.0
      */
-    public static class ResourceGenerator implements Iterable<Resource> {
+    public static class ResourceGenerator implements Iterable<Message> {
 
         private static final List<String> FILENAMES = List.of("pi.txt", "Selection_032.png");
-        private final List<Resource> resources;
+        private final List<Message> messages;
+        private final String token;
 
         /**
          * Creates a new {@code ResourceGenerator} with the provided {@code token} and
@@ -66,17 +67,28 @@ public class WsEndpointFilteredResource {
          */
         public ResourceGenerator(final String token, final int port) {
             var url = "http://localhost:" + port;
-            resources = FILENAMES.stream()
+            this.token = token;
+            this.messages = FILENAMES.stream()
                 .map(fn -> IResource.createResource(b -> b
                     .token(token)
                     .leafResourceId(fn)
                     .url(url)))
+                .map(rsc -> message(rsc, MessageType.RESOURCE))
                 .collect(Collectors.toList());
+            this.messages.add(message(IError.create(b -> b.text("test error")), MessageType.ERROR));
+
+        }
+
+        private Message message(final Object body, final MessageType type) {
+            return IMessage.create(b -> b
+                .putHeader("token", token)
+                .type(type)
+                .body(body));
         }
 
         @Override
-        public Iterator<Resource> iterator() {
-            return resources.iterator();
+        public Iterator<Message> iterator() {
+            return messages.iterator();
         }
 
     }
@@ -87,7 +99,7 @@ public class WsEndpointFilteredResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(WsEndpointFilteredResource.class);
     @SuppressWarnings("unused")
     private final WebSocketBroadcaster broadcaster;
-    private Iterator<Resource> resources;
+    private Iterator<Message> messages;
 
     /**
      * Create a new {@code WsEndpointFilteredResource} with the provided
@@ -109,12 +121,14 @@ public class WsEndpointFilteredResource {
     @OnOpen
     public void onOpen(final String token, final WebSocketSession session) {
         session.put("token", token);
-        this.resources = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
-        if (!resources.hasNext()) {
+        this.messages = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
+        if (!messages.hasNext()) {
             send(session, MessageType.COMPLETE);
         }
         System.out.println("onOpen::" + session.getId());
     }
+
+    boolean completeSent = false;
 
     /**
      * Called when a new message arrives
@@ -127,8 +141,8 @@ public class WsEndpointFilteredResource {
         LOGGER.debug("Recd: {}", inmsg);
         var type = inmsg.getType();
         if (type == CTS) {
-            if (resources.hasNext()) {
-                sendResource(session, resources.next());
+            if (messages.hasNext()) {
+                send(session, messages.next());
             } else {
                 send(session, MessageType.COMPLETE);
             }
@@ -145,12 +159,6 @@ public class WsEndpointFilteredResource {
     @OnClose
     public void onClose(final WebSocketSession session) {
         System.out.println("onClose::" + session.getId());
-    }
-
-    private static void sendResource(final WebSocketSession session, final Resource resource) {
-        var token = session.get("token", String.class).get();
-        var message = IMessage.create(b -> b.putHeader("token", token).type(MessageType.RESOURCE).body(resource));
-        send(session, message);
     }
 
     private static void send(final WebSocketSession session, final MessageType messageType) {

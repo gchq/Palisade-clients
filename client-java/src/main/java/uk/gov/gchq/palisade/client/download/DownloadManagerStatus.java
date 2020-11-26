@@ -61,11 +61,4 @@ public interface DownloadManagerStatus {
      */
     boolean hasAvailableSlots();
 
-    /**
-     * Returns the current status of this download manager
-     *
-     * @return the current status of this download manager
-     */
-    ManagerStatus getStatus();
-
 }

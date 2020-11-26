@@ -38,10 +38,10 @@ import uk.gov.gchq.palisade.client.util.TupleStyle;
 public interface IErrorEvent {
 
     /**
-     * Returns the resource to be downloaded
+     * Returns the error
      *
-     * @return the resource to be downloaded
+     * @return the error
      */
-    Error getError();
+    IError getError();
 
 }

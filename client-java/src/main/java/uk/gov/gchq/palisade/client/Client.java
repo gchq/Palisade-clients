@@ -51,31 +51,34 @@ public interface Client {
     Result submit(UnaryOperator<JobRequest.Builder> func);
 
     /**
-     * Returns a newly constructed {@code Job} using the provided configuration,
-     * which is used to submit a request to the Palisade service
+     * Submits the provided {@code jobRequest} to Palisade and returns a result
+     * object through which a status object can be retrieved
      *
-     * @param jobConfig The configuration for the job
-     * @return a newly constructed {@code Job} using the provided configuration
+     * @param jobRequest The {@code IJobRequest} to be submitted
+     * @return a result object through which a status object can be retrieved
+     * @throws ClientException if any error is encountered
      */
-    Result submit(IJobRequest jobConfig);
+    Result submit(IJobRequest jobRequest);
 
     /**
-     * Returns a newly constructed {@code Job} using the provided configuration,
-     * which will resume from the point provided in the configuration
+     * Loads a previous job state to constuct a job which the resumes from the point
+     * of its last known state.
      *
      * @param path to the job state to resume from
-     * @return a newly constructed {@code Job} using the provided configuration
+     * @return a result object through which a status object can be retrieved
+     * @throws ClientException if any error is encountered
      */
     Result resume(Path path);
 
     /**
-     * Returns a newly constructed {@code Job} using the provided path to a saved
-     * state and a map of configuration overrides to be applied.
+     * Loads a previous job state to constuct a job which the resumes from the point
+     * of its last known state. The provided map is used to override the previous
+     * state.
      *
      * @param path          to the job state to resume from
-     * @param configuration A map of attributes to be applied after the saved state
-     *                      has been loaded
-     * @return a newly constructed {@code Job} using the provided configuration
+     * @param configuration The configuration used to override the save state
+     * @return a result object through which a status object can be retrieved
+     * @throws ClientException if any error is encountered
      */
     Result resume(Path path, Map<String, Object> configuration);
 

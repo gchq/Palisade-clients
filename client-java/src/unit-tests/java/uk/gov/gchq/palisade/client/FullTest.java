@@ -52,7 +52,7 @@ class FullTest {
         client = Client.create(Map.of(
             Configuration.KEY_SERVICE_PS_PORT, embeddedServer.getPort(),
             Configuration.KEY_SERVICE_FRS_PORT, embeddedServer.getPort(),
-            Configuration.KEY_DOWNLOAD_THREADS, 2));
+            Configuration.KEY_DOWNLOAD_THREADS, 1));
     }
 
     @Test

@@ -10,12 +10,12 @@ service:
   context: /cluster 
   palisade:
     scheme: http
-    port: 8081
+    port: ${service.port}
     context: /palisade
     endpoint: /registerDataRequest
   filteredResource:
     scheme: ws
-    port: 8081
+    port: ${service.port}
     context: /filteredResource
     endpoint: /name/%t
   data:

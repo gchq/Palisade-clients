@@ -82,12 +82,13 @@ public class ResourceClientTest {
         // There are two resources so we should have 3 events (2 resource and 1
         // complete)
 
-        future.get(5, TimeUnit.SECONDS);
-        assertThat(events).hasSize(3);
+        future.get(5, TimeUnit.HOURS);
+        assertThat(events).hasSize(4);
 
         var event0 = getIfInstanceOf(events.get(0), ResourceReadyEvent.class);
         var event1 = getIfInstanceOf(events.get(1), ResourceReadyEvent.class);
-        var event2 = getIfInstanceOf(events.get(2), ResourcesExhaustedEvent.class);
+        var event2 = getIfInstanceOf(events.get(2), ErrorEvent.class);
+        var event3 = getIfInstanceOf(events.get(3), ResourcesExhaustedEvent.class);
 
         assertThat(event0.getResource())
             .extracting("leafResourceId", "token", "url")
@@ -97,10 +98,13 @@ public class ResourceClientTest {
             .extracting("leafResourceId", "token", "url")
             .containsExactly("Selection_032.png", TOKEN, "http://localhost:" + embeddedServer.getPort());
 
-        assertThat(event2)
+        assertThat(event2.getError())
+            .extracting("text")
+            .isEqualTo("test error");
+
+        assertThat(event3)
             .extracting("token")
             .isEqualTo(TOKEN);
-
 
     }
 
@@ -124,6 +128,17 @@ public class ResourceClientTest {
     @Subscribe
     public void onResourcesExhausted(final ResourcesExhaustedEvent resourcesExhaustedEvent) {
         events.add(resourcesExhaustedEvent);
+    }
+
+    /**
+     * Receives an {@code ErrorEvent} whenever the ResourceClientListener gets a
+     * complete message from the server
+     *
+     * @param errorEvent The event
+     */
+    @Subscribe
+    public void onError(final ErrorEvent errorEvent) {
+        events.add(errorEvent);
     }
 
     /**

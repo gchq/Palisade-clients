@@ -38,6 +38,7 @@ import uk.gov.gchq.palisade.client.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.resource.ErrorEvent;
 import uk.gov.gchq.palisade.client.resource.ResourceClient;
 import uk.gov.gchq.palisade.client.resource.ResourceReadyEvent;
+import uk.gov.gchq.palisade.client.resource.ResourcesExhaustedEvent;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.io.Serializable;
@@ -233,6 +234,18 @@ public final class ClientJob implements Job {
     }
 
     /**
+     * Receives a {@code ResourcesExhaustedEvent} there are no more resources
+     *
+     * @param event The event to be handled
+     */
+    @SuppressWarnings("java:S2325") // make static
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    public void onNoMoreResources(final ResourcesExhaustedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
+        state.finish();
+    }
+
+    /**
      * Handles the {@code ErrorEvent}. This method will, for now, simply log the
      * error. The exact function of this methoid is to be decided.
      *
@@ -243,6 +256,7 @@ public final class ClientJob implements Job {
     public void onError(final ErrorEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
         var error = event.getError();
+        state.error(error.getText());
         LOGGER.debug("Job received an error: {}", error);
     }
 
@@ -313,7 +327,7 @@ public final class ClientJob implements Job {
                 })
             .thenApply(v -> state.createSavedState()));
 
-        state.downloadsStarted();
+        state.start();
 
         LOGGER.debug("Job created for token: {}", token);
 
