@@ -31,7 +31,7 @@ class PalisadeServiceTest {
     @Inject EmbeddedServer embeddedServer;
 
     @Test
-    void testSubmit() throws Exception {
+    void testSubmit() {
 
         var port = embeddedServer.getPort();
         var palisadeRequest = IPalisadeRequest.createPalisadeRequest(b -> b

@@ -35,8 +35,7 @@
   },
   "executions" : [ {
     "id" : "438be574-ecc5-4d6b-88d3-829389b72dcd",
-    "start" : "2020-11-25T15:18:02.514230Z",
-    "end" : null
+    "start" : "2020-11-25T15:18:02.514230Z"
   } ],
   "downloads" : [ {
     "status" : "COMPLETE",
@@ -53,9 +52,7 @@
       "path" : "/tmp/palisade/abcd-1/downloads/palisade-download_abcd-1_20201125-151802_pi.txt",
       "bytes" : "1000000",
       "filename" : "palisade-download_abcd-1_20201125-151802_pi.txt"
-    },
-    "stackTrace" : null,
-    "errorMessage" : null
+    }
   }, {
     "status" : "COMPLETE",
     "id" : "fc9c3a61-5bdd-4616-9cea-7c3f2706bb5b",
@@ -71,8 +68,6 @@
       "path" : "/tmp/palisade/abcd-1/downloads/palisade-download_abcd-1_20201125-151802_Selection_032.png",
       "bytes" : "950569",
       "filename" : "palisade-download_abcd-1_20201125-151802_Selection_032.png"
-    },
-    "stackTrace" : null,
-    "errorMessage" : null
+    }
   } ]
 }

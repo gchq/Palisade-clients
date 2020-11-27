@@ -40,6 +40,7 @@ public enum JobDownloadStatus {
     /**
      * Download failed
      */
-    FAILED;
+    FAILED
+
 }
 

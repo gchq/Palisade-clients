@@ -25,20 +25,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ClientTest {
 
+    private static final int NUM_THREADS = 16;
+
     private static final String HOST = "clusterhost";
     private static final String HTTP = "http";
-    private static final int NUM_THREADS = 16;
     private static final String FILE_PATH = "/media";
+
+    private static final String UNKOWN_KEY = "my.unknown";
+    private static final String UNKOWN_VALUE = "boogie";
 
     @Test
     void testCreateWithProperties() {
 
-        var client = (JavaClient) Client.create(Map.<String, Object>of(
+        var client = (JavaClient) Client.create(Map.of(
             Configuration.KEY_SERVICE_HOST, HOST,
             Configuration.KEY_SERVICE_PS_SCHEME, HTTP,
             Configuration.KEY_DOWNLOAD_THREADS, NUM_THREADS,
             Configuration.KEY_RECEIVER_FILE_PATH, FILE_PATH,
-            "my.unkown", "boogie"));
+            UNKOWN_KEY, UNKOWN_VALUE));
 
         var properties = client.getConfiguration().getProperties();
 
@@ -47,7 +51,7 @@ class ClientTest {
             Configuration.KEY_SERVICE_PS_SCHEME, HTTP,
             Configuration.KEY_DOWNLOAD_THREADS, NUM_THREADS,
             Configuration.KEY_RECEIVER_FILE_PATH, FILE_PATH,
-            "my.unkown", "boogie"));
+            UNKOWN_KEY, UNKOWN_VALUE));
 
     }
 

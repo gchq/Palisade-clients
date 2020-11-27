@@ -77,7 +77,7 @@ public final class Util {
     public static String trimSlashes(final String path) {
         String result = path.trim();
         if (result.startsWith("/")) {
-            result = result.substring(1, result.length());
+            result = result.substring(1);
         }
         if (result.endsWith("/")) {
             result = result.substring(0, result.length() - 1);

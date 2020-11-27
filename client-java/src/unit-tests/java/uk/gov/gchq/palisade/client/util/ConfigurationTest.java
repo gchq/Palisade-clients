@@ -28,7 +28,7 @@ class ConfigurationTest {
     private Configuration defaultConfig;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         this.defaultConfig = Configuration.from(Map.of());
     }
 

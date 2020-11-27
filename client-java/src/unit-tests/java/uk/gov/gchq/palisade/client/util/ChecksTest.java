@@ -15,8 +15,6 @@
  */
 package uk.gov.gchq.palisade.client.util;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -24,14 +22,6 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class ChecksTest {
-
-    @BeforeEach
-    void setUp() throws Exception {
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-    }
 
     private static final Class<IllegalArgumentException> CLASS = IllegalArgumentException.class;
 

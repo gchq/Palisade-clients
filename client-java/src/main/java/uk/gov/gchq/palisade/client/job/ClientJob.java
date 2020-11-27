@@ -215,7 +215,6 @@ public final class ClientJob implements Job {
         state.downloadScheduled(event.getId(), resource.getLeafResourceId(), resource.getUrl());
     }
 
-
     /**
      * Handles the {@code ResourceReadyEvent} by scheduling a download. This method
      * will return immediately as the download will be queued.
@@ -247,7 +246,7 @@ public final class ClientJob implements Job {
 
     /**
      * Handles the {@code ErrorEvent}. This method will, for now, simply log the
-     * error. The exact function of this methoid is to be decided.
+     * error.
      *
      * @param event The event to be handled
      */
@@ -265,7 +264,7 @@ public final class ClientJob implements Job {
      * is successful, will then creates and starts the {@code ResourceClient} which
      * controls the retrieval of resource metadata. This method will not block.
      *
-     * @return the result containing a future to retrieve the fiunal state
+     * @return the result containing a future to retrieve the final state
      */
     public Result start() {
 
@@ -287,7 +286,7 @@ public final class ClientJob implements Job {
 
         var wsUri = setup.getState().getConfiguration().getFilteredResourceUri();
 
-        // we must register the event subscriptions in this job with the evnt bus
+        // we must register the event subscriptions in this job with the event bus
         // provided to us
 
         eventBus.register(this);

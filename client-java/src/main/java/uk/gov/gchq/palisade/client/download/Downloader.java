@@ -194,11 +194,11 @@ public final class Downloader implements ReceiverContext {
                 throw new DownloaderException(msg, statusCode);
             }
 
-            var recieverResult = processStream(httpResponse.body(), receiver, this);
+            var receiverResult = processStream(httpResponse.body(), receiver, this);
 
             return createDownloadResult(b -> b
                 .id(setup.getId())
-                .properties(recieverResult.getProperties()));
+                .properties(receiverResult.getProperties()));
 
         } catch (ReceiverException e) {
             throw new DownloaderException("Caught exception from receiver: " + e.getMessage(), e);

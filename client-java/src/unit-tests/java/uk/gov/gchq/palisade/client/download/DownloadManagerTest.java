@@ -197,7 +197,7 @@ public class DownloadManagerTest {
 
     /**
      * Handles the provided event. Any method annotated with {@code Subscribe} must
-     * be public and be in a plublic class. This is a requirement of the
+     * be public and be in a public class. This is a requirement of the
      * {@code EventBus}
      *
      * @param e the event
@@ -209,7 +209,7 @@ public class DownloadManagerTest {
 
     /**
      * Handles the provided event. Any method annotated with {@code Subscribe} must
-     * be public and be in a plublic class. This is a requirement of the
+     * be public and be in a public class. This is a requirement of the
      * {@code EventBus}
      *
      * @param e the event
@@ -221,7 +221,7 @@ public class DownloadManagerTest {
 
     /**
      * Handles the provided event. Any method annotated with {@code Subscribe} must
-     * be public and be in a plublic class. This is a requirement of the
+     * be public and be in a public class. This is a requirement of the
      * {@code EventBus}
      *
      * @param e the event
@@ -233,7 +233,7 @@ public class DownloadManagerTest {
 
     /**
      * Handles the provided event. Any method annotated with {@code Subscribe} must
-     * be public and be in a plublic class. This is a requirement of the
+     * be public and be in a public class. This is a requirement of the
      * {@code EventBus}
      *
      * @param e the event
@@ -245,7 +245,7 @@ public class DownloadManagerTest {
 
     /**
      * Handles the provided event. Any method annotated with {@code Subscribe} must
-     * be public and be in a plublic class. This is a requirement of the
+     * be public and be in a public class. This is a requirement of the
      * {@code EventBus}
      *
      * @param e the event

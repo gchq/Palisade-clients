@@ -13,7 +13,6 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 |  +- org.apache.commons:commons-text:jar:1.9:compile
 |  |  \- org.apache.commons:commons-lang3:jar:3.9:compile
 |  \- com.github.wnameless.json:json-base:jar:1.2.0:compile
-+- org.mapstruct:mapstruct:jar:1.4.1.Final:compile
 +- org.immutables:value:jar:2.8.2:provided
 +- io.micronaut.test:micronaut-test-junit5:jar:2.1.1:test
 |  \- io.micronaut.test:micronaut-test-core:jar:2.1.1:test
@@ -55,7 +54,5 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 +- org.awaitility:awaitility:jar:4.0.3:test
 |  \- org.hamcrest:hamcrest:jar:2.1:test
 +- org.assertj:assertj-core:jar:3.17.2:test
-+- ch.qos.logback:logback-classic:jar:1.2.3:test
-|  \- ch.qos.logback:logback-core:jar:1.2.3:test
-\- org.reflections:reflections:jar:0.9.12:test
-   \- org.javassist:javassist:jar:3.26.0-GA:test
+\- ch.qos.logback:logback-classic:jar:1.2.3:test
+   \- ch.qos.logback:logback-core:jar:1.2.3:test

@@ -63,7 +63,7 @@ public final class Configuration {
     public static final String KEY_SERVICE_PS_SCHEME = "service.palisade.scheme";
 
     /**
-     * pasliade service port
+     * palisade service port
      */
     public static final String KEY_SERVICE_PS_PORT = "service.palisade.port";
 
@@ -134,11 +134,11 @@ public final class Configuration {
     }
 
     /**
-     * Creates a new configuration instance with the default overriden by values
+     * Creates a new configuration instance with the default overridden by values
      * from the provided map
      *
      * @param properties The property overrides
-     * @return a new configuration instance with the default overriden by values
+     * @return a new configuration instance with the default overridden by values
      *         from the provided map
      */
     public static Configuration from(final Map<String, Object> properties) {
@@ -165,7 +165,7 @@ public final class Configuration {
             var json = new ObjectMapper().writeValueAsString(object);
 
             // ... so that the flattener can create a single flat map of dot delimited keys:
-            // e.g. "file.reciever.path=/tmp"
+            // e.g. "file.receiver.path=/tmp"
             var map = JsonFlattener.flattenAsMap(json);
 
             map = Util.substituteVariables(map);
@@ -199,7 +199,7 @@ public final class Configuration {
      * @param overrides The map to merge
      * @return a new configuration
      */
-    public Configuration merge(final Map<String, ? extends Object> overrides) {
+    public Configuration merge(final Map<String, ?> overrides) {
         if (overrides == null || overrides.isEmpty()) {
             return this;
         }

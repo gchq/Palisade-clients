@@ -50,7 +50,7 @@ class ResumeTest {
     private Client client;
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         client = Client.create();
     }
 

@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.receiver.Receiver;
-import uk.gov.gchq.palisade.client.receiver.ReceiverContext;
 import uk.gov.gchq.palisade.client.receiver.ReceiverException;
 import uk.gov.gchq.palisade.client.resource.IResource;
 import uk.gov.gchq.palisade.client.util.Configuration;
@@ -129,12 +128,8 @@ class DownloaderTest {
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)
             .configuration(configuration)
-            .receiver(new Receiver() {
-                @Override
-                public IReceiverResult process(final ReceiverContext ctx, final InputStream is)
-                    throws ReceiverException {
-                    throw new IllegalArgumentException("test exception");
-                }
+            .receiver((ctx, is) -> {
+                throw new IllegalArgumentException("test exception");
             })
             .resource(IResource.createResource(r -> r
                 .leafResourceId(filename)
@@ -142,7 +137,7 @@ class DownloaderTest {
                 .url(BASE_URL))));
 
         assertThatExceptionOfType(DownloaderException.class)
-            .isThrownBy(() -> downloader.start())
+            .isThrownBy(downloader::start)
             .havingCause()
             .isInstanceOf(ReceiverException.class)
             .havingCause()
@@ -207,12 +202,8 @@ class DownloaderTest {
             }
 
         } finally {
-            if (actual != null) {
-                actual.close();
-            }
-            if (expected != null) {
-                expected.close();
-            }
+            actual.close();
+            expected.close();
         }
     }
 

@@ -15,8 +15,6 @@
  */
 package uk.gov.gchq.palisade.client.receiver;
 
-import uk.gov.gchq.palisade.client.resource.MessageType;
-
 import java.io.InputStream;
 import java.util.Map;
 
@@ -33,12 +31,12 @@ public interface Receiver {
      *
      * @since 0.5.0
      */
-    public interface IReceiverResult {
+    interface IReceiverResult {
 
         /**
-         * Returns the type of this message
+         * Returns any properties added by the called {@code Receiver}
          *
-         * @return the {@link MessageType}
+         * @return any properties added by the called {@code Receiver}
          */
         Map<String, String> getProperties();
 
@@ -50,7 +48,7 @@ public interface Receiver {
      * @param receiverContext The context
      * @param inputStream     the stream to process
      * @return the result
-     * @throws ReceiverException if an erro occurs during processing
+     * @throws ReceiverException if an error occurs during processing
      */
     IReceiverResult process(ReceiverContext receiverContext, InputStream inputStream) throws ReceiverException;
 

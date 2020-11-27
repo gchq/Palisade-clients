@@ -45,7 +45,6 @@ public interface IJobReceiver {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static JobReceiver createJobReceiver(final UnaryOperator<JobReceiver.Builder> func) {
         return func.apply(JobReceiver.builder()).build();
     }
@@ -56,7 +55,6 @@ public interface IJobReceiver {
      *
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static JobReceiver createJobReceiver() {
         return JobReceiver.builder().build();
     }
@@ -86,7 +84,6 @@ public interface IJobReceiver {
      * @param func The function to apply
      * @return a new instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     default JobReceiver change(final UnaryOperator<JobReceiver.Builder> func) {
         return func.apply(JobReceiver.builder().from(this)).build();
     }

@@ -101,7 +101,6 @@ public class ResourceClientListener implements Listener {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     public static ResourceClientListener createResourceClientListenr(
         final UnaryOperator<ResourceClientListenrSetup.Builder> func) {
         return new ResourceClientListener(func.apply(ResourceClientListenrSetup.builder()).build());
@@ -196,7 +195,7 @@ public class ResourceClientListener implements Listener {
             // This is a quite crude way of waiting for download slots to become available
             // Should implement a better way, but this will do for now.
 
-            while (!getDownloadTracker().hasAvailableSlots()) {
+            while (!getDownloadTracker().canSchedule()) {
                 try {
                     LOGGER.debug("No download slots available, waiting");
                     Thread.sleep(ONE_SECOND);

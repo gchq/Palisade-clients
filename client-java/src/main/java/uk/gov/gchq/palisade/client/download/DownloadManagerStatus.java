@@ -16,49 +16,19 @@
 package uk.gov.gchq.palisade.client.download;
 
 /**
- * An instance of this class is provided by a DownloadManager in order to track
- * its status. This is especially important when replying to an RTS request from
- * the server. If there are no more slots available, then the client will wait
- * until there is before send a CTS.
+ * A class that reports on the status of a {@code DownloadManager}
  *
  * @since 0.5.0
  */
 public interface DownloadManagerStatus {
 
     /**
-     * The current status of the download manager
+     * Returns true if the {@code DownloadManager} can accept another download. If
+     * this method returns true, it does not necessarily mean that the download will
+     * start immediately.
      *
-     * @since 0.5.0
+     * @return true if the {@code DownloadManager} can accept another download.
      */
-    enum ManagerStatus {
-        /**
-         * Currently downloading and/or has slots available
-         */
-        ACTIVE,
-
-        /**
-         * Download manager is in the process of shutting down
-         */
-        SHUTTING_DOWN,
-
-        /**
-         * Download manager has shuit down and all resources released (threads).
-         */
-        SHUT_DOWN
-    }
-
-    /**
-     * Returns the number of slots available for downloads to initiated
-     *
-     * @return the number of slots available for downloads to initiated
-     */
-    int getAvaliableSlots();
-
-    /**
-     * Returns true if there are download slots available
-     *
-     * @return true if there are download slots available
-     */
-    boolean hasAvailableSlots();
+    boolean canSchedule();
 
 }

@@ -47,6 +47,8 @@ import static uk.gov.gchq.palisade.client.resource.MessageType.CTS;
 @ServerWebSocket("/cluster/filteredResource/name/{token}")
 public class WsEndpointFilteredResource {
 
+    private static final String TOKEN_KEY = "token";
+
     /**
      * Generates test resources
      *
@@ -81,7 +83,7 @@ public class WsEndpointFilteredResource {
 
         private Message message(final Object body, final MessageType type) {
             return IMessage.create(b -> b
-                .putHeader("token", token)
+                .putHeader(TOKEN_KEY, token)
                 .type(type)
                 .body(body));
         }
@@ -120,7 +122,7 @@ public class WsEndpointFilteredResource {
      */
     @OnOpen
     public void onOpen(final String token, final WebSocketSession session) {
-        session.put("token", token);
+        session.put(TOKEN_KEY, token);
         this.messages = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
         if (!messages.hasNext()) {
             send(session, MessageType.COMPLETE);
@@ -162,7 +164,7 @@ public class WsEndpointFilteredResource {
     }
 
     private static void send(final WebSocketSession session, final MessageType messageType) {
-        var token = session.get("token", String.class).get();
+        var token = session.get(TOKEN_KEY, String.class).get();
         var message = IMessage.create(b -> b.putHeader("token", token).type(messageType));
         send(session, message);
     }

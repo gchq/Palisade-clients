@@ -125,7 +125,7 @@ public interface ISavedJobState extends Serializable {
     @ImmutableStyle
     @JsonDeserialize(as = StatePalisadeResponse.class)
     @JsonSerialize(as = StatePalisadeResponse.class)
-    public interface IStatePalisadeResponse {
+    interface IStatePalisadeResponse {
 
         /**
          * Helper method to create a {@code StatePalisadeResponse} using a builder
@@ -134,7 +134,6 @@ public interface ISavedJobState extends Serializable {
          * @param func The builder function
          * @return a newly created data request instance
          */
-        @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
         static StatePalisadeResponse createStatePalisadeResponse(
             final UnaryOperator<StatePalisadeResponse.Builder> func) {
             return func.apply(StatePalisadeResponse.builder()).build();

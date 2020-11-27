@@ -15,6 +15,7 @@
  */
 package uk.gov.gchq.palisade.client;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -61,8 +62,8 @@ public interface Client {
     Result submit(IJobRequest jobRequest);
 
     /**
-     * Loads a previous job state to constuct a job which the resumes from the point
-     * of its last known state.
+     * Loads a previous job state to construct a job which the resumes from the
+     * point of its last known state.
      *
      * @param path to the job state to resume from
      * @return a result object through which a status object can be retrieved
@@ -71,9 +72,9 @@ public interface Client {
     Result resume(Path path);
 
     /**
-     * Loads a previous job state to constuct a job which the resumes from the point
-     * of its last known state. The provided map is used to override the previous
-     * state.
+     * Loads a previous job state to construct a job which the resumes from the
+     * point of its last known state. The provided map is used to override the
+     * previous state.
      *
      * @param path          to the job state to resume from
      * @param configuration The configuration used to override the save state
@@ -106,9 +107,12 @@ public interface Client {
         var objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
-//            .setSerializationInclusion(Include.NON_NULL)
-//            .setSerializationInclusion(Include.NON_ABSENT)
-//            .setSerializationInclusion(Include.NON_EMPTY)
+            // comment out the 3 include directives below to tell jackson to output all
+            // attributes, even if null, absent or empty (e.g. empty optional and
+            // collection)
+            .setSerializationInclusion(Include.NON_NULL)
+            .setSerializationInclusion(Include.NON_ABSENT)
+            .setSerializationInclusion(Include.NON_EMPTY)
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         var downloadManager = createDownloadManager(b -> b

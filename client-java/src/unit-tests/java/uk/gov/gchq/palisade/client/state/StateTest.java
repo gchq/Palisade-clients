@@ -30,7 +30,7 @@ class StateTest {
     private static ObjectMapper objectMapper;
 
     @BeforeAll
-    static void setUpClass() throws Exception {
+    static void setUpClass() {
         objectMapper = new ObjectMapper().findAndRegisterModules();
     }
 

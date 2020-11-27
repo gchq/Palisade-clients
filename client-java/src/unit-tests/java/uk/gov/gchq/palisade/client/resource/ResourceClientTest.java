@@ -61,7 +61,7 @@ public class ResourceClientTest {
     private int port;
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         this.port = embeddedServer.getPort();
         this.events = new ArrayList<>();
         this.eventBus = EventBus.builder().build();
@@ -165,7 +165,7 @@ public class ResourceClientTest {
         return (T) o;
     }
 
-    private CompletableFuture<Void> startClient() throws Exception {
+    private CompletableFuture<Void> startClient() {
         return ResourceClient
             .createResourceClient(b -> b
                 .baseUri("ws://localhost:" + port + "/cluster/filteredResource/name/%t")

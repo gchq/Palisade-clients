@@ -48,7 +48,7 @@ class FullTest {
     private Client client;
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         client = Client.create(Map.of(
             Configuration.KEY_SERVICE_PS_PORT, embeddedServer.getPort(),
             Configuration.KEY_SERVICE_FRS_PORT, embeddedServer.getPort(),

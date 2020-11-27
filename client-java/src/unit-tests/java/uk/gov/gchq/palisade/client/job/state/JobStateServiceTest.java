@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
@@ -31,7 +30,6 @@ import uk.gov.gchq.palisade.client.util.Configuration;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.gchq.palisade.client.job.state.IJobRequest.createJobRequest;
 
 class JobStateServiceTest {
@@ -39,7 +37,7 @@ class JobStateServiceTest {
     private JobStateService service;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
 
         var objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
@@ -102,7 +100,7 @@ class JobStateServiceTest {
         assertThat(state).isNotNull();
         assertThat(state.getCreated()).isNotNull();
         assertThat(state.getDownloads()).isEmpty();
-        assertThat(state.getPalisadeResponse().get()).isEqualTo(palisadeResponse);
+        assertThat(state.getPalisadeResponse()).hasValue(palisadeResponse);
         assertThat(state.getExecutions()).hasSize(2);
         assertThat(state.getSequence()).isEqualTo(0);
         assertThat(state.getStatus()).isEqualTo(JobStatus.DOWNLOADS_IN_PROGRESS);
@@ -134,7 +132,7 @@ class JobStateServiceTest {
         assertThat(state).isNotNull();
         assertThat(state.getCreated()).isNotNull();
         assertThat(state.getDownloads()).isNotEmpty().hasSize(2);
-        assertThat(state.getPalisadeResponse().get()).isEqualTo(palisadeResponse);
+        assertThat(state.getPalisadeResponse()).hasValue(palisadeResponse);
         assertThat(state.getExecutions()).hasSize(2);
         assertThat(state.getSequence()).isEqualTo(0);
         assertThat(state.getStatus()).isEqualTo(JobStatus.DOWNLOADS_IN_PROGRESS);
@@ -143,12 +141,6 @@ class JobStateServiceTest {
         assertThat(state.getExecutions().get(state.getCurrentExecution().getId()))
             .isEqualTo(state.getCurrentExecution());
 
-    }
-
-    @Test
-    @Disabled
-    void testSave() {
-        fail("Not yet implemented");
     }
 
 }

@@ -122,23 +122,18 @@ public final class DownloadManager implements DownloadManagerStatus {
         return executor.awaitTermination(timeout, unit);
     }
 
-    @Override
-    public int getAvaliableSlots() {
-        return buffer.remainingCapacity();
-    }
-
     /**
-     * Returns the download tracker for this download manager
+     * Returns the {@code DownloadManagerStatus} for this {@code DownloadManager}
      *
-     * @return the download tracker for this download manager
+     * @return the {@code DownloadManagerStatus} for this {@code DownloadManager}
      */
     public DownloadManagerStatus getDownloadTracker() {
         return this;
     }
 
     @Override
-    public boolean hasAvailableSlots() {
-        return getAvaliableSlots() > 0;
+    public boolean canSchedule() {
+        return buffer.remainingCapacity() > 0;
     }
 
     /**
@@ -147,7 +142,7 @@ public final class DownloadManager implements DownloadManagerStatus {
      * @param resource      The resource describing the data to be downloaded.
      * @param eventbus      The event bus to be use when posting download events
      * @param receiver      The receiver instance which will be passed the
-     *                      dowbnloaded input stream for processing
+     *                      downloaded input stream for processing
      * @param configuration The job configuration
      * @return the download id
      */
@@ -175,16 +170,19 @@ public final class DownloadManager implements DownloadManagerStatus {
         // outside the executor.
 
         Runnable runner = () -> {
+
             eventbus.post(DownloadStartedEvent.of(downloadId, resource, Map.of()));
+
+            // Note: The Downloader will catch Exception and throw DownloaderException, so
+            // no need to catch Exception here :)
+
             try {
                 var result = downloader.start();
                 eventbus.post(DownloadCompletedEvent.of(downloadId, resource, result.getProperties(), result));
             } catch (DownloaderException e) {
                 eventbus.post(DownloadFailedEvent.of(downloadId, resource, Map.of(), e, e.getStatusCode()));
-            } catch (Exception e) {
-                LOGGER.error("Unknown exception caught. Please check code as this should never happen", e);
-                eventbus.post(DownloadFailedEvent.of(downloadId, resource, Map.of(), e, -1));
             }
+
         };
 
         executor.execute(runner);
@@ -201,7 +199,7 @@ public final class DownloadManager implements DownloadManagerStatus {
      * execution. Use awaitTermination to do that.
      */
     public void shutdown() {
-        LOGGER.debug("Download manager requsted to shutdown");
+        LOGGER.debug("Download manager requested to shutdown");
         executor.shutdown();
     }
 

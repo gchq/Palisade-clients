@@ -1,317 +1,290 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ~ Copyright 2020 Crown Copyright ~ ~ Licensed under the Apache License, 
-		Version 2.0 (the "License"); ~ you may not use this file except in compliance 
-		with the License. ~ You may obtain a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 
-		~ ~ Unless required by applicable law or agreed to in writing, software ~ 
-		distributed under the License is distributed on an "AS IS" BASIS, ~ WITHOUT 
-		WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. ~ See the 
-		License for the specific language governing permissions and ~ limitations 
-		under the License. -->
+<!--
+  ~ Copyright 2020 Crown Copyright
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xmlns="http://maven.apache.org/POM/4.0.0"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-		<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-		<parent>
-				<groupId>uk.gov.gchq.palisade</groupId>
-				<artifactId>clients</artifactId>
-				<version>0.5.0-${revision}</version>
-				<relativePath>../pom.xml</relativePath>
-		</parent>
+    <parent>
+        <groupId>uk.gov.gchq.palisade</groupId>
+        <artifactId>clients</artifactId>
+        <version>0.5.0-${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-		<artifactId>client-java</artifactId>
-		<name>client-java</name>
-		<description>Java standalone client</description>
-		<url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
+    <artifactId>client-java</artifactId>
+    <name>client-java</name>
+    <description>Java standalone client</description>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
 
-		<properties>
-				<jdk.version>11</jdk.version>
-				<release.version>11</release.version>
+    <properties>
+        <jdk.version>11</jdk.version>
+        <release.version>11</release.version>
 
-				<!-- Dependency versions -->
-				<micronaut.version>2.1.1</micronaut.version>
-				<immutables.version>2.8.2</immutables.version>
-				<tyrus.version>1.17</tyrus.version>
-				<!-- Test dependency versions -->
-				<junit.jupiter.version>5.7.0</junit.jupiter.version>
-				<junit.platform.version>1.7.0</junit.platform.version>
-				<awaitility.version>4.0.3</awaitility.version>
-				<assertj.version>3.17.2</assertj.version>
-				<logback.version>1.2.3</logback.version>
-				<equalsverifier.version>3.4.2</equalsverifier.version>
-				<reflections.version>0.9.12</reflections.version>
-				<jackson.version>2.10.0</jackson.version>
-				<mapstruct.version>1.4.1.Final</mapstruct.version>
-		</properties>
+        <!-- Dependency versions -->
+        <micronaut.version>2.1.1</micronaut.version>
+        <immutables.version>2.8.2</immutables.version>
+        <tyrus.version>1.17</tyrus.version>
+        <!-- Test dependency versions -->
+        <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <junit.platform.version>1.7.0</junit.platform.version>
+        <awaitility.version>4.0.3</awaitility.version>
+        <assertj.version>3.17.2</assertj.version>
+        <logback.version>1.2.3</logback.version>
+        <equalsverifier.version>3.4.2</equalsverifier.version>
+        <reflections.version>0.9.12</reflections.version>
+        <jackson.version>2.10.0</jackson.version>
+        <mapstruct.version>1.4.1.Final</mapstruct.version>
+    </properties>
 
-		<dependencyManagement>
-				<dependencies>
-						<dependency>
-								<groupId>org.slf4j</groupId>
-								<artifactId>slf4j-api</artifactId>
-								<version>1.7.30</version>
-						</dependency>
-						<dependency>
-								<groupId>org.junit.jupiter</groupId>
-								<artifactId>junit-jupiter</artifactId>
-								<version>${junit.jupiter.version}</version>
-								<scope>test</scope>
-						</dependency>
-						<dependency>
-								<groupId>org.junit.jupiter</groupId>
-								<artifactId>junit-jupiter-api</artifactId>
-								<version>${junit.jupiter.version}</version>
-								<scope>test</scope>
-						</dependency>
-						<dependency>
-								<groupId>org.junit.jupiter</groupId>
-								<artifactId>junit-jupiter-params</artifactId>
-								<version>${junit.jupiter.version}</version>
-								<scope>test</scope>
-						</dependency>
-						<dependency>
-								<groupId>org.junit.jupiter</groupId>
-								<artifactId>junit-jupiter-engine</artifactId>
-								<version>${junit.jupiter.version}</version>
-								<scope>test</scope>
-						</dependency>
-						<dependency>
-								<groupId>org.junit.jupiter</groupId>
-								<artifactId>junit-jupiter-engine</artifactId>
-								<version>${junit.jupiter.version}</version>
-								<scope>test</scope>
-						</dependency>
-						<dependency>
-								<groupId>org.junit.platform</groupId>
-								<artifactId>junit-platform-engine</artifactId>
-								<version>${junit.platform.version}</version>
-								<scope>test</scope>
-						</dependency>
-						<dependency>
-								<groupId>org.junit.platform</groupId>
-								<artifactId>junit-platform-commons</artifactId>
-								<version>${junit.platform.version}</version>
-								<scope>test</scope>
-						</dependency>
-				</dependencies>
-		</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.30</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-engine</artifactId>
+                <version>${junit.platform.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-commons</artifactId>
+                <version>${junit.platform.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-		<dependencies>
-				<!-- https://mvnrepository.com/artifact/org.slf4j/api -->
-				<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-				<dependency>
-						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-api</artifactId>
-				</dependency>
-				<dependency>
-						<groupId>org.greenrobot</groupId>
-						<artifactId>eventbus</artifactId>
-						<version>3.2.0</version>
-				</dependency>
-				<dependency>
-						<groupId>com.fasterxml.jackson.core</groupId>
-						<artifactId>jackson-databind</artifactId>
-						<version>${jackson.version}</version>
-				</dependency>
-				<dependency>
-						<groupId>com.fasterxml.jackson.datatype</groupId>
-						<artifactId>jackson-datatype-jdk8</artifactId>
-						<version>${jackson.version}</version>
-				</dependency>
-				<dependency>
-						<groupId>com.fasterxml.jackson.dataformat</groupId>
-						<artifactId>jackson-dataformat-properties</artifactId>
-						<version>${jackson.version}</version>
-				</dependency>
-				<dependency>
-						<groupId>com.fasterxml.jackson.datatype</groupId>
-						<artifactId>jackson-datatype-jsr310</artifactId>
-						<version>${jackson.version}</version>
-				</dependency>
-				<dependency>
-						<groupId>com.fasterxml.jackson.dataformat</groupId>
-						<artifactId>jackson-dataformat-yaml</artifactId>
-						<version>${jackson.version}</version>
-				</dependency>
-				<dependency>
-						<groupId>com.github.wnameless.json</groupId>
-						<artifactId>json-flattener</artifactId>
-						<version>0.11.1</version>
-				</dependency>
-				<dependency>
-						<groupId>org.mapstruct</groupId>
-						<artifactId>mapstruct</artifactId>
-						<version>${mapstruct.version}</version>
-				</dependency>
-				<dependency>
-						<groupId>org.immutables</groupId>
-						<artifactId>value</artifactId>
-						<version>${immutables.version}</version>
-						<scope>provided</scope>
-				</dependency>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/api -->
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.greenrobot</groupId>
+            <artifactId>eventbus</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-properties</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.wnameless.json</groupId>
+            <artifactId>json-flattener</artifactId>
+            <version>0.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+            <version>${immutables.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
-				<!-- - Test Dependencies -->
+        <!-- - Test Dependencies -->
 
-				<dependency>
-						<!-- Micronaut DI -->
-						<groupId>io.micronaut.test</groupId>
-						<artifactId>micronaut-test-junit5</artifactId>
-						<version>${micronaut.version}</version>
-						<scope>test</scope>
-						<exclusions>
-								<exclusion>
-										<groupId>org.junit.jupiter</groupId>
-										<artifactId>junit-jupiter-api</artifactId>
-								</exclusion>
-						</exclusions>
-				</dependency>
+        <dependency>
+            <groupId>io.micronaut.test</groupId>
+            <artifactId>micronaut-test-junit5</artifactId>
+            <version>${micronaut.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-runtime</artifactId>
+            <version>${micronaut.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-inject</artifactId>
+            <version>${micronaut.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-inject-java</artifactId>
+            <version>${micronaut.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-http-server-netty</artifactId>
+            <version>${micronaut.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitility.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-				<dependency>
-						<groupId>io.micronaut</groupId>
-						<artifactId>micronaut-runtime</artifactId>
-						<version>${micronaut.version}</version>
-						<scope>test</scope>
-				</dependency>
-
-				<dependency>
-						<!-- Micronaut DI -->
-						<groupId>io.micronaut</groupId>
-						<artifactId>micronaut-inject</artifactId>
-						<version>${micronaut.version}</version>
-						<scope>provided</scope>
-				</dependency>
-				<dependency>
-						<!-- Micronaut DI -->
-						<groupId>io.micronaut</groupId>
-						<artifactId>micronaut-inject-java</artifactId>
-						<version>${micronaut.version}</version>
-						<scope>provided</scope>
-				</dependency>
-				<dependency>
-						<!-- Micronaut HTTP -->
-						<groupId>io.micronaut</groupId>
-						<artifactId>micronaut-http-server-netty</artifactId>
-						<version>${micronaut.version}</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<!-- JUnit -->
-						<groupId>org.junit.jupiter</groupId>
-						<artifactId>junit-jupiter</artifactId>
-						<version>${junit.jupiter.version}</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<!-- Async testing utilities -->
-						<groupId>org.awaitility</groupId>
-						<artifactId>awaitility</artifactId>
-						<version>${awaitility.version}</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<!-- AssertJ Unittest DSL -->
-						<groupId>org.assertj</groupId>
-						<artifactId>assertj-core</artifactId>
-						<version>${assertj.version}</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<!-- SLF4J logging framework -->
-						<groupId>ch.qos.logback</groupId>
-						<artifactId>logback-classic</artifactId>
-						<version>${logback.version}</version>
-						<scope>test</scope>
-				</dependency>
-				<dependency>
-						<!-- Reflections -->
-						<groupId>org.reflections</groupId>
-						<artifactId>reflections</artifactId>
-						<version>0.9.12</version>
-						<scope>test</scope>
-				</dependency>
-		</dependencies>
-
-		<build>
-				<resources>
-						<resource>
-								<directory>src/main/resources</directory>
-								<includes>
-										<include>**/*.yaml</include>
-								</includes>
-						</resource>
-				</resources>
-				<plugins>
-						<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> 
-								<version>3.8.1</version> <configuration> <source>11</source> <target>11</target> 
-								<annotationProcessorPaths> <path> <groupId>org.mapstruct</groupId> <artifactId>mapstruct-processor</artifactId> 
-								<version>${mapstruct.version}</version> </path> <path> <groupId>org.immutables</groupId> 
-								<artifactId>value</artifactId> <version>${immutables.version}</version> </path> 
-								</annotationProcessorPaths> </configuration> </plugin> -->
-						<plugin>
-								<groupId>org.apache.maven.plugins</groupId>
-								<artifactId>maven-shade-plugin</artifactId>
-								<version>3.2.4</version>
-								<executions>
-										<execution>
-												<phase>package</phase>
-												<goals>
-														<goal>shade</goal>
-												</goals>
-												<configuration>
-														<relocations>
-																<relocation>
-																		<pattern>com</pattern>
-																		<shadedPattern>shade.com</shadedPattern>
-																</relocation>
-																<relocation>
-																		<pattern>javax</pattern>
-																		<shadedPattern>shade.javax</shadedPattern>
-																</relocation>
-																<relocation>
-																		<pattern>org</pattern>
-																		<shadedPattern>shade.org</shadedPattern>
-																</relocation>
-														</relocations>
-												</configuration>
-										</execution>
-								</executions>
-						</plugin>
-						<plugin>
-								<groupId>org.codehaus.mojo</groupId>
-								<artifactId>build-helper-maven-plugin</artifactId>
-								<version>3.0.0</version>
-								<executions>
-										<execution>
-												<id>add-test-sources</id>
-												<phase>generate-test-sources</phase>
-												<goals>
-														<goal>add-test-source</goal>
-												</goals>
-												<configuration>
-														<sources>
-																<source>src/unit-tests/java</source>
-														</sources>
-												</configuration>
-										</execution>
-										<execution>
-												<id>add-test-resources</id>
-												<phase>generate-test-resources</phase>
-												<goals>
-														<goal>add-test-resource</goal>
-												</goals>
-												<configuration>
-														<resources>
-																<resource>
-																		<filtering>true</filtering>
-																		<directory>src/unit-tests/resources</directory>
-																</resource>
-														</resources>
-												</configuration>
-										</execution>
-								</executions>
-						</plugin>
-				</plugins>
-		</build>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.yaml</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com</pattern>
+                                    <shadedPattern>shade.com</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javax</pattern>
+                                    <shadedPattern>shade.javax</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org</pattern>
+                                    <shadedPattern>shade.org</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/unit-tests/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-test-resources</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <filtering>true</filtering>
+                                    <directory>src/unit-tests/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
