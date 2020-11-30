@@ -84,7 +84,7 @@ public class JobStateService {
      */
     public JobState createFrom(final Path fromPath, final Map<String, Object> configuration) {
         try {
-            var json = new String(Files.readString(fromPath));
+            var json = Files.readString(fromPath);
             var state = fromJson(json);
             return new JobState(this, state, configuration);
         } catch (IOException e) {
