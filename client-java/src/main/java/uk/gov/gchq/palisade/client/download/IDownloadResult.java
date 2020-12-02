@@ -40,7 +40,6 @@ public interface IDownloadResult {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static DownloadResult createDownloadResult(final UnaryOperator<DownloadResult.Builder> func) {
         return func.apply(DownloadResult.builder()).build();
     }

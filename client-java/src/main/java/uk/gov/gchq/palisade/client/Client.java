@@ -48,7 +48,6 @@ public interface Client {
      * @return a result object through which a status object can be retrieved
      * @throws ClientException if any error is encountered
      */
-    @SuppressWarnings("java:S3242")
     Result submit(UnaryOperator<JobRequest.Builder> func);
 
     /**

@@ -101,7 +101,6 @@ public final class DownloadManager implements DownloadManagerStatus {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     public static DownloadManager createDownloadManager(final UnaryOperator<DownloadManagerSetup.Builder> func) {
         return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
     }

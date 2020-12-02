@@ -53,7 +53,6 @@ public interface ISavedJobState extends Serializable {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static ISavedJobState create(final UnaryOperator<SavedJobState.Builder> func) {
         return func.apply(SavedJobState.builder()).build();
     }
@@ -149,7 +148,7 @@ public interface ISavedJobState extends Serializable {
     }
 
     /**
-     * The palisade response
+     * Represents an error from the Filtered Resource Service.
      *
      * @since 0.5.0
      */
@@ -157,7 +156,7 @@ public interface ISavedJobState extends Serializable {
     @ImmutableStyle
     @JsonDeserialize(as = StateJobError.class)
     @JsonSerialize(as = StateJobError.class)
-    public interface IStateJobError {
+    interface IStateJobError {
 
         /**
          * Helper method to create a {@code StatePalisadeResponse} using a builder
@@ -166,7 +165,6 @@ public interface ISavedJobState extends Serializable {
          * @param func The builder function
          * @return a newly created data request instance
          */
-        @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
         static IStateJobError createStateJobError(final UnaryOperator<StateJobError.Builder> func) {
             return func.apply(StateJobError.builder()).build();
         }
@@ -189,7 +187,7 @@ public interface ISavedJobState extends Serializable {
     @ImmutableStyle
     @JsonDeserialize(as = StateJobRequest.class)
     @JsonSerialize(as = StateJobRequest.class)
-    public interface IStateJobRequest {
+    interface IStateJobRequest {
 
         /**
          * Helper method to create a {@code StateJobConfig} using a builder function
@@ -197,7 +195,6 @@ public interface ISavedJobState extends Serializable {
          * @param func The builder function
          * @return a newly created data request instance
          */
-        @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
         static IStateJobRequest createStateJobConfig(final UnaryOperator<StateJobRequest.Builder> func) {
             return func.apply(StateJobRequest.builder()).build();
         }
@@ -248,7 +245,7 @@ public interface ISavedJobState extends Serializable {
     @ImmutableStyle
     @JsonDeserialize(as = StateExecution.class)
     @JsonSerialize(as = StateExecution.class)
-    public interface IStateExecution {
+    interface IStateExecution {
 
         /**
          * Helper method to create a {@code StateExecution} using a builder function
@@ -256,7 +253,6 @@ public interface ISavedJobState extends Serializable {
          * @param func The builder function
          * @return a newly created data request instance
          */
-        @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
         static StateExecution createStateExecution(final UnaryOperator<StateExecution.Builder> func) {
             return func.apply(StateExecution.builder()).build();
         }
@@ -300,7 +296,7 @@ public interface ISavedJobState extends Serializable {
     @ImmutableStyle
     @JsonDeserialize(as = StateDownload.class)
     @JsonSerialize(as = StateDownload.class)
-    public interface IStateDownload {
+    interface IStateDownload {
 
         /**
          * Helper method to create a {@code StateDownload} using a builder function
@@ -308,7 +304,6 @@ public interface ISavedJobState extends Serializable {
          * @param func The builder function
          * @return a newly created data request instance
          */
-        @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
         static StateDownload createStateDownload(final UnaryOperator<StateDownload.Builder> func) {
             return func.apply(StateDownload.builder()).build();
         }

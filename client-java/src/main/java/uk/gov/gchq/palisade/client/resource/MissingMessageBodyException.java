@@ -36,7 +36,7 @@ public class MissingMessageBodyException extends ClientException {
      * @param resourceMessage The offending message
      */
     public MissingMessageBodyException(final Message resourceMessage) {
-        super("Recieved a message with a missing resource. Message was: " + resourceMessage);
+        super("Received a message with a missing resource. Message was: " + resourceMessage);
         this.resourceMessage = resourceMessage;
     }
 

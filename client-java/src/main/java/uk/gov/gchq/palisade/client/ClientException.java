@@ -26,7 +26,7 @@ public class ClientException extends RuntimeException {
     /**
      * Creates a new instance with the provided {@code message}
      *
-     * @param message The message
+     * @param message The message attached to the exception
      * @see RuntimeException#RuntimeException(String)
      */
     public ClientException(final String message) {
@@ -36,8 +36,8 @@ public class ClientException extends RuntimeException {
     /**
      * Creates a new instance with the provided {@code message} and {@code cause}
      *
-     * @param message The message
-     * @param cause   The cause
+     * @param message The message attached to the exception
+     * @param cause   The underlying cause of the exception
      * @see RuntimeException#RuntimeException(String, Throwable)
      */
     public ClientException(final String message, final Throwable cause) {

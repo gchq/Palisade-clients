@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.gchq.palisade.client.resource.IResource.createResource;
 
 class ResourceSerialisationTest {
 
@@ -35,24 +36,24 @@ class ResourceSerialisationTest {
 
     @Test
     void testMessageSerialisation() throws Exception {
-        Message expected = IMessage.create(b -> b
-                .type(MessageType.RESOURCE)
-                .body("string")
-                .headers(Map.of("key", "value")));
-        String string = objectMapper.writeValueAsString(expected);
-        Message actual = objectMapper.readValue(string, Message.class);
+        var expected = IMessage.createMessage(b -> b
+            .type(MessageType.RESOURCE)
+            .body("string")
+            .headers(Map.of("key", "value")));
+        var string = objectMapper.writeValueAsString(expected);
+        var actual = objectMapper.readValue(string, Message.class);
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void testResourceSerialisation() throws Exception {
-        Resource expected = IResource.createResource(b -> b
-                .token("token")
-                .leafResourceId("leaf-reource-id")
-                .url("url")
-                .properties(Map.of("key", "value")));
-        String string = objectMapper.writeValueAsString(expected);
-        Resource actual = objectMapper.readValue(string, Resource.class);
+        var expected = createResource(b -> b
+            .token("token")
+            .leafResourceId("leaf-resource-id")
+            .url("url")
+            .properties(Map.of("key", "value")));
+        var string = objectMapper.writeValueAsString(expected);
+        var actual = objectMapper.readValue(string, Resource.class);
         assertThat(actual).isEqualTo(expected);
     }
 

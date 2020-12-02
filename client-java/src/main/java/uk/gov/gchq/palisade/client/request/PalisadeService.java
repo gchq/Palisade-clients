@@ -31,6 +31,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.IntPredicate;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
@@ -44,7 +45,7 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 public class PalisadeService implements PalisadeClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeService.class);
-    private static final int HTTP_OK = 200;
+    private static final IntPredicate IS_HTTP_OK = sts -> sts == 200;
 
     private final ObjectMapper objectMapper;
     private final String baseUri;
@@ -74,7 +75,6 @@ public class PalisadeService implements PalisadeClient {
         return palisadeResponse;
     }
 
-    @SuppressWarnings({ "java:S1774", "java:S2211", "java:S2221", "java:S1166" })
     @Override
     public CompletableFuture<PalisadeResponse> submitAsync(final PalisadeRequest palisadeRequest) {
 
@@ -82,13 +82,7 @@ public class PalisadeService implements PalisadeClient {
 
         LOGGER.debug("Submitting request to Palisade: {}", palisadeRequest);
 
-        String requestBody;
-        try {
-            requestBody = objectMapper().writeValueAsString(palisadeRequest);
-        } catch (JsonProcessingException e1) {
-            throw new ClientException("Failed to parse request: " + palisadeRequest.toString(), e1);
-        }
-
+        var requestBody = toJson(palisadeRequest);
         var uri = URI.create(baseUri);
 
         LOGGER.debug("Submitting request to: {}", uri);
@@ -101,26 +95,36 @@ public class PalisadeService implements PalisadeClient {
 
         return httpClient
             .sendAsync(httpRequest, BodyHandlers.ofString())
-            .thenApply(resp -> {
-                int status = resp.statusCode();
-                LOGGER.debug("{}: {}", (status == HTTP_OK ? "Success" : "Error"), status);
-                if (status != HTTP_OK) {
-                    String body;
-                    try {
-                        body = objectMapper.writeValueAsString(resp.body());
-                    } catch (Exception e) {
-                        body = "!failed to parse response body: " + resp.body();
-                        // swallow
-                    }
-                    throw new ClientException("Request to palisade service failed (" + status + "), response\n" + body);
-                }
-                return resp;
-            })
+            .thenApply(resp -> checkStatusCode(resp, IS_HTTP_OK))
             .thenApply(HttpResponse::body)
-            .thenApply(this::readValue);
+            .thenApply(this::toResponse);
+
     }
 
-    private PalisadeResponse readValue(final String string) {
+    private <T> HttpResponse<T> checkStatusCode(final HttpResponse<T> resp, final IntPredicate pred) {
+        int status = resp.statusCode();
+        if (!pred.test(status)) {
+            String body;
+            try {
+                body = objectMapper.writeValueAsString(resp.body());
+            } catch (Exception e) {
+                body = "!failed to parse response body: " + resp.body();
+                // swallow
+            }
+            throw new ClientException("Request to palisade service failed (" + status + "), response\n" + body);
+        }
+        return resp;
+    }
+
+    private String toJson(final Object object) {
+        try {
+            return objectMapper().writeValueAsString(object);
+        } catch (JsonProcessingException e1) {
+            throw new ClientException("Failed to parse request: " + object.toString(), e1);
+        }
+    }
+
+    private PalisadeResponse toResponse(final String string) {
         try {
             return objectMapper().readValue(string, PalisadeResponse.class);
         } catch (IOException ioe) {

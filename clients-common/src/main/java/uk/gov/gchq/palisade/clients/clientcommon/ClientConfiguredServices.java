@@ -42,7 +42,6 @@ import java.time.Duration;
 //import uk.gov.gchq.palisade.user.service.UserService;
 
 @Deprecated
-@SuppressWarnings({ "java:S125", "java:S1123", "java:S1133", "java:S1068", "java:S1213" })
 public final class ClientConfiguredServices {
 
     /*

@@ -71,13 +71,6 @@ public class JobState {
 
     private IPalisadeResponse palisadeResponse;
     private IJobExecution currentExecution;
-
-    /*
-     * Can be: OPEN: The job has just been created and is waiting to start RECEIVED:
-     * The job has made a query request to palisade and received a response
-     * IN_PROGRESS: This job is in the process of downloading resources COMPLETE:
-     * This job has completed downloading all the resources
-     */
     private JobStatus status;
 
     /**
@@ -204,10 +197,10 @@ public class JobState {
     /**
      * Indicates to this state that a request has been sent
      *
-     * @param jobConfig The job config containing the details sent to the palisade
-     *                  service
+     * @param jobRequest The job request containing the details sent to the palisade
+     *                   service
      */
-    public void requestSent(final IJobRequest jobConfig) {
+    public void requestSent(final IJobRequest jobRequest) {
         lock.lock();
         try {
             this.status = JobStatus.REQUEST_SENT;
@@ -217,7 +210,7 @@ public class JobState {
     }
 
     /**
-     * Indicates to this state that the provided repsonse has been received
+     * Indicates to this state that the provided response has been received
      *
      * @param palisadeResponse The received response
      */
@@ -233,7 +226,7 @@ public class JobState {
 
     /**
      * Indicates to this state that downloads have commenced, but none have been
-     * downloaded yet
+     * downloaded yet. A new execution is created and added to the state.
      */
     public void start() {
         lock.lock();
@@ -248,8 +241,8 @@ public class JobState {
     }
 
     /**
-     * Indicates to this state that downloads have commenced, but none have been
-     * downloaded yet
+     * Indicates to this state that downloads have completed. The current execution
+     * will be updated to reflect that it is complete and it's end time updated.
      */
     public void finish() {
         lock.lock();
@@ -264,8 +257,8 @@ public class JobState {
     }
 
     /**
-     * Indicates to this state that downloads have commenced, but none have been
-     * downloaded yet
+     * Indicates to this state that an error has been received from the Filtered
+     * Resource Service. The error will be added to the current execution.
      *
      * @param text The error text
      */
@@ -282,11 +275,12 @@ public class JobState {
     }
 
     /**
-     * A download has been scheduled
+     * Indicates that a download has been scheduled. The state will be updated with
+     * the download and associated with the current execution.
      *
      * @param id         The download id
      * @param resourceId The resource id
-     * @param url        The url to be downloaded from
+     * @param url        The URL to be downloaded from
      */
     public void downloadScheduled(final UUID id, final String resourceId, final String url) {
         checkArgument(id);
@@ -307,7 +301,8 @@ public class JobState {
     }
 
     /**
-     * A download has been started
+     * Indicates that a download has been started. The state will be updated to
+     * reflect the download's status and start time.
      *
      * @param id    The download id
      * @param start The start time
@@ -329,7 +324,8 @@ public class JobState {
     }
 
     /**
-     * A download has been completed
+     * Indicates that a download has been completed. This state will updated to
+     * reflect the new state of the download.
      *
      * @param id         The download id
      * @param end        The end time

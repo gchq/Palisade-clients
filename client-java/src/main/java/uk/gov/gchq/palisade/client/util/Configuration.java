@@ -203,11 +203,11 @@ public final class Configuration {
         if (overrides == null || overrides.isEmpty()) {
             return this;
         }
-        Map<String, Object> p = new HashMap<>();
-        p.putAll(this.properties);
-        p.putAll(overrides);
-        p = Util.substituteVariables(p);
-        return new Configuration(p);
+        Map<String, Object> allProperties = new HashMap<>();
+        allProperties.putAll(this.properties);
+        allProperties.putAll(overrides);
+        allProperties = Util.substituteVariables(allProperties);
+        return new Configuration(allProperties);
     }
 
     /**

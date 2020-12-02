@@ -130,7 +130,6 @@ public final class Downloader implements ReceiverContext {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
         checkArgument(func);
         return new Downloader(func.apply(DownloaderSetup.builder()).build());

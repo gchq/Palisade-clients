@@ -34,18 +34,18 @@ class RequestSerialisationTest {
     }
 
     @Test
-    void testPalisadeResponseSserialisation() throws Exception {
-        PalisadeResponse expected = createPalisadeResponse(b -> b.token("blah"));
-        String string = objectMapper.writeValueAsString(expected);
-        PalisadeResponse actual = objectMapper.readValue(string, PalisadeResponse.class);
+    void testPalisadeResponseSerialisation() throws Exception {
+        var expected = createPalisadeResponse(b -> b.token("blah"));
+        var string = objectMapper.writeValueAsString(expected);
+        var actual = objectMapper.readValue(string, PalisadeResponse.class);
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void testPalisadeRequestSerialisation() throws Exception {
-        PalisadeRequest expected = createPalisadeRequest(b -> b.resourceId("resourceId").userId("userId"));
-        String string = objectMapper.writeValueAsString(expected);
-        PalisadeRequest actual = objectMapper.readValue(string, PalisadeRequest.class);
+        var expected = createPalisadeRequest(b -> b.resourceId("resourceId").userId("userId"));
+        var string = objectMapper.writeValueAsString(expected);
+        var actual = objectMapper.readValue(string, PalisadeRequest.class);
         assertThat(actual).isEqualTo(expected);
     }
 

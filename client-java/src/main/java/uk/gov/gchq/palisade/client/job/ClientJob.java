@@ -48,7 +48,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.request.IPalisadeRequest.createPalisadeRequest;
-import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListenr;
+import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListener;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
@@ -136,7 +136,6 @@ public final class ClientJob implements Job {
      * @param func The builder function
      * @return a newly created ClientJob instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     public static ClientJob createJob(final UnaryOperator<JobSetup.Builder> func) {
         checkArgument(func, "Must supply a function to create a job");
         return createJob(func.apply(JobSetup.builder()).build());
@@ -221,7 +220,6 @@ public final class ClientJob implements Job {
      *
      * @param event The event to be handled
      */
-    @SuppressWarnings("java:S3242")
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     public void onResourceReady(final ResourceReadyEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
@@ -237,7 +235,6 @@ public final class ClientJob implements Job {
      *
      * @param event The event to be handled
      */
-    @SuppressWarnings("java:S2325") // make static
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     public void onNoMoreResources(final ResourcesExhaustedEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
@@ -296,7 +293,7 @@ public final class ClientJob implements Job {
 
         var resourceClient = ResourceClient.createResourceClient(rc -> rc
             .baseUri(wsUri)
-            .resourceClientListener(createResourceClientListenr(rcl -> rcl
+            .resourceClientListener(createResourceClientListener(rcl -> rcl
                 .token(token)
                 .downloadManagerStatus(downloadManager)
                 .eventBus(eventBus)

@@ -33,7 +33,7 @@ import java.util.function.UnaryOperator;
 
 /**
  * An instance of this class manages the communications to the Filtered Resource
- * Server via webn sockets
+ * Server via WebSockets
  *
  * @since 0.5.0
  */
@@ -99,18 +99,17 @@ public class ResourceClient {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     public static ResourceClient createResourceClient(final UnaryOperator<ResourceClientSetup.Builder> func) {
         return new ResourceClient(func.apply(ResourceClientSetup.builder()).build());
     }
 
     /**
-     * Requests the closure of this resource client, return a completeable future,
+     * Requests the closure of this resource client, return a completable future,
      * that when complete will signify the successful closure.
      */
     public void close() {
         LOGGER.debug("closing resource client!");
-        latch.countDown(); // release completeable future
+        latch.countDown(); // release completable future
     }
 
     /**
@@ -118,7 +117,6 @@ public class ResourceClient {
      *
      * @param event The event to be handled
      */
-    @SuppressWarnings("java:S2325") // make static
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     public void onNoMoreResources(final ResourcesExhaustedEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
@@ -154,7 +152,7 @@ public class ResourceClient {
             .thenCompose(v -> webSocket.sendClose(WebSocket.NORMAL_CLOSURE, ""))
             .thenRun(() -> {
                 LOGGER.debug("Websocket output is now closed");
-                latch.countDown(); // release completeable future
+                latch.countDown(); // release completable future
             });
     }
 

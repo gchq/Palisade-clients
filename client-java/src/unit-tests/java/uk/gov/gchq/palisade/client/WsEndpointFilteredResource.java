@@ -71,9 +71,9 @@ public class WsEndpointFilteredResource {
             var url = "http://localhost:" + port;
             this.token = token;
             this.messages = FILENAMES.stream()
-                .map(fn -> IResource.createResource(b -> b
+                .map(filename -> IResource.createResource(b -> b
                     .token(token)
-                    .leafResourceId(fn)
+                    .leafResourceId(filename)
                     .url(url)))
                 .map(rsc -> message(rsc, MessageType.RESOURCE))
                 .collect(Collectors.toList());
@@ -82,7 +82,7 @@ public class WsEndpointFilteredResource {
         }
 
         private Message message(final Object body, final MessageType type) {
-            return IMessage.create(b -> b
+            return IMessage.createMessage(builder -> builder
                 .putHeader(TOKEN_KEY, token)
                 .type(type)
                 .body(body));
@@ -99,8 +99,6 @@ public class WsEndpointFilteredResource {
     EmbeddedServer embeddedServer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WsEndpointFilteredResource.class);
-    @SuppressWarnings("unused")
-    private final WebSocketBroadcaster broadcaster;
     private Iterator<Message> messages;
 
     /**
@@ -110,7 +108,7 @@ public class WsEndpointFilteredResource {
      * @param broadcaster the web socket broadcaster
      */
     public WsEndpointFilteredResource(final WebSocketBroadcaster broadcaster) {
-        this.broadcaster = broadcaster;
+        // noop
     }
 
     /**
@@ -127,7 +125,7 @@ public class WsEndpointFilteredResource {
         if (!messages.hasNext()) {
             send(session, MessageType.COMPLETE);
         }
-        System.out.println("onOpen::" + session.getId());
+        LOGGER.debug("onOpen::{}", session.getId());
     }
 
     boolean completeSent = false;
@@ -160,12 +158,12 @@ public class WsEndpointFilteredResource {
      */
     @OnClose
     public void onClose(final WebSocketSession session) {
-        System.out.println("onClose::" + session.getId());
+        LOGGER.debug("onClose::{}", session.getId());
     }
 
     private static void send(final WebSocketSession session, final MessageType messageType) {
         var token = session.get(TOKEN_KEY, String.class).get();
-        var message = IMessage.create(b -> b.putHeader("token", token).type(messageType));
+        var message = IMessage.createMessage(b -> b.putHeader("token", token).type(messageType));
         send(session, message);
     }
 

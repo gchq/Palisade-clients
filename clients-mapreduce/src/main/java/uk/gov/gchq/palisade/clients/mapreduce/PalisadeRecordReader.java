@@ -51,7 +51,6 @@ import static java.util.Objects.requireNonNull;
  * In order to do this, we create a DataRequestResponse for each Resource and send it to the data service
  * created by the corresponding ConnectionDetail object.
  */
-@SuppressWarnings("java:S1135")
 public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeRecordReader.class);
 

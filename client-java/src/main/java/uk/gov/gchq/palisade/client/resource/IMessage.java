@@ -50,8 +50,7 @@ public interface IMessage extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
-    static Message create(final UnaryOperator<Message.Builder> func) {
+    static Message createMessage(final UnaryOperator<Message.Builder> func) {
         return func.apply(Message.builder()).build();
     }
 

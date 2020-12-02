@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * The job state service provideds loading and saving services for job states
+ * The job state service provides loading and saving services for job states
  *
  * @since 0.5.0
  */
@@ -53,10 +53,10 @@ public class JobStateService {
     }
 
     /**
-     * Returns a newly created {@code JobState} with the provided job config and
-     * properties
+     * Returns a newly created {@code JobState} with the provided job request and
+     * configuration properties
      *
-     * @param jobConfig     The job config
+     * @param jobConfig     The job configuration
      * @param configuration The client configuration
      * @return a newly created {@code JobState}
      */
@@ -66,7 +66,7 @@ public class JobStateService {
 
 
     /**
-     * Returns newly created {@code JobState} from the provided path to a state file
+     * Returns newly created {@code JobState} from the provided path
      *
      * @param fromPath The path to load state from
      * @return newly created {@code JobState}
@@ -76,7 +76,8 @@ public class JobStateService {
     }
 
     /**
-     * Returns newly created {@code JobState} from the provided path to a state file
+     * Returns newly created {@code JobState} from the provided path overridden with
+     * the provided configuration properties.
      *
      * @param fromPath      The path to load state from
      * @param configuration The override configuration

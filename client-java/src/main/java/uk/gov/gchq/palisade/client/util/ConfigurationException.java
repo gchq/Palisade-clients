@@ -29,7 +29,7 @@ public class ConfigurationException extends ClientException {
     /**
      * Returns a newly created instance with the provided message
      *
-     * @param message The message
+     * @param message The message text explaining this exception
      */
     public ConfigurationException(final String message) {
         super(message);
@@ -38,8 +38,8 @@ public class ConfigurationException extends ClientException {
     /**
      * Returns a newly created instance with the provided message and cause
      *
-     * @param message The message
-     * @param cause   The cause
+     * @param message The message text explaining this exception
+     * @param cause   The underlying cause
      */
     public ConfigurationException(final String message, final Throwable cause) {
         super(message, cause);

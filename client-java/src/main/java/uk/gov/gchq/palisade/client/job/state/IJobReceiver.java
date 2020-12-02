@@ -66,7 +66,7 @@ public interface IJobReceiver {
      * @return the receiver
      */
     @Value.Default
-    default Receiver getReciver() {
+    default Receiver getReceiver() {
         return new FileReceiver();
     }
 

@@ -31,8 +31,8 @@ class ClientTest {
     private static final String HTTP = "http";
     private static final String FILE_PATH = "/media";
 
-    private static final String UNKOWN_KEY = "my.unknown";
-    private static final String UNKOWN_VALUE = "boogie";
+    private static final String UNKNOWN_KEY = "my.unknown";
+    private static final String UNKNOWN_VALUE = "boogie";
 
     @Test
     void testCreateWithProperties() {
@@ -42,7 +42,7 @@ class ClientTest {
             Configuration.KEY_SERVICE_PS_SCHEME, HTTP,
             Configuration.KEY_DOWNLOAD_THREADS, NUM_THREADS,
             Configuration.KEY_RECEIVER_FILE_PATH, FILE_PATH,
-            UNKOWN_KEY, UNKOWN_VALUE));
+            UNKNOWN_KEY, UNKNOWN_VALUE));
 
         var properties = client.getConfiguration().getProperties();
 
@@ -51,7 +51,7 @@ class ClientTest {
             Configuration.KEY_SERVICE_PS_SCHEME, HTTP,
             Configuration.KEY_DOWNLOAD_THREADS, NUM_THREADS,
             Configuration.KEY_RECEIVER_FILE_PATH, FILE_PATH,
-            UNKOWN_KEY, UNKOWN_VALUE));
+            UNKNOWN_KEY, UNKNOWN_VALUE));
 
     }
 

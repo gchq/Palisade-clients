@@ -23,32 +23,23 @@ package uk.gov.gchq.palisade.client.resource;
 public enum MessageType {
 
     /**
-     * Server is ready to send a resource
-     * Required headers:
-     * token: The request token to subscribe to
-     */
-    RTS,
-
-    /**
-     * Client reponds with CTS after it has recived a RTS when it is ready.
+     * Indicates that the client is ready to receive. This type of message is send
+     * only.
      */
     CTS,
 
     /**
-     * An error has occurred on the server
+     * An error has occurred on the server. This type of message is receive only.
      */
     ERROR,
 
     /**
-     * A resource from the server Required headers: token: The request token to
-     * subscribe to
+     * A resource from the server. This type of message is receive only.
      */
     RESOURCE,
 
     /**
-     * No more resources available for token
-     * Required headers:
-     * token: The request token to subscribe to
+     * No more resources available for token. This type of message is receive only.
      */
     COMPLETE
 

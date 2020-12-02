@@ -47,7 +47,7 @@ public class ResourceClientListener implements Listener {
      */
     @Value.Immutable
     @ImmutableStyle
-    public interface IResourceClientListenrSetup {
+    public interface IResourceClientListenerSetup {
 
         /**
          * Returns the download manager status
@@ -83,7 +83,7 @@ public class ResourceClientListener implements Listener {
     private static final long ONE_SECOND = 1000L;
 
 
-    private final IResourceClientListenrSetup setup;
+    private final IResourceClientListenerSetup setup;
 
     /**
      * A {@code ResourceClient} manages the passing of messages to/from a websocket
@@ -91,7 +91,7 @@ public class ResourceClientListener implements Listener {
      *
      * @param setup The setup for this listener
      */
-    public ResourceClientListener(final IResourceClientListenrSetup setup) {
+    public ResourceClientListener(final IResourceClientListenerSetup setup) {
         this.setup = Checks.checkArgument(setup);
     }
 
@@ -101,9 +101,9 @@ public class ResourceClientListener implements Listener {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    public static ResourceClientListener createResourceClientListenr(
-        final UnaryOperator<ResourceClientListenrSetup.Builder> func) {
-        return new ResourceClientListener(func.apply(ResourceClientListenrSetup.builder()).build());
+    public static ResourceClientListener createResourceClientListener(
+        final UnaryOperator<ResourceClientListenerSetup.Builder> func) {
+        return new ResourceClientListener(func.apply(ResourceClientListenerSetup.builder()).build());
     }
 
     DownloadManagerStatus getDownloadTracker() {
@@ -118,7 +118,7 @@ public class ResourceClientListener implements Listener {
         return getSetup().getObjectMapper();
     }
 
-    IResourceClientListenrSetup getSetup() {
+    IResourceClientListenerSetup getSetup() {
         return setup;
     }
 
@@ -218,7 +218,6 @@ public class ResourceClientListener implements Listener {
         getEventBus().post(event);
     }
 
-    @SuppressWarnings({ "java:S3242", "java:S1135" }) // I REALLY want to use UnaryOperator here SonarQube!!!
     private CompletableFuture<WebSocket> sendMessage(final WebSocket ws, final UnaryOperator<Message.Builder> func) {
         var message = func.apply(Message.builder().putHeader("token", getToken())).build();
         try {

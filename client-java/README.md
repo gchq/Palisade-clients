@@ -33,17 +33,17 @@ Once the job is submitted control is returned to the application without blockin
 
 ## Logical Diagram
 
-![Logical Diagram](doc/java-client-logical-diagram-1.svg){width=800}
+![Logical Diagram](doc/java-client-logical-diagram-1.svg)
 
 ## Events
 
-The Java Client has at its core an EventBus which handles the communication between the major parts of the code. The reasoning behind this is that it keeps the components loosely coupled. This makes the code much easier to maintain and easier to test. The eventbus has the ability to alter how events are posted. Currently this client uses the `ThreadMode.MAIN_ORDERED` setting. This allows the posted events to be be non-blocking  
+The Java Client has at its core an EventBus which handles the communication between the major parts of the code. The reasoning behind this is that it keeps the components loosely coupled. This makes the code much easier to maintain and easier to test. The EventBus has the ability to alter how events are posted. Currently, this client uses the `ThreadMode.MAIN_ORDERED` setting. This allows the posted events to be non-blocking.
 
 Following is a breakdown of which classes subscribe and post events:
 
 ### Resource Client
 
-The `ResourceClientListener` handles the messages that are received vis the websocket. When these messages are received, the listener will post the following events when messages are received from the `FilteredResourceservice`. This class does not subscribe to any events via the EventBus, it only posts:
+The `ResourceClientListener` handles the messages that are received via the websocket. When these messages are received, the listener will post the following events when messages are received from the `FilteredResourceService`. This class does not subscribe to any events via the EventBus, it only posts:
 
 * __ResourceReadyEvent__ - is posted when a message of type `RESOURCE` is received.
 * __ResourcesExhaustedEvent__ - is posted when a message of type `COMPLETE` has been received.
@@ -76,7 +76,7 @@ The following events are subscribed to:
 * __ResourcesExhaustedEvent__ - updates the state as finished
 * __ErrorEvent__ - updates the state
 
-A countdown latch is created (with the outstandin number of downloads) once the resource client has closed the websocket. This signifies that no more resources are going to arrive from the Filtered Resource Service. As each download event is received, the latch is decremented. Once it hits 0, the future is completed and the final state is returned.
+A countdown latch is created (with the outstanding number of downloads) once the resource client has closed the websocket. This signifies that no more resources are going to arrive from the Filtered Resource Service. As each download event is received, the latch is decremented. Once it hits 0, the future is completed and the final state is returned.
 
 ## Code
 

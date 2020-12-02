@@ -41,12 +41,11 @@ import java.util.function.UnaryOperator;
 public interface IJobDownload {
 
     /**
-     * Helper method to create a {@code JobConfig} using a builder function
+     * Helper method to create a {@code JobDownload} using a builder function
      *
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static IJobDownload createDownload(final UnaryOperator<JobDownload.Builder> func) {
         return func.apply(JobDownload.builder()).build();
     }
@@ -62,9 +61,9 @@ public interface IJobDownload {
     }
 
     /**
-     * Returns the execuction containing this download
+     * Returns the execution containing this download
      *
-     * @return the execuction containing this download
+     * @return the execution containing this download
      */
     IJobExecution getExecution();
 

@@ -16,7 +16,7 @@
 package uk.gov.gchq.palisade.client.receiver;
 
 /**
- * Thrown when an inputstream receiver fails to complete
+ * Thrown when a {@code Receiver} fails to complete
  *
  * @since 0.5.0
  */

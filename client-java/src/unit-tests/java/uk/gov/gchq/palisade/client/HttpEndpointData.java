@@ -39,10 +39,10 @@ public class HttpEndpointData {
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointData.class);
 
     /**
-     * Returns an http response containing an inputstream. so cool :)
+     * Returns an http response containing an inputstream
      *
      * @param request The request
-     * @return an http response containing an inputstream. so cool :)
+     * @return an http response containing an inputstream
      */
     @Post("/read/chunked")
     @Consumes(MediaType.APPLICATION_JSON)

@@ -53,7 +53,6 @@ public interface IJobExecution {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static JobExecution createJobExecution(final UnaryOperator<JobExecution.Builder> func) {
         return func.apply(JobExecution.builder()).build();
     }

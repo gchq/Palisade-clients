@@ -37,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListenr;
 
 /**
  * Note that this class must be public for the subscriptions on the event bus to
@@ -169,7 +168,7 @@ public class ResourceClientTest {
         return ResourceClient
             .createResourceClient(b -> b
                 .baseUri("ws://localhost:" + port + "/cluster/filteredResource/name/%t")
-                .resourceClientListener(createResourceClientListenr(rcl -> rcl
+                .resourceClientListener(ResourceClientListener.createResourceClientListener(rcl -> rcl
                     .downloadManagerStatus(downloadTracker)
                     .eventBus(eventBus)
                     .objectMapper(objectMapper)

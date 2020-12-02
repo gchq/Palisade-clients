@@ -48,7 +48,6 @@ public interface IError extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     static Error create(final UnaryOperator<Error.Builder> func) {
         return func.apply(Error.builder()).build();
     }

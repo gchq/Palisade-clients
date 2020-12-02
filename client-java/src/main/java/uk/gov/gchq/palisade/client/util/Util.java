@@ -41,12 +41,12 @@ public final class Util {
 
     /**
      * Replaces tokens in the provide template by using the functions provided. This
-     * is usefil when replacing path tokens in a template. For example
+     * is useful when replacing path tokens in a template. For example
      * <pre>{@code /tmp/%t/%s/%r}</pre>
      *
      * @param template     The source template
      * @param replacements The replacement functions
-     * @return the template with tokjens replaced
+     * @return the template with tokens replaced
      */
     public static String replaceTokens(final String template, final Map<String, Supplier<String>> replacements) {
         String result = template;

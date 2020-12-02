@@ -35,7 +35,7 @@ class UtilTest {
             "%t", () -> token,
             "%s", () -> now);
 
-        String path = Util.replaceTokens("/my/path/t-%t/s-%s.json", replacementMap);
+        var path = Util.replaceTokens("/my/path/t-%t/s-%s.json", replacementMap);
 
         assertThat(path).isEqualTo(("/my/path/t-" + token + "/s-" + now + ".json"));
     }
@@ -48,9 +48,9 @@ class UtilTest {
             "key2", "${key1}",
             "key3", "${key1}");
 
-        var substitued = Util.substituteVariables(original);
+        var substituted = Util.substituteVariables(original);
 
-        assertThat(substitued).containsAllEntriesOf(Map.of(
+        assertThat(substituted).containsAllEntriesOf(Map.of(
             "key1", "theValue",
             "key2", "theValue",
             "key3", "theValue"));
