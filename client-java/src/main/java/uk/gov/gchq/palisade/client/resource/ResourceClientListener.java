@@ -195,15 +195,10 @@ public class ResourceClientListener implements Listener {
             // This is a quite crude way of waiting for download slots to become available
             // Should implement a better way, but this will do for now.
 
-            while (!getDownloadTracker().canSchedule()) {
-                try {
-                    LOGGER.debug("No download slots available, waiting");
-                    Thread.sleep(ONE_SECOND);
-                } catch (InterruptedException e) { // just swallow this
-                    Thread.currentThread().interrupt();
-                    LOGGER.warn("This thread was sleeping, when it was interrupted: {}", e.getMessage());
-                    // we'll loop round to see if there are any available slots
-                }
+            try {
+                getDownloadTracker().await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
 
             sendMessage(ws, b -> b.type(MessageType.CTS));

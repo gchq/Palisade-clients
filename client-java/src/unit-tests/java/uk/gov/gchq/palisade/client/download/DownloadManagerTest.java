@@ -109,7 +109,7 @@ public class DownloadManagerTest {
     void testSuccessfulDownload() {
 
         var resource = createResource(r -> r
-            .leafResourceId("pi.txt")
+            .leafResourceId("resources/pi0.txt")
             .token(TOKEN)
             .url(BASE_URL));
 

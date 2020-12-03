@@ -21,8 +21,8 @@ List of third-party dependencies grouped by their license type
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
 * Spring Cloud Starter OpenFeign ([org.springframework.cloud:spring-cloud-starter-openfeign:2.2.0.RELEASE](https://projects.spring.io/spring-cloud))
 * clients-common ([uk.gov.gchq.palisade:clients-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/clients-common))
-* common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
-* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
+* common ([uk.gov.gchq.palisade:common:0.5.0-20201123.112015-20](https://github.com/gchq/Palisade-common))
+* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-20201123.113246-22](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
 
 ### [Eclipse Public License 1.0](./licenses/eclipse_public_license_1.0.html):
 * Logback Classic Module ([ch.qos.logback:logback-classic:1.2.3](http://logback.qos.ch/logback-classic))

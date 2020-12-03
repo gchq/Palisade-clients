@@ -71,13 +71,13 @@ class ResumeTest {
          * now we should read both the original and the new file The original is in
          * "src/test/resources" and the download file is in "/tmp"
          */
-        InputStream expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("pi.txt");
-        FileInputStream actual = new FileInputStream(findPath(state, "pi.txt"));
+        InputStream expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/pi0.txt");
+        FileInputStream actual = new FileInputStream(findPath(state, "resources/pi0.txt"));
 
         assertThat(actual).hasSameContentAs(expected);
 
-        expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("Selection_032.png");
-        actual = new FileInputStream(findPath(state, "Selection_032.png"));
+        expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/pi1.txt");
+        actual = new FileInputStream(findPath(state, "resources/pi1.txt"));
 
         assertThat(actual).hasSameContentAs(expected);
 

@@ -31,4 +31,11 @@ public interface DownloadManagerStatus {
      */
     boolean canSchedule();
 
+    /**
+     * Wait for download availability to become available
+     *
+     * @throws InterruptedException If the thread is interrupted
+     */
+    void await() throws InterruptedException;
+
 }

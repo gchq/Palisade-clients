@@ -56,7 +56,10 @@ public class WsEndpointFilteredResource {
      */
     public static class ResourceGenerator implements Iterable<Message> {
 
-        private static final List<String> FILENAMES = List.of("pi.txt", "Selection_032.png");
+        private static final List<String> FILENAMES = List.of(
+            "resources/pi0.txt", "resources/pi1.txt", "resources/pi2.txt", "resources/pi3.txt",
+            "resources/pi4.txt", "resources/pi5.txt", "resources/pi6.txt", "resources/pi7.txt",
+            "resources/pi8.txt", "resources/pi9.txt");
         private final List<Message> messages;
         private final String token;
 

@@ -82,26 +82,26 @@ public class ResourceClientTest {
         // complete)
 
         future.get(5, TimeUnit.HOURS);
-        assertThat(events).hasSize(4);
+        assertThat(events).hasSize(12);
 
         var event0 = getIfInstanceOf(events.get(0), ResourceReadyEvent.class);
         var event1 = getIfInstanceOf(events.get(1), ResourceReadyEvent.class);
-        var event2 = getIfInstanceOf(events.get(2), ErrorEvent.class);
-        var event3 = getIfInstanceOf(events.get(3), ResourcesExhaustedEvent.class);
+        var event10 = getIfInstanceOf(events.get(10), ErrorEvent.class);
+        var event11 = getIfInstanceOf(events.get(11), ResourcesExhaustedEvent.class);
 
         assertThat(event0.getResource())
             .extracting("leafResourceId", "token", "url")
-            .containsExactly("pi.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
+            .containsExactly("resources/pi0.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event1.getResource())
             .extracting("leafResourceId", "token", "url")
-            .containsExactly("Selection_032.png", TOKEN, "http://localhost:" + embeddedServer.getPort());
+            .containsExactly("resources/pi1.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
 
-        assertThat(event2.getError())
+        assertThat(event10.getError())
             .extracting("text")
             .isEqualTo("test error");
 
-        assertThat(event3)
+        assertThat(event11)
             .extracting("token")
             .isEqualTo(TOKEN);
 

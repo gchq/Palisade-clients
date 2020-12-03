@@ -31,7 +31,22 @@ import java.util.function.Supplier;
  *
  * @since 0.5.0
  */
-public class FileReceiver extends AbstractReceiver {
+public class FileReceiver implements Receiver {
+
+    /**
+     * Property key for the number of bytes downloaded
+     */
+    public static final String BYTES_KEY = "bytes";
+
+    /**
+     * Property key for the path where downloads are saved
+     */
+    public static final String PATH_KEY = "path";
+
+    /**
+     * Property key for the filename
+     */
+    public static final String FILENAME_KEY = "filename";
 
     private static final String FILE_PATH_KEY = "receiver.file.path";
 

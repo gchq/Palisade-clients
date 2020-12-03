@@ -64,7 +64,7 @@ class DownloaderTest {
     void testSuccessfulDownload() throws Exception {
 
         var token = "abcd-1";
-        var filename = "pi.txt";
+        var filename = "resources/pi0.txt";
 
         var downloader = Downloader.createDownloader(b -> b
             .objectMapper(objectMapper)
@@ -92,7 +92,7 @@ class DownloaderTest {
     void testInvalid() throws Exception {
 
         var token = "abcd-1";
-        var filename = "pi.txt";
+        var filename = "resources/pi0.txt";
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)
@@ -119,7 +119,7 @@ class DownloaderTest {
     void testReceiverFail() {
 
         var token = "abcd-1";
-        var filename = "Selection_032.png";
+        var filename = "resources/pi1.txt";
 
         var downloader = createDownloader(b -> b
             .objectMapper(objectMapper)

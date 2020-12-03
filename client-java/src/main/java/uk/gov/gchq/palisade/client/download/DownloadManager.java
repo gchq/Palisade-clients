@@ -31,6 +31,9 @@ import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.download.Downloader.createDownloader;
@@ -65,12 +68,14 @@ public final class DownloadManager implements DownloadManagerStatus {
          * @return the object mapper to be passed on to downloader threads
          */
         ObjectMapper getObjectMapper();
+
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadManager.class);
 
     private static final int CORE_POOL_SIZE = 0; // ensure that unreferenced pools are reclaimed
     private static final int KEEP_ALIVE_SECONDS = 10;
+    private static final int BUFFER_SIZE = 5;
 
     private final ThreadPoolExecutor executor;
     private final LinkedBlockingQueue<Runnable> buffer;
@@ -84,7 +89,7 @@ public final class DownloadManager implements DownloadManagerStatus {
      */
     private DownloadManager(final DownloadManagerSetup downloadManagerSetup) {
         this.setup = checkArgument(downloadManagerSetup);
-        this.buffer = new LinkedBlockingQueue<>();
+        this.buffer = new LinkedBlockingQueue<>(BUFFER_SIZE);
         this.executor = new ThreadPoolExecutor(
             CORE_POOL_SIZE,
             setup.getNumThreads(),
@@ -167,24 +172,38 @@ public final class DownloadManager implements DownloadManagerStatus {
         // The downloader is wrapped here so as to catch ALL exceptions that may be
         // thrown. They are handled within the runnable as no exceptions may be thrown
         // outside the executor.
+        //
+        // Once the runnable is complete, a check is made to see if there is spare
+        // capacity in the buffer feeding the executor. If there is, then the
+        // capacity condition is signalled, releasing any waiting threads (in this
+        // instance only the ResourceClientListener).
 
         Runnable runner = () -> {
 
-            eventbus.post(DownloadStartedEvent.of(downloadId, resource, Map.of()));
-
-            // Note: The Downloader will catch Exception and throw DownloaderException, so
-            // no need to catch Exception here :)
-
             try {
+
+                eventbus.post(DownloadStartedEvent.of(downloadId, resource, Map.of()));
                 var result = downloader.start();
                 eventbus.post(DownloadCompletedEvent.of(downloadId, resource, result.getProperties(), result));
+
             } catch (DownloaderException e) {
                 eventbus.post(DownloadFailedEvent.of(downloadId, resource, Map.of(), e, e.getStatusCode()));
+            } finally {
+                capacityLock.lock();
+                try {
+                    if (buffer.remainingCapacity() > 0) {
+                        LOGGER.debug("Buffer capacity now available");
+                        capacity.signal();
+                    }
+                } finally {
+                    capacityLock.unlock();
+                }
             }
 
         };
 
         executor.execute(runner);
+
         return downloadId;
 
     }
@@ -217,6 +236,22 @@ public final class DownloadManager implements DownloadManagerStatus {
     public void shutdownNow() {
         LOGGER.debug("Download manager told to shutdown now");
         executor.shutdownNow();
+    }
+
+    final Lock capacityLock = new ReentrantLock();
+    final Condition capacity = capacityLock.newCondition();
+
+    @Override
+    public void await() throws InterruptedException {
+        capacityLock.lock();
+        try {
+            while (buffer.remainingCapacity() == 0) {
+                LOGGER.debug("Waiting for buffer capacity to become available");
+                capacity.await();
+            }
+        } finally {
+            capacityLock.unlock();
+        }
     }
 
 }

@@ -27,6 +27,7 @@ import uk.gov.gchq.palisade.client.util.Configuration;
 import javax.inject.Inject;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,17 +63,23 @@ class FullTest {
         var result = client.submit(jobRequest);
         var state = result.future().join();
 
-        /*
-         * now we should read both the original and the new file The original is in
-         * "src/test/resources" and the download file is in "/tmp"
-         */
-        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("pi.txt");
-        var actual = new FileInputStream(findPath(state, "pi.txt"));
+        assertDownloaded(state, "resources/pi0.txt");
+        assertDownloaded(state, "resources/pi1.txt");
+        assertDownloaded(state, "resources/pi2.txt");
+        assertDownloaded(state, "resources/pi3.txt");
+        assertDownloaded(state, "resources/pi4.txt");
+        assertDownloaded(state, "resources/pi5.txt");
+        assertDownloaded(state, "resources/pi6.txt");
+        assertDownloaded(state, "resources/pi7.txt");
+        assertDownloaded(state, "resources/pi8.txt");
+        assertDownloaded(state, "resources/pi9.txt");
 
-        assertThat(actual).hasSameContentAs(expected);
+    }
 
-        expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("Selection_032.png");
-        actual = new FileInputStream(findPath(state, "Selection_032.png"));
+    private void assertDownloaded(final ISavedJobState state, final String resourceId) throws FileNotFoundException {
+
+        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceId);
+        var actual = new FileInputStream(findPath(state, resourceId));
 
         assertThat(actual).hasSameContentAs(expected);
 
