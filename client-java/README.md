@@ -27,7 +27,7 @@ for (IStateDownload dl : state.getDownloads()) {
 }
 ```
 
-Once the job is submitted control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
+Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
 
 ## Overview
 

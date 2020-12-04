@@ -31,7 +31,6 @@ import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
 
-import java.io.File;
 import java.io.FileInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,7 +79,7 @@ class DownloaderTest {
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.
 
-        var actual = new FileInputStream(new File(result.getProperties().get("path")));
+        var actual = new FileInputStream(result.getProperties().get("path"));
         var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
 
         assertThat(actual).hasSameContentAs(expected);
@@ -108,7 +107,7 @@ class DownloaderTest {
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.
 
-        var actual = new FileInputStream(new File(result.getProperties().get("path")));
+        var actual = new FileInputStream(result.getProperties().get("path"));
         var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
 
         assertThat(actual).hasSameContentAs(expected);

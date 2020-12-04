@@ -126,7 +126,7 @@ public class WsEndpointFilteredResource {
         session.put(TOKEN_KEY, token);
         this.messages = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
         if (!messages.hasNext()) {
-            send(session, MessageType.COMPLETE);
+            sendComplete(session);
         }
         LOGGER.debug("onOpen::{}", session.getId());
     }
@@ -147,7 +147,7 @@ public class WsEndpointFilteredResource {
             if (messages.hasNext()) {
                 send(session, messages.next());
             } else {
-                send(session, MessageType.COMPLETE);
+                sendComplete(session);
             }
         } else {
             LOGGER.warn("Unknown message type: {}", inmsg.getType());
@@ -164,10 +164,10 @@ public class WsEndpointFilteredResource {
         LOGGER.debug("onClose::{}", session.getId());
     }
 
-    private static void send(final WebSocketSession session, final MessageType messageType) {
-        var token = session.get(TOKEN_KEY, String.class).get();
-        var message = IMessage.createMessage(b -> b.putHeader("token", token).type(messageType));
-        send(session, message);
+    private static final void sendComplete(final WebSocketSession session) {
+        send(session, IMessage.createMessage(b -> b
+            .putHeader("token", session.get(TOKEN_KEY, String.class).get())
+            .type(MessageType.COMPLETE)));
     }
 
     private static void send(final WebSocketSession session, final Message message) {

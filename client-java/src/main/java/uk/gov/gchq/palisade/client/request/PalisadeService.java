@@ -95,15 +95,15 @@ public class PalisadeService implements PalisadeClient {
 
         return httpClient
             .sendAsync(httpRequest, BodyHandlers.ofString())
-            .thenApply(resp -> checkStatusCode(resp, IS_HTTP_OK))
+            .thenApply(this::checkStatusOK)
             .thenApply(HttpResponse::body)
             .thenApply(this::toResponse);
 
     }
 
-    private <T> HttpResponse<T> checkStatusCode(final HttpResponse<T> resp, final IntPredicate pred) {
+    private <T> HttpResponse<T> checkStatusOK(final HttpResponse<T> resp) {
         int status = resp.statusCode();
-        if (!pred.test(status)) {
+        if (!IS_HTTP_OK.test(status)) {
             String body;
             try {
                 body = objectMapper.writeValueAsString(resp.body());
