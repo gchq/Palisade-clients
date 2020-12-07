@@ -80,7 +80,6 @@ public class ResourceClientListener implements Listener {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceClientListener.class);
-    private static final long ONE_SECOND = 1000L;
 
 
     private final IResourceClientListenerSetup setup;

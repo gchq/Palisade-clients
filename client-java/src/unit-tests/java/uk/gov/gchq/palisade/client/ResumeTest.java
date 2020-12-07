@@ -33,7 +33,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * @author dbell
+ * @since 0.5.0
  */
 @MicronautTest
 class ResumeTest {

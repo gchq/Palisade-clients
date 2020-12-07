@@ -81,6 +81,9 @@ public final class DownloadManager implements DownloadManagerStatus {
     private final LinkedBlockingQueue<Runnable> buffer;
     private final DownloadManagerSetup setup;
 
+    private final Lock capacityLock = new ReentrantLock();
+    private final Condition capacity = capacityLock.newCondition();
+
     /**
      * Create a new DownloadManager with the the provided
      * {@code DownloadManagerSetup}
@@ -238,8 +241,6 @@ public final class DownloadManager implements DownloadManagerStatus {
         executor.shutdownNow();
     }
 
-    final Lock capacityLock = new ReentrantLock();
-    final Condition capacity = capacityLock.newCondition();
 
     @Override
     public void await() throws InterruptedException {
