@@ -1,0 +1,32 @@
+#
+# replacement attributes markers:
+#  %t = token
+#  %s = timestamp (yyyyMMdd-hhmmss)
+#  %r = resource
+#
+service:
+  host: localhost
+  port: 8081
+  context: /cluster 
+  palisade:
+    scheme: http
+    port: ${service.port}
+    context: /palisade
+    endpoint: /registerDataRequest
+  filteredResource:
+    scheme: ws
+    port: ${service.port}
+    context: /filteredResource
+    endpoint: /name/%t
+  data:
+    context: /data
+    endpoint: /read/chunked    
+state:
+  path: /tmp/palisade/%t/palisade-state_%t_%s.json
+download:
+  threads: 2
+receiver:
+  file:
+    path: /tmp/palisade/%t/downloads/palisade-download_%t_%s_%r
+    class: uk.gov.gchq.palisade.client.receiver.FileReceiver
+    

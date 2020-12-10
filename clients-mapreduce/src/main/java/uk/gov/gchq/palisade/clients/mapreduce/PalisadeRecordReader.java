@@ -102,7 +102,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     /**
      * No-arg constructor.
      */
-    public PalisadeRecordReader() {
+    public PalisadeRecordReader() { // noop
     }
 
     /**
@@ -146,7 +146,7 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
             } catch (final CompletionException e) {
                 //something went wrong while fetching the next resource, what we do now depends on the user choice of how
                 //they want to handle errors, either way we need to log the error
-                LOGGER.warn("Failed to connect to resource {} due to {}", errResource, e.getCause());
+                LOGGER.warn("Failed to connect to resource {} due to {}", errResource, e.getCause().getMessage());
                 LOGGER.warn("Failure exception is", e);
                 errResource = null;
                 //notify via counter
@@ -174,22 +174,22 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
      * @throws java.util.concurrent.CompletionException if the next source of data suffered a failure on establishing
      *                                                  data stream
      */
+    @SuppressWarnings("java:S125")
     private boolean moveToNextResource() {
         //do we have a resource iterator?
         if (resIt == null) {
             return false;
-        } else {
-            //any resources left to process?
-            if (resIt.hasNext()) {
-                //set up the next resource
-//                setupItemStream();
-                return true;
-            } else {
-                //end of things to be iterated
-                resIt = null;
-                return false;
-            }
         }
+        // any resources left to process?
+        if (resIt.hasNext()) {
+            // set up the next resource
+            // setupItemStream();
+            return true;
+        }
+        // end of things to be iterated
+        resIt = null;
+        return false;
+
     }
 
     /**
@@ -260,9 +260,11 @@ public class PalisadeRecordReader<V> extends RecordReader<LeafResource, V> {
     @Override
     @Generated
     public float getProgress() {
-        return (dataRequestResponse != null && dataRequestResponse.getResources().size() > 0)
-                ? (float) processed / dataRequestResponse.getResources().size()
-                : 0;
+        double result = 0;
+        if (dataRequestResponse != null && !dataRequestResponse.getResources().isEmpty()) {
+            result = ((double) processed) / dataRequestResponse.getResources().size();
+        }
+        return (float) result;
     }
 
     /**

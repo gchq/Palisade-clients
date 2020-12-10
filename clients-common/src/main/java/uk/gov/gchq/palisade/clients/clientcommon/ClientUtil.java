@@ -33,6 +33,7 @@ BE REQUIRED
 */
 
 @Deprecated
+@SuppressWarnings({ "java:S125", "java:S1123", "java:S1133", "java:S1068", "java:S1213" })
 public final class ClientUtil {
     private ClientUtil() {
     }

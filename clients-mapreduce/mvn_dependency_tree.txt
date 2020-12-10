@@ -113,7 +113,7 @@ uk.gov.gchq.palisade:clients-mapreduce:jar:0.5.0-SNAPSHOT
 |  +- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.10.0:compile
 |  \- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.10.0:compile
 +- uk.gov.gchq.palisade:clients-common:jar:0.5.0-SNAPSHOT:compile
-+- junit:junit:jar:4.12:test
++- junit:junit:jar:4.13.1:test
 |  \- org.hamcrest:hamcrest-core:jar:2.1:test
 |     \- org.hamcrest:hamcrest:jar:2.1:test
 \- org.mockito:mockito-all:jar:1.10.19:test
