@@ -1,5 +1,5 @@
 uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
-+- org.slf4j:slf4j-api:jar:1.7.30:compile
++- org.slf4j:slf4j-api:jar:1.7.26:compile
 +- org.greenrobot:eventbus:jar:3.2.0:compile
 +- com.fasterxml.jackson.core:jackson-databind:jar:2.10.0:compile
 |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.10.0:compile
