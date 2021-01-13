@@ -15,7 +15,7 @@
  */
 package uk.gov.gchq.palisade.client.receiver;
 
-import uk.gov.gchq.palisade.client.resource.Resource;
+import uk.gov.gchq.palisade.client.resource.ResourceMessage;
 
 import java.util.Optional;
 
@@ -31,7 +31,7 @@ public interface ReceiverContext {
      *
      * @return the resource that is being received
      */
-    Resource getResource();
+    ResourceMessage getResource();
 
     /**
      * Returns an optional containing the value for the provided key or empty if not

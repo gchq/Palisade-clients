@@ -21,8 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.request.IPalisadeRequest.createPalisadeRequest;
-import static uk.gov.gchq.palisade.client.request.IPalisadeResponse.createPalisadeResponse;
 
 class RequestSerialisationTest {
 
@@ -35,7 +33,7 @@ class RequestSerialisationTest {
 
     @Test
     void testPalisadeResponseSerialisation() throws Exception {
-        var expected = createPalisadeResponse(b -> b.token("blah"));
+        var expected = PalisadeResponse.createPalisadeResponse(b -> b.token("blah"));
         var string = objectMapper.writeValueAsString(expected);
         var actual = objectMapper.readValue(string, PalisadeResponse.class);
         assertThat(actual).isEqualTo(expected);
@@ -43,7 +41,7 @@ class RequestSerialisationTest {
 
     @Test
     void testPalisadeRequestSerialisation() throws Exception {
-        var expected = createPalisadeRequest(b -> b.resourceId("resourceId").userId("userId"));
+        var expected = PalisadeRequest.createPalisadeRequest(b -> b.resourceId("resourceId").userId("userId"));
         var string = objectMapper.writeValueAsString(expected);
         var actual = objectMapper.readValue(string, PalisadeRequest.class);
         assertThat(actual).isEqualTo(expected);

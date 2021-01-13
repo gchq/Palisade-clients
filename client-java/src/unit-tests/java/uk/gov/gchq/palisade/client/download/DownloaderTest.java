@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.receiver.Receiver;
 import uk.gov.gchq.palisade.client.receiver.ReceiverException;
-import uk.gov.gchq.palisade.client.resource.IResource;
+import uk.gov.gchq.palisade.client.resource.ResourceMessage;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
@@ -69,7 +69,7 @@ class DownloaderTest {
             .objectMapper(objectMapper)
             .configuration(configuration)
             .receiver(receiver)
-            .resource(IResource.createResource(r -> r
+            .resource(ResourceMessage.createResource(r -> r
                 .leafResourceId(filename)
                 .token(token)
                 .url(BASE_URL))));
@@ -97,7 +97,7 @@ class DownloaderTest {
             .objectMapper(objectMapper)
             .configuration(configuration)
             .receiver(receiver)
-            .resource(IResource.createResource(r -> r
+            .resource(ResourceMessage.createResource(r -> r
                 .leafResourceId(filename)
                 .token(token)
                 .url(BASE_URL))));
@@ -126,7 +126,7 @@ class DownloaderTest {
             .receiver((ctx, is) -> {
                 throw new IllegalArgumentException("test exception");
             })
-            .resource(IResource.createResource(r -> r
+            .resource(ResourceMessage.createResource(r -> r
                 .leafResourceId(filename)
                 .token(token)
                 .url(BASE_URL))));
@@ -150,7 +150,7 @@ class DownloaderTest {
             .objectMapper(objectMapper)
             .configuration(configuration)
             .receiver(receiver)
-            .resource(IResource.createResource(r -> r
+            .resource(ResourceMessage.createResource(r -> r
                 .leafResourceId(filename)
                 .token(token)
                 .url(BASE_URL))));

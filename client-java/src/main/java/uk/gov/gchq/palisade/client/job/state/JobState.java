@@ -19,12 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.job.JobDownloadStatus;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateDownload;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateExecution;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobError;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobRequest;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStatePalisadeResponse;
-import uk.gov.gchq.palisade.client.request.IPalisadeResponse;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState.StateDownload;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState.StateExecution;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState.StateJobError;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState.StateJobRequest;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState.StatePalisadeResponse;
 import uk.gov.gchq.palisade.client.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
@@ -39,9 +38,6 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import static uk.gov.gchq.palisade.client.job.state.IJobDownload.createDownload;
-import static uk.gov.gchq.palisade.client.job.state.IJobExecution.createJobExecution;
-import static uk.gov.gchq.palisade.client.request.IPalisadeResponse.createPalisadeResponse;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
@@ -62,15 +58,15 @@ public class JobState {
      * This is the date/time when this job was first created
      */
     private final Instant created;
-    private final IJobRequest jobRequest;
+    private final JobRequest jobRequest;
     private final Configuration configuration;
-    private final Map<UUID, IJobDownload> downloads = new HashMap<>();
-    private final Map<UUID, IJobExecution> executions = new HashMap<>();
+    private final Map<UUID, JobDownload> downloads = new HashMap<>();
+    private final Map<UUID, JobExecution> executions = new HashMap<>();
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    private IPalisadeResponse palisadeResponse;
-    private IJobExecution currentExecution;
+    private PalisadeResponse palisadeResponse;
+    private JobExecution currentExecution;
     private JobStatus status;
 
     /**
@@ -81,7 +77,7 @@ public class JobState {
      * @param jobRequest    The request for this job
      * @param configuration The client (global) properties
      */
-    JobState(final JobStateService service, final IJobRequest jobRequest, final Configuration configuration) {
+    JobState(final JobStateService service, final JobRequest jobRequest, final Configuration configuration) {
 
         this.service = service;
         this.jobRequest = jobRequest;
@@ -93,7 +89,7 @@ public class JobState {
 
         // setup the first execution
 
-        this.currentExecution = IJobExecution.createJobExecution();
+        this.currentExecution = JobExecution.createJobExecution();
         this.executions.put(this.currentExecution.getId(), this.currentExecution);
 
     }
@@ -106,7 +102,7 @@ public class JobState {
      * @param state         the state for this job
      * @param configuration The job configuration
      */
-    JobState(final JobStateService service, final ISavedJobState state, final Map<String, Object> configuration) {
+    JobState(final JobStateService service, final SavedJobState state, final Map<String, Object> configuration) {
 
         this.service = service;
 
@@ -117,7 +113,7 @@ public class JobState {
         this.created = state.getCreated();
         this.configuration = Configuration.from(state.getProperties()).merge(configuration);
 
-        this.jobRequest = IJobRequest.createJobRequest((final JobRequest.Builder b) -> {
+        this.jobRequest = JobRequest.createJobRequest((final JobRequest.Builder b) -> {
             var req = state.getRequest();
             return b
                 .properties(req.getProperties())
@@ -130,22 +126,23 @@ public class JobState {
 
         if (this.status.getSequence() > JobStatus.REQUEST_SENT.getSequence()) {
 
-            this.palisadeResponse = createPalisadeResponse(b -> b.token(state.getPalisadeResponse().getToken()));
+            this.palisadeResponse = PalisadeResponse
+                .createPalisadeResponse(b -> b.token(state.getPalisadeResponse().getToken()));
 
             state.getExecutions()
                 .stream()
-                .map(ex -> createJobExecution(b -> b
+                .map(ex -> JobExecution.createJobExecution(b -> b
                     .endTime(ex.getEnd())
                     .startTime(ex.getStart())
                     .id(UUID.fromString(ex.getId()))
                     .errors(ex.getErrors().stream()
-                        .map(err -> IJobError.createJobError(c -> c.text(err.getText())))
+                        .map(err -> JobError.createJobError(c -> c.text(err.getText())))
                         .collect(Collectors.toList()))))
                 .forEach(ex -> executions.put(ex.getId(), ex));
 
             state.getDownloads()
                 .stream()
-                .map(dl -> createDownload(b -> b
+                .map(dl -> JobDownload.createDownload(b -> b
                     .id(UUID.fromString(dl.getId()))
                     .execution(executions.get(UUID.fromString(dl.getExecutionId())))
                     .duration(dl.getDuration())
@@ -162,7 +159,7 @@ public class JobState {
 
         // setup the next execution
 
-        this.currentExecution = IJobExecution.createJobExecution();
+        this.currentExecution = JobExecution.createJobExecution();
         this.executions.put(this.currentExecution.getId(), this.currentExecution);
 
     }
@@ -172,7 +169,7 @@ public class JobState {
      *
      * @return the job config
      */
-    public IJobRequest getJobConfig() {
+    public JobRequest getJobConfig() {
         return this.jobRequest;
     }
 
@@ -190,7 +187,7 @@ public class JobState {
      *
      * @return the palisade response
      */
-    public Optional<IPalisadeResponse> getPalisadeResponse() {
+    public Optional<PalisadeResponse> getPalisadeResponse() {
         return Optional.ofNullable(this.palisadeResponse);
     }
 
@@ -200,7 +197,7 @@ public class JobState {
      * @param jobRequest The job request containing the details sent to the palisade
      *                   service
      */
-    public void requestSent(final IJobRequest jobRequest) {
+    public void requestSent(final JobRequest jobRequest) {
         lock.lock();
         try {
             this.status = JobStatus.REQUEST_SENT;
@@ -232,7 +229,7 @@ public class JobState {
         lock.lock();
         try {
             this.status = JobStatus.DOWNLOADS_IN_PROGRESS;
-            currentExecution = IJobExecution.createJobExecution(b -> b);
+            currentExecution = JobExecution.createJobExecution(b -> b);
             executions.put(currentExecution.getId(), currentExecution);
             save();
         } finally {
@@ -265,7 +262,7 @@ public class JobState {
     public void error(final String text) {
         lock.lock();
         try {
-            var error = IJobError.createJobError(e -> e.text(text));
+            var error = JobError.createJobError(e -> e.text(text));
             currentExecution = this.currentExecution.change(b -> b.addError(error));
             executions.put(currentExecution.getId(), currentExecution);
             save();
@@ -288,7 +285,7 @@ public class JobState {
         checkArgument(url);
         lock.lock();
         try {
-            var dl = createDownload(b -> b
+            var dl = JobDownload.createDownload(b -> b
                 .id(id)
                 .resourceId(resourceId)
                 .url(url)
@@ -313,6 +310,10 @@ public class JobState {
         lock.lock();
         try {
             var prev = downloads.get(id);
+            if (prev == null) {
+                throw new IllegalStateException(
+                    String.format("Download with id %s not found. There is a programming problem here!", id));
+            }
             var next = prev.change(b -> b
                 .startTime(start)
                 .status(JobDownloadStatus.IN_PROGRESS));
@@ -354,15 +355,15 @@ public class JobState {
         return this.created;
     }
 
-    IJobExecution getCurrentExecution() {
+    JobExecution getCurrentExecution() {
         return this.currentExecution;
     }
 
-    Map<UUID, IJobExecution> getExecutions() {
+    Map<UUID, JobExecution> getExecutions() {
         return this.executions;
     }
 
-    Map<UUID, IJobDownload> getDownloads() {
+    Map<UUID, JobDownload> getDownloads() {
         return this.downloads;
     }
 
@@ -406,8 +407,8 @@ public class JobState {
      *
      * @return a saved state instance from this state
      */
-    public ISavedJobState createSavedState() {
-        return ISavedJobState.create(b -> b
+    public SavedJobState createSavedState() {
+        return SavedJobState.create(b -> b
             .sequence(sequence)
             .status(status)
             .created(created)
@@ -420,7 +421,7 @@ public class JobState {
 
     public long getIncompleteDownloadCount() {
         return downloads.values().stream()
-            .filter(IJobDownload::hasNotEnded)
+            .filter(JobDownload::hasNotEnded)
             .count();
     }
 
@@ -428,8 +429,8 @@ public class JobState {
         service.save(createSavedState(), configuration.getStatePath());
     }
 
-    private static IStateJobRequest map(final IJobRequest jc) {
-        return IStateJobRequest.createStateJobConfig(b -> b
+    private static StateJobRequest map(final JobRequest jc) {
+        return StateJobRequest.createStateJobConfig(b -> b
             .userId(jc.getUserId())
             .purpose(jc.getPurpose())
             .resourceId(jc.getResourceId())
@@ -437,26 +438,26 @@ public class JobState {
             .properties(jc.getProperties()));
     }
 
-    private static IStatePalisadeResponse map(final IPalisadeResponse jc) {
-        return IStatePalisadeResponse.createStatePalisadeResponse(b -> b
+    private static StatePalisadeResponse map(final PalisadeResponse jc) {
+        return StatePalisadeResponse.createStatePalisadeResponse(b -> b
             .token(jc.getToken()));
     }
 
-    private static IStateExecution map(final IJobExecution ex) {
-        return IStateExecution.createStateExecution(b -> b
+    private static StateExecution map(final JobExecution ex) {
+        return StateExecution.createStateExecution(b -> b
             .id(ex.getId().toString())
             .start(ex.getStartTime())
             .end(ex.getEndTime())
             .errors(ex.getErrors().stream().map(JobState::map).collect(Collectors.toList())));
     }
 
-    private static IStateJobError map(final IJobError e) {
-        return IStateJobError.createStateJobError(b -> b
+    private static StateJobError map(final JobError e) {
+        return StateJobError.createStateJobError(b -> b
             .text(e.getText()));
     }
 
-    private static IStateDownload map(final IJobDownload dl) {
-        return IStateDownload.createStateDownload(b -> b
+    private static StateDownload map(final JobDownload dl) {
+        return StateDownload.createStateDownload(b -> b
             .id(dl.getId().toString())
             .status(dl.getStatus())
             .statusCode(dl.getStatusCode())

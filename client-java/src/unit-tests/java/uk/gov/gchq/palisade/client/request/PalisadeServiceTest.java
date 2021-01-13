@@ -34,7 +34,7 @@ class PalisadeServiceTest {
     void testSubmit() {
 
         var port = embeddedServer.getPort();
-        var palisadeRequest = IPalisadeRequest.createPalisadeRequest(b -> b
+        var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
             .resourceId("resource_id")
             .userId("user_id")
             .putContext("key", "value"));

@@ -1,5 +1,13 @@
 package uk.gov.gchq.palisade.client.abc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.gov.gchq.palisade.client.ClientException;
+import uk.gov.gchq.palisade.client.abc.impl.DefaultClient;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,10 +19,17 @@ import java.util.Map;
  *
  * @author dbell
  */
-public class ClientManager {
+public abstract class ClientManager {
 
-    public ClientManager() {
-        // TODO Auto-generated constructor stub
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientManager.class);
+    private static final List<Client> clients = new ArrayList<>();
+
+    static {
+        clients.add(new DefaultClient());
+    }
+
+    private ClientManager() {
+        // prevent instantiation
     }
 
     /**
@@ -25,7 +40,24 @@ public class ClientManager {
      * @return a client for the provided URL
      */
     public static Client getClient(final String url) {
-        return null;
+        for (Client client : clients) {
+            if (client.acceptsURL(url)) {
+                // Success!
+                LOGGER.debug("getClient returning {}", client.getClass().getName());
+                return (client);
+            }
+        }
+        throw new ClientException("No suitable driver");
+    }
+
+    public static final Session openSession(final String url) {
+        var client = getClient(url);
+        return client.connect(url, Map.of());
+    }
+
+    public static final Session openSession(final String url, final Map<String, String> info) {
+        var client = getClient(url);
+        return client.connect(url, info);
     }
 
     /**
@@ -44,7 +76,7 @@ public class ClientManager {
      * @return a client for the provided URL
      */
     public static Client getClient(final String url, final Map<String, String> info) {
-        return null;
+        return getClient(url);
     }
 
 }

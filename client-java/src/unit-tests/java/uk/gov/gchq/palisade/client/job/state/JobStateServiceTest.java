@@ -24,13 +24,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
-import uk.gov.gchq.palisade.client.request.IPalisadeResponse;
+import uk.gov.gchq.palisade.client.request.PalisadeResponse;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.job.state.IJobRequest.createJobRequest;
 
 class JobStateServiceTest {
 
@@ -54,7 +53,7 @@ class JobStateServiceTest {
     @Test
     void testCreateNew() {
 
-        var jobConfig = createJobRequest(b -> b
+        var jobConfig = JobRequest.createJobRequest(b -> b
             .userId("user_id")
             .resourceId("resource_id")
             .purpose("purpose")
@@ -80,14 +79,14 @@ class JobStateServiceTest {
     @Test
     void testCreateFromNoDownloads() throws Exception {
 
-        var jobConfig = createJobRequest(b -> b
+        var jobConfig = JobRequest.createJobRequest(b -> b
             .userId("user_id")
             .resourceId("resource_id")
             .purpose("purpose")
             .receiverClass(FileReceiver.class)
             .putProperty("key", "value"));
 
-        var palisadeResponse = IPalisadeResponse.createPalisadeResponse(b -> b
+        var palisadeResponse = PalisadeResponse.createPalisadeResponse(b -> b
             .token("abcd-1")
         );
 
@@ -114,14 +113,14 @@ class JobStateServiceTest {
     @Test
     void testCreateFromWithDownloads() throws Exception {
 
-        var jobConfig = createJobRequest(b -> b
+        var jobConfig = JobRequest.createJobRequest(b -> b
             .userId("user_id")
             .resourceId("resource_id")
             .purpose("purpose")
             .receiverClass(FileReceiver.class)
             .putProperty("key", "value"));
 
-        var palisadeResponse = IPalisadeResponse.createPalisadeResponse(b -> b.token("abcd-1"));
+        var palisadeResponse = PalisadeResponse.createPalisadeResponse(b -> b.token("abcd-1"));
 
         var url = Thread.currentThread().getContextClassLoader()
             .getResource("resume/palisade-state_1_with-downloads.json");

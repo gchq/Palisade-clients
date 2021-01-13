@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.palisade.client.download.DownloadManager;
 import uk.gov.gchq.palisade.client.job.ClientJob;
 import uk.gov.gchq.palisade.client.job.Result;
-import uk.gov.gchq.palisade.client.job.state.IJobRequest;
 import uk.gov.gchq.palisade.client.job.state.JobRequest;
 import uk.gov.gchq.palisade.client.job.state.JobState;
 import uk.gov.gchq.palisade.client.job.state.JobStateService;
@@ -92,11 +91,11 @@ public class JavaClient implements Client {
     @Override
     @SuppressWarnings("java:S3242") // I REALLY want to use UnaryOperator here SonarQube!!!
     public Result submit(final UnaryOperator<JobRequest.Builder> func) {
-        return submit(func.apply(JobRequest.builder()).build());
+        return submit(func.apply(new JobRequest.Builder()).build());
     }
 
     @Override
-    public Result submit(final IJobRequest jobRequest) {
+    public Result submit(final JobRequest jobRequest) {
 
         LOGGER.debug("Job configuration submitted: {}", jobRequest);
 

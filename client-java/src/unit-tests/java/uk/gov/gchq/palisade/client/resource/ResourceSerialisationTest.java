@@ -20,10 +20,12 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import uk.gov.gchq.palisade.client.resource.WebSocketListener.Item;
+import uk.gov.gchq.palisade.client.resource.WebSocketListener.MessageType;
+
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.resource.IResource.createResource;
 
 class ResourceSerialisationTest {
 
@@ -36,24 +38,24 @@ class ResourceSerialisationTest {
 
     @Test
     void testMessageSerialisation() throws Exception {
-        var expected = IMessage.createMessage(b -> b
+        var expected = Item.createMessage(b -> b
             .type(MessageType.RESOURCE)
             .body("string")
             .headers(Map.of("key", "value")));
         var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, Message.class);
+        var actual = objectMapper.readValue(string, Item.class);
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void testResourceSerialisation() throws Exception {
-        var expected = createResource(b -> b
+        var expected = WebSocketMessage.createResource(b -> b
             .token("token")
             .leafResourceId("leaf-resource-id")
             .url("url")
             .properties(Map.of("key", "value")));
         var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, Resource.class);
+        var actual = objectMapper.readValue(string, ResourceMessage.class);
         assertThat(actual).isEqualTo(expected);
     }
 

@@ -1,0 +1,20 @@
+#
+# replacement attributes markers:
+#  %t = token
+#  %s = timestamp (yyyyMMdd-hhmmss)
+#  %r = resource
+#
+service:
+  palisade:
+    path: palisade/registerDataRequest
+  filteredResource:
+    path: filteredResource/name/%t
+  data:
+    path: data/read/chunked    
+state:
+  path: /tmp/palisade/%t/palisade-state_%t_%s.json
+receiver:
+  file:
+    path: /tmp/palisade/%t/downloads/palisade-download_%t_%s_%r
+    class: uk.gov.gchq.palisade.client.receiver.FileReceiver
+    

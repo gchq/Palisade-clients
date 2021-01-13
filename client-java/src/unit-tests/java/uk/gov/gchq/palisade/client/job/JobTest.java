@@ -20,7 +20,8 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.Client;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobRequest;
+import uk.gov.gchq.palisade.client.job.state.JobRequest;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState.StateJobRequest;
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
@@ -29,7 +30,6 @@ import javax.inject.Inject;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.job.state.IJobRequest.createJobRequest;
 
 @MicronautTest
 class JobTest {
@@ -48,7 +48,7 @@ class JobTest {
 
         var client = Client.create(properties);
 
-        var config = createJobRequest(b -> b
+        var config = JobRequest.createJobRequest(b -> b
             .purpose("purpose")
             .resourceId("resource_id")
             .userId("user_id")
@@ -66,7 +66,7 @@ class JobTest {
 
         // the client adds the default properties in for the receiver
 
-        var expectedRequest = IStateJobRequest.createStateJobConfig(b -> b
+        var expectedRequest = StateJobRequest.createStateJobConfig(b -> b
             .purpose("purpose")
             .resourceId("resource_id")
             .userId("user_id")

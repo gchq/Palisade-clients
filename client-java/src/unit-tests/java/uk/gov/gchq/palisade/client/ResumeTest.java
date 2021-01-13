@@ -20,7 +20,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
@@ -83,7 +83,7 @@ class ResumeTest {
 
     }
 
-    private String findPath(final ISavedJobState state, final String resourceId) {
+    private String findPath(final SavedJobState state, final String resourceId) {
         return state.getDownloads().stream()
             .filter(dl -> dl.getResourceId().equals(resourceId))
             .findFirst()

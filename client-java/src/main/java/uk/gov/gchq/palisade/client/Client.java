@@ -22,7 +22,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import uk.gov.gchq.palisade.client.job.Result;
-import uk.gov.gchq.palisade.client.job.state.IJobRequest;
 import uk.gov.gchq.palisade.client.job.state.JobRequest;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
@@ -51,6 +50,17 @@ public interface Client {
     Result submit(UnaryOperator<JobRequest.Builder> func);
 
     /**
+     * Submits a request via the provided builder function to Palisade and returns a
+     * result object through which a status object can be retrieved
+     *
+     * @param func The function applied to the {@code JobConfig.Builder} which
+     *             provided the configuration
+     * @return a result object through which a status object can be retrieved
+     * @throws ClientException if any error is encountered
+     */
+    Result submit(UnaryOperator<JobRequest.Builder> func);
+
+    /**
      * Submits the provided {@code jobRequest} to Palisade and returns a result
      * object through which a status object can be retrieved
      *
@@ -58,7 +68,7 @@ public interface Client {
      * @return a result object through which a status object can be retrieved
      * @throws ClientException if any error is encountered
      */
-    Result submit(IJobRequest jobRequest);
+    Result submit(JobRequest jobRequest);
 
     /**
      * Loads a previous job state to construct a job which the resumes from the

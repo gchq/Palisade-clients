@@ -20,8 +20,8 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import uk.gov.gchq.palisade.client.job.state.IJobRequest;
-import uk.gov.gchq.palisade.client.job.state.ISavedJobState;
+import uk.gov.gchq.palisade.client.job.state.JobRequest;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
@@ -54,7 +54,7 @@ class FullTest {
     @Test
     void testFull() throws Exception {
 
-        var jobRequest = IJobRequest.createJobRequest(b -> b
+        var jobRequest = JobRequest.createJobRequest(b -> b
             .userId("user_id")
             .resourceId("pi.txt")
             .purpose("purpose"));
@@ -76,7 +76,7 @@ class FullTest {
 
     }
 
-    private void assertDownloaded(final ISavedJobState state, final String resourceId) throws FileNotFoundException {
+    private void assertDownloaded(final SavedJobState state, final String resourceId) throws FileNotFoundException {
 
         var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceId);
         var actual = new FileInputStream(findPath(state, resourceId));
@@ -89,7 +89,7 @@ class FullTest {
      * Finds the path of a download with the given resourceId by filtering the
      * downloads
      */
-    private String findPath(final ISavedJobState state, final String resourceId) {
+    private String findPath(final SavedJobState state, final String resourceId) {
         return state.getDownloads().stream()
             .filter(dl -> dl.getResourceId().equals(resourceId))
             .findFirst()

@@ -22,7 +22,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.download.IDataRequest.createDataRequest;
 
 class DataRequestSerialisationTest {
 
@@ -36,7 +35,7 @@ class DataRequestSerialisationTest {
     @Test
     @DisplayName("Test DataRequest [De]Serialisation")
     void testDataRequestSerialisation() throws Exception {
-        DataRequest expected = createDataRequest(b -> b
+        DataRequest expected = DataRequest.createDataRequest(b -> b
             .token("blah")
             .leafResourceId("leaf-resource-id"));
         String string = objectMapper.writeValueAsString(expected);

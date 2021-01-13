@@ -60,7 +60,7 @@ public class JobStateService {
      * @param configuration The client configuration
      * @return a newly created {@code JobState}
      */
-    public JobState createNew(final IJobRequest jobConfig, final Configuration configuration) {
+    public JobState createNew(final JobRequest jobConfig, final Configuration configuration) {
         return new JobState(this, jobConfig, configuration);
     }
 
@@ -93,7 +93,7 @@ public class JobStateService {
         }
     }
 
-    final void save(final ISavedJobState state, final String path) {
+    final void save(final SavedJobState state, final String path) {
 
         LOGGER.debug("Saving state to: {}", path);
 
@@ -114,7 +114,7 @@ public class JobStateService {
     }
 
 
-    private String toJson(final ISavedJobState state) {
+    private String toJson(final SavedJobState state) {
         try {
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(state);
         } catch (JsonProcessingException e) {
@@ -123,7 +123,7 @@ public class JobStateService {
 
     }
 
-    private ISavedJobState fromJson(final String json) {
+    private SavedJobState fromJson(final String json) {
         try {
             return objectMapper.readValue(json, SavedJobState.class);
         } catch (JsonProcessingException e) {

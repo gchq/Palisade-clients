@@ -24,7 +24,7 @@ import uk.gov.gchq.palisade.client.receiver.Receiver;
 import uk.gov.gchq.palisade.client.receiver.Receiver.IReceiverResult;
 import uk.gov.gchq.palisade.client.receiver.ReceiverContext;
 import uk.gov.gchq.palisade.client.receiver.ReceiverException;
-import uk.gov.gchq.palisade.client.resource.Resource;
+import uk.gov.gchq.palisade.client.resource.ResourceMessage;
 import uk.gov.gchq.palisade.client.util.Configuration;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 import uk.gov.gchq.palisade.client.util.Util;
@@ -41,8 +41,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
-import static uk.gov.gchq.palisade.client.download.IDataRequest.createDataRequest;
-import static uk.gov.gchq.palisade.client.download.IDownloadResult.createDownloadResult;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
@@ -61,7 +59,17 @@ public final class Downloader implements ReceiverContext {
      */
     @Value.Immutable
     @ImmutableStyle
-    public interface IDownloaderSetup {
+    public interface DownloaderSetup {
+
+        /**
+         * Exposes the generated builder outside this package
+         * <p>
+         * While the generated implementation (and consequently its builder) is not
+         * visible outside of this package. This builder inherits and exposes all public
+         * methods defined on the generated implementation's Builder class.
+         */
+        class Builder extends ImmutableDownloaderSetup.Builder { // empty
+        }
 
         /**
          * Returns the id for this download session. If the id is omitted during
@@ -108,7 +116,7 @@ public final class Downloader implements ReceiverContext {
          *
          * @return the resource to be downloaded
          */
-        Resource getResource();
+        ResourceMessage getResource();
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Downloader.class);
@@ -132,7 +140,7 @@ public final class Downloader implements ReceiverContext {
      */
     static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
         checkArgument(func);
-        return new Downloader(func.apply(DownloaderSetup.builder()).build());
+        return new Downloader(func.apply(new DownloaderSetup.Builder()).build());
     }
 
     @Override
@@ -151,7 +159,7 @@ public final class Downloader implements ReceiverContext {
     }
 
     @Override
-    public Resource getResource() {
+    public ResourceMessage getResource() {
         return setup.getResource();
     }
 
@@ -175,7 +183,7 @@ public final class Downloader implements ReceiverContext {
             var uri = Util.createUri(resource.getUrl(), setup.getConfiguration().getDataPath());
 
             var requestBody = mapper
-                .writeValueAsString(createDataRequest(b -> b
+                .writeValueAsString(DataRequest.createDataRequest(b -> b
                     .token(resource.getToken())
                     .leafResourceId(resource.getLeafResourceId())));
 
@@ -195,7 +203,7 @@ public final class Downloader implements ReceiverContext {
 
             var receiverResult = processStream(httpResponse.body(), receiver, this);
 
-            return createDownloadResult(b -> b
+            return DownloadResult.createDownloadResult(b -> b
                 .id(setup.getId())
                 .properties(receiverResult.getProperties()));
 

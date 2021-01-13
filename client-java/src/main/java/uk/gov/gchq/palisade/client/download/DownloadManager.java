@@ -22,11 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.receiver.Receiver;
-import uk.gov.gchq.palisade.client.resource.Resource;
+import uk.gov.gchq.palisade.client.resource.ResourceMessage;
 import uk.gov.gchq.palisade.client.util.Configuration;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -36,7 +35,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.UnaryOperator;
 
-import static uk.gov.gchq.palisade.client.download.Downloader.createDownloader;
+import static uk.gov.gchq.palisade.client.download.DownloadEvent.completed;
+import static uk.gov.gchq.palisade.client.download.DownloadEvent.failed;
+import static uk.gov.gchq.palisade.client.download.DownloadEvent.scheduled;
+import static uk.gov.gchq.palisade.client.download.DownloadEvent.started;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
@@ -53,7 +55,17 @@ public final class DownloadManager implements DownloadManagerStatus {
      */
     @Value.Immutable
     @ImmutableStyle
-    public interface IDownloadManagerSetup {
+    public interface DownloadManagerSetup {
+
+        /**
+         * Exposes the generated builder outside this package
+         * <p>
+         * While the generated implementation (and consequently its builder) is not
+         * visible outside of this package. This builder inherits and exposes all public
+         * methods defined on the generated implementation's Builder class.
+         */
+        class Builder extends ImmutableDownloadManagerSetup.Builder { // empty
+        }
 
         /**
          * Returns the number of threads that the configured downloader will use
@@ -110,7 +122,7 @@ public final class DownloadManager implements DownloadManagerStatus {
      * @return a newly created data request instance
      */
     public static DownloadManager createDownloadManager(final UnaryOperator<DownloadManagerSetup.Builder> func) {
-        return new DownloadManager(func.apply(DownloadManagerSetup.builder()).build());
+        return new DownloadManager(func.apply(new DownloadManagerSetup.Builder()).build());
     }
 
     /**
@@ -155,14 +167,14 @@ public final class DownloadManager implements DownloadManagerStatus {
      */
     @SuppressWarnings("java:S2221")
     public UUID schedule(
-            final Resource resource,
+        final ResourceMessage resource,
             final EventBus eventbus,
             final Receiver receiver,
             final Configuration configuration) {
 
         LOGGER.debug("### Scheduling resource: {}", resource);
 
-        var downloader = createDownloader(b -> b
+        var downloader = Downloader.createDownloader(b -> b
             .resource(resource)
             .receiver(receiver)
             .objectMapper(setup.getObjectMapper())
@@ -170,7 +182,7 @@ public final class DownloadManager implements DownloadManagerStatus {
 
         var downloadId = downloader.getDownloadId();
 
-        eventbus.post(DownloadScheduledEvent.of(downloadId, resource, Map.of()));
+        eventbus.post(scheduled(downloadId, resource));
 
         // The downloader is wrapped here so as to catch ALL exceptions that may be
         // thrown. They are handled within the runnable as no exceptions may be thrown
@@ -184,13 +196,11 @@ public final class DownloadManager implements DownloadManagerStatus {
         Runnable runner = () -> {
 
             try {
-
-                eventbus.post(DownloadStartedEvent.of(downloadId, resource, Map.of()));
+                eventbus.post(started(downloadId, resource));
                 var result = downloader.start();
-                eventbus.post(DownloadCompletedEvent.of(downloadId, resource, result.getProperties(), result));
-
+                eventbus.post(completed(downloadId, resource, result, result.getProperties()));
             } catch (DownloaderException e) {
-                eventbus.post(DownloadFailedEvent.of(downloadId, resource, Map.of(), e, e.getStatusCode()));
+                eventbus.post(failed(downloadId, resource, e, e.getStatusCode()));
             } finally {
                 capacityLock.lock();
                 try {

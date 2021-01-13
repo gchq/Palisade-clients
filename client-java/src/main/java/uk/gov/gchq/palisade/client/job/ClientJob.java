@@ -16,6 +16,9 @@
 package uk.gov.gchq.palisade.client.job;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -25,30 +28,31 @@ import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.Job;
-import uk.gov.gchq.palisade.client.download.DownloadCompletedEvent;
-import uk.gov.gchq.palisade.client.download.DownloadFailedEvent;
+import uk.gov.gchq.palisade.client.download.DownloadEvent.CompletedEvent;
+import uk.gov.gchq.palisade.client.download.DownloadEvent.FailedEvent;
+import uk.gov.gchq.palisade.client.download.DownloadEvent.ScheduledEvent;
+import uk.gov.gchq.palisade.client.download.DownloadEvent.StartedEvent;
 import uk.gov.gchq.palisade.client.download.DownloadManager;
-import uk.gov.gchq.palisade.client.download.DownloadScheduledEvent;
-import uk.gov.gchq.palisade.client.download.DownloadStartedEvent;
-import uk.gov.gchq.palisade.client.job.state.IJobRequest;
+import uk.gov.gchq.palisade.client.job.state.JobRequest;
 import uk.gov.gchq.palisade.client.job.state.JobState;
+import uk.gov.gchq.palisade.client.job.state.SavedJobState;
 import uk.gov.gchq.palisade.client.receiver.Receiver;
 import uk.gov.gchq.palisade.client.request.PalisadeClient;
 import uk.gov.gchq.palisade.client.request.PalisadeRequest;
-import uk.gov.gchq.palisade.client.resource.ErrorEvent;
-import uk.gov.gchq.palisade.client.resource.ResourceClient;
-import uk.gov.gchq.palisade.client.resource.ResourceReadyEvent;
-import uk.gov.gchq.palisade.client.resource.ResourcesExhaustedEvent;
+import uk.gov.gchq.palisade.client.resource.CompleteEvent;
+import uk.gov.gchq.palisade.client.resource.ErrorMessage;
+import uk.gov.gchq.palisade.client.resource.ResourceMessage;
+import uk.gov.gchq.palisade.client.resource.WebSocketClient;
+import uk.gov.gchq.palisade.client.resource.ResourceMessage;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Flow.Publisher;
 import java.util.function.UnaryOperator;
 
-import static uk.gov.gchq.palisade.client.request.IPalisadeRequest.createPalisadeRequest;
-import static uk.gov.gchq.palisade.client.resource.ResourceClientListener.createResourceClientListener;
 import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
 
 /**
@@ -65,7 +69,17 @@ public final class ClientJob implements Job {
      */
     @Value.Immutable
     @ImmutableStyle
-    public interface IJobSetup extends Serializable {
+    public interface JobSetup extends Serializable {
+
+        /**
+         * Exposes the generated builder outside this package
+         * <p>
+         * While the generated implementation (and consequently its builder) is not
+         * visible outside of this package. This builder inherits and exposes all public
+         * methods defined on the generated implementation's Builder class.
+         */
+        class Builder extends ImmutableJobSetup.Builder { // empty
+        }
 
         /**
          * Returns the job context for this job
@@ -113,9 +127,9 @@ public final class ClientJob implements Job {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientJob.class);
-    private static final String EVENT_CAUGHT = "---> Caught event: {}";
+    private static final String EVENT_CAUGHT = "---> EVENT CAUGHT: {}";
 
-    private final IJobSetup setup;
+    private final JobSetup setup;
     private final JobState state;
 
     /*
@@ -138,7 +152,7 @@ public final class ClientJob implements Job {
      */
     public static ClientJob createJob(final UnaryOperator<JobSetup.Builder> func) {
         checkArgument(func, "Must supply a function to create a job");
-        return createJob(func.apply(JobSetup.builder()).build());
+        return createJob(func.apply(new JobSetup.Builder()).build());
     }
 
     /**
@@ -161,7 +175,8 @@ public final class ClientJob implements Job {
      */
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     @SuppressWarnings("java:S3242")
-    public void onDownloadCompleted(final DownloadCompletedEvent event) {
+    public void onDownloadCompleted(final CompletedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
         state.downloadCompleted(event.getId(), event.getTime(), event.getProperties());
         if (this.remainingDownloadLatch != null) {
             remainingDownloadLatch.countDown();
@@ -178,7 +193,8 @@ public final class ClientJob implements Job {
      */
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     @SuppressWarnings("java:S3242")
-    public void onDownloadFailed(final DownloadFailedEvent event) {
+    public void onDownloadFailed(final FailedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
         state.downloadFailed(event.getId(), event.getTime(), event.getStatusCode(), event.getCause());
         if (this.remainingDownloadLatch != null) {
             remainingDownloadLatch.countDown();
@@ -194,7 +210,8 @@ public final class ClientJob implements Job {
      */
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     @SuppressWarnings("java:S3242")
-    public void onDownloadStarted(final DownloadStartedEvent event) {
+    public void onDownloadStarted(final StartedEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
         state.downloadStarted(event.getId(), event.getTime());
     }
 
@@ -206,7 +223,8 @@ public final class ClientJob implements Job {
      */
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     @SuppressWarnings("java:S3242")
-    public void onDownloadScheduled(final DownloadScheduledEvent event) {
+    public void onDownloadScheduled(final ScheduledEvent event) {
+        LOGGER.debug(EVENT_CAUGHT, event);
         if (remainingDownloadLatch != null) {
             throw new ClientException("Cannot schedule more downloads. this job is in the progress of shutting down");
         }
@@ -221,7 +239,7 @@ public final class ClientJob implements Job {
      * @param event The event to be handled
      */
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public void onResourceReady(final ResourceReadyEvent event) {
+    public void onResourceReady(final ResourceEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
         setup.getDownloadManager().schedule(
             event.getResource(),
@@ -236,7 +254,7 @@ public final class ClientJob implements Job {
      * @param event The event to be handled
      */
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public void onNoMoreResources(final ResourcesExhaustedEvent event) {
+    public void onNoMoreResources(final CompleteEvent event) {
         LOGGER.debug(EVENT_CAUGHT, event);
         state.finish();
     }
@@ -267,7 +285,7 @@ public final class ClientJob implements Job {
 
         // create request and call the palisade service
 
-        IJobRequest jobConfig = state.getJobConfig();
+        JobRequest jobConfig = state.getJobConfig();
 
         var future = setup.getPalisadeClient().submitAsync(createRequest(jobConfig));
         state.requestSent(jobConfig);
@@ -291,13 +309,9 @@ public final class ClientJob implements Job {
         // this resource client handles the communication to the filtered resource
         // service via a websocket
 
-        var resourceClient = ResourceClient.createResourceClient(rc -> rc
-            .baseUri(wsUri)
-            .resourceClientListener(createResourceClientListener(rcl -> rcl
-                .token(token)
-                .downloadManagerStatus(downloadManager)
-                .eventBus(eventBus)
-                .objectMapper(objectMapper))));
+        var resourceClient = WebSocketClient.createResourceClient(rc -> rc
+            .token(token)
+            .baseUri(wsUri));
 
         // this future will complete only when the resource client (websocket
         // controller) and the job has completed. The job knows the point at which there
@@ -306,7 +320,7 @@ public final class ClientJob implements Job {
         // and this future completes.
 
         var future1 = resourceClient
-            .connect()
+            .subscribe()
             .thenCompose((final Void s) ->
                 // we should not check to see if there is any download that has not completed
                 // Set the latch to the number of incomplete downloads
@@ -325,17 +339,55 @@ public final class ClientJob implements Job {
 
         state.start();
 
+
+        // for streams we need to create an emitter for the rxJava Flowable
+
+        ObservableOnSubscribe<Integer> resourceEmitter = (final ObservableEmitter<Integer> emitter) -> {
+            for (int i = 0; i <= 1000; i++) {
+                if (emitter.isDisposed()) {
+                    return;
+                }
+                emitter.onNext(i);
+            }
+            emitter.onComplete();
+        };
+
+        var source = Observable.<Integer>create(resourceEmitter);
+
+
+
+
+
         LOGGER.debug("Job created for token: {}", token);
 
         // return the result. Upon returning the result, the code will not block. The
         // caller will need to retrieve the future and join.
 
-        return () -> future1;
+        return new Result() {
+
+            @Override
+            public Publisher<ResourceMessage> resources() {
+
+                return null;
+
+            }
+
+            @Override
+            public CompletableFuture<SavedJobState> future() {
+                return future1;
+            }
+
+            @Override
+            public Publisher<Error> errors() {
+                // TODO Auto-generated method stub
+                return null;
+            }
+        };
 
     }
 
 
-    private static PalisadeRequest createRequest(final IJobRequest jobConfig) {
+    private static PalisadeRequest createRequest(final JobRequest jobConfig) {
 
         var userId = jobConfig.getUserId();
         var purposeOpt = jobConfig.getPurpose();
@@ -343,7 +395,7 @@ public final class ClientJob implements Job {
         var properties = new HashMap<>(jobConfig.getProperties());
         properties.put("PURPOSE", purposeOpt.orElse("client_request"));
 
-        var palisadeRequest = createPalisadeRequest(b -> b
+        var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
             .resourceId(resourceId)
             .userId(userId)
             .context(properties));

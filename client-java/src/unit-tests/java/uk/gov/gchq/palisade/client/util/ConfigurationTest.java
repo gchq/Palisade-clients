@@ -18,7 +18,6 @@ package uk.gov.gchq.palisade.client.util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,18 +29,6 @@ class ConfigurationTest {
     @BeforeEach
     void setUp() {
         this.defaultConfig = Configuration.from(Map.of());
-    }
-
-    @Test
-    void testPalisadePortWasSubstituted() {
-        assertThat(defaultConfig.get("service.palisade.port", BigDecimal.class))
-            .isEqualByComparingTo(new BigDecimal("8081"));
-    }
-
-    @Test
-    void testFilteredResourcePortWasSubstituted() {
-        assertThat(defaultConfig.get("service.filteredResource.port", BigDecimal.class))
-            .isEqualByComparingTo(new BigDecimal("8081"));
     }
 
     @Test
@@ -58,12 +45,7 @@ class ConfigurationTest {
     @Test
     void testFilteredResourceUri() {
         assertThat(defaultConfig.getFilteredResourceUri())
-            .isEqualTo("ws://localhost:8081/cluster/filteredResource/name/%t");
-    }
-
-    @Test
-    void testDownloadThreads() {
-        assertThat(defaultConfig.getDownloadThreads()).isEqualTo(2);
+            .isEqualTo("ws://localhost:8082/cluster/filteredResource/name/%t");
     }
 
     @Test
@@ -76,5 +58,6 @@ class ConfigurationTest {
     void testDataPath() {
         assertThat(defaultConfig.getDataPath()).isEqualTo("data/read/chunked");
     }
+
 
 }

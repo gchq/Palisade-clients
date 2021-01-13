@@ -47,7 +47,7 @@ class StateTest {
         assertThat(actual).isNotNull().isEqualTo(expected);
         assertThat(actual).isNotNull().usingRecursiveComparison().isEqualTo(expected);
 
-        actual = SavedJobState.builder().from(actual).sequence(2).build();
+        actual = actual.change(b -> b.sequence(2));
 
         assertThat(actual).isNotNull().isNotEqualTo(expected);
         assertThat(actual).isNotNull().usingRecursiveComparison().isNotEqualTo(expected);

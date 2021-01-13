@@ -67,8 +67,8 @@ public class PalisadeService implements PalisadeClient {
     }
 
     @Override
-    public PalisadeResponse submit(final PalisadeRequest request) {
-        var future = submitAsync(request);
+    public PalisadeResponse submit(final PalisadeRequest palisadeRequest) {
+        var future = submitAsync(palisadeRequest);
         var palisadeResponse = future.join();
         assert palisadeResponse != null : "No response back from palisade service";
         LOGGER.debug("Got response from Palisade: {}", palisadeResponse);
@@ -83,14 +83,15 @@ public class PalisadeService implements PalisadeClient {
         LOGGER.debug("Submitting request to Palisade: {}", palisadeRequest);
 
         var requestBody = toJson(palisadeRequest);
+        var body = BodyPublishers.ofString(requestBody);
         var uri = URI.create(baseUri);
 
         LOGGER.debug("Submitting request to: {}", uri);
 
         var httpRequest = HttpRequest.newBuilder(uri)
             .setHeader("User-Agent", "Palisade Java Client")
-            .header("Content-Type", "application/json")
-            .POST(BodyPublishers.ofString(requestBody))
+            .setHeader("Content-Type", "application/json")
+            .POST(body)
             .build();
 
         return httpClient

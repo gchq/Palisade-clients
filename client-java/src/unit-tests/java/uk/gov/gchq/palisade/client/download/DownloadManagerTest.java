@@ -30,7 +30,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.download.DownloadEvent.CompletedEvent;
+import uk.gov.gchq.palisade.client.download.DownloadEvent.FailedEvent;
+import uk.gov.gchq.palisade.client.download.DownloadEvent.ScheduledEvent;
+import uk.gov.gchq.palisade.client.download.DownloadEvent.StartedEvent;
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
+import uk.gov.gchq.palisade.client.resource.ResourceMessage;
 import uk.gov.gchq.palisade.client.util.Configuration;
 
 import javax.inject.Inject;
@@ -43,7 +48,6 @@ import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static uk.gov.gchq.palisade.client.download.DownloadManager.createDownloadManager;
-import static uk.gov.gchq.palisade.client.resource.IResource.createResource;
 
 /**
  * This class must be public for the event bus to work. SonarQube complains
@@ -108,7 +112,7 @@ public class DownloadManagerTest {
     @Test
     void testSuccessfulDownload() {
 
-        var resource = createResource(r -> r
+        var resource = ResourceMessage.createResource(r -> r
             .leafResourceId("resources/pi0.txt")
             .token(TOKEN)
             .url(BASE_URL));
@@ -125,22 +129,22 @@ public class DownloadManagerTest {
         // the first event caught should be a download started
 
         var eventObject = events.get(0);
-        assertThat(eventObject).isInstanceOf(DownloadScheduledEvent.class);
-        var scheduledEvent = (DownloadScheduledEvent) eventObject;
+        assertThat(eventObject).isInstanceOf(ScheduledEvent.class);
+        var scheduledEvent = (ScheduledEvent) eventObject;
         assertThat(scheduledEvent.getId()).isEqualTo(downloadId);
         assertThat(scheduledEvent.getResource()).isEqualTo(resource);
 
         eventObject = events.get(1);
-        assertThat(eventObject).isInstanceOf(DownloadStartedEvent.class);
-        var startedEvent = (DownloadStartedEvent) eventObject;
+        assertThat(eventObject).isInstanceOf(StartedEvent.class);
+        var startedEvent = (StartedEvent) eventObject;
         assertThat(startedEvent.getId()).isEqualTo(downloadId);
         assertThat(startedEvent.getResource()).isEqualTo(resource);
 
         // the second event caught should be a download completed
 
         eventObject = events.get(2);
-        assertThat(eventObject).isInstanceOf(DownloadCompletedEvent.class);
-        var completedEvent = (DownloadCompletedEvent) eventObject;
+        assertThat(eventObject).isInstanceOf(CompletedEvent.class);
+        var completedEvent = (CompletedEvent) eventObject;
         assertThat(completedEvent.getId()).isEqualTo(downloadId);
         assertThat(completedEvent.getResource()).isEqualTo(resource);
 
@@ -151,7 +155,7 @@ public class DownloadManagerTest {
 
         var resourceName = "i do not exist";
 
-        var resource = createResource(r -> r
+        var resource = ResourceMessage.createResource(r -> r
             .leafResourceId(resourceName)
             .token(TOKEN)
             .url(BASE_URL));
@@ -168,24 +172,24 @@ public class DownloadManagerTest {
         // the first event caught should be a download scheduled
 
         var eventObject = events.get(0);
-        assertThat(eventObject).isInstanceOf(DownloadScheduledEvent.class);
-        var scheduledEvent = (DownloadScheduledEvent) eventObject;
+        assertThat(eventObject).isInstanceOf(ScheduledEvent.class);
+        var scheduledEvent = (ScheduledEvent) eventObject;
         assertThat(scheduledEvent.getId()).isEqualTo(downloadId);
         assertThat(scheduledEvent.getResource()).isEqualTo(resource);
 
         // the second event caught should be a download started
 
         eventObject = events.get(1);
-        assertThat(eventObject).isInstanceOf(DownloadStartedEvent.class);
-        var startedEvent = (DownloadStartedEvent) eventObject;
+        assertThat(eventObject).isInstanceOf(StartedEvent.class);
+        var startedEvent = (StartedEvent) eventObject;
         assertThat(startedEvent.getId()).isEqualTo(downloadId);
         assertThat(startedEvent.getResource()).isEqualTo(resource);
 
         // the second event caught should be a download completed
 
         eventObject = events.get(2);
-        assertThat(eventObject).isInstanceOf(DownloadFailedEvent.class);
-        var failedEvent = (DownloadFailedEvent) eventObject;
+        assertThat(eventObject).isInstanceOf(FailedEvent.class);
+        var failedEvent = (FailedEvent) eventObject;
         assertThat(failedEvent.getId()).isEqualTo(downloadId);
         assertThat(failedEvent.getResource()).isEqualTo(resource);
         assertThat(failedEvent.getCause()).isInstanceOf(DownloaderException.class);
@@ -203,7 +207,7 @@ public class DownloadManagerTest {
      * @param e the event
      */
     @Subscribe
-    public void handleStarted(final DownloadStartedEvent e) {
+    public void handleStarted(final StartedEvent e) {
         this.events.add(e);
     }
 
@@ -215,7 +219,7 @@ public class DownloadManagerTest {
      * @param e the event
      */
     @Subscribe
-    public void handleCompleted(final DownloadCompletedEvent e) {
+    public void handleCompleted(final CompletedEvent e) {
         this.events.add(e);
     }
 
@@ -227,7 +231,7 @@ public class DownloadManagerTest {
      * @param e the event
      */
     @Subscribe
-    public void handleFailed(final DownloadFailedEvent e) {
+    public void handleFailed(final FailedEvent e) {
         this.events.add(e);
     }
 
@@ -239,7 +243,7 @@ public class DownloadManagerTest {
      * @param e the event
      */
     @Subscribe
-    public void handleScheduled(final DownloadScheduledEvent e) {
+    public void handleScheduled(final ScheduledEvent e) {
         this.events.add(e);
     }
 
