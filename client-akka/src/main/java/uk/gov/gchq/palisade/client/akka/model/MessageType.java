@@ -16,9 +16,9 @@
 package uk.gov.gchq.palisade.client.akka.model;
 
 /**
- * Type of message (and thus expected headers/body content) sent by either the uk.gov.gchq.palisade.client.client or the server.
+ * Type of message (and thus expected headers/body content) sent by either the client or the server.
  * <p>
- * The uk.gov.gchq.palisade.client.client is expected to only send:
+ * The client is expected to only send:
  * <ul>
  * <li> {@link MessageType#PING} - is the server alive? reply with a {@link MessageType#PONG}
  * <li> {@link MessageType#CTS} - clear to send next {@link MessageType#RESOURCE}, {@link MessageType#ERROR} or {@link MessageType#COMPLETE}
@@ -26,9 +26,9 @@ package uk.gov.gchq.palisade.client.akka.model;
  * The server is expected to only send:
  * <ul>
  * <li> {@link MessageType#PONG} - the server is alive
- * <li> {@link MessageType#RESOURCE} - the next available resource for the uk.gov.gchq.palisade.client.client
- * <li> {@link MessageType#ERROR} - an error occurred while processing the uk.gov.gchq.palisade.client.client's request
- * <li> {@link MessageType#COMPLETE} - there is nothing more to return to the uk.gov.gchq.palisade.client.client
+ * <li> {@link MessageType#RESOURCE} - the next available resource for the client
+ * <li> {@link MessageType#ERROR} - an error occurred while processing the client's request
+ * <li> {@link MessageType#COMPLETE} - there is nothing more to return to the client
  * </ul>
  */
 public enum MessageType {

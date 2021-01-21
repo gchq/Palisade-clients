@@ -53,6 +53,9 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Flow.Publisher;
 
+/**
+ * Implementation of the client interface that also exposes some akka-specific data-types such as {@link Source}s.
+ */
 public class AkkaClient implements Client {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

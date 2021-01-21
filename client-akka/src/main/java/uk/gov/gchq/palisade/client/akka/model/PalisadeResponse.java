@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 
 /**
- * Response message that is returned to the uk.gov.gchq.palisade.client.client.  The message contains information that will identify this request
+ * Response message that is returned to the client.  The message contains information that will identify this request
  * for access to the data and be used in a subsequent request to see the resources.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)

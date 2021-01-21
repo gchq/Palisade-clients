@@ -15,7 +15,7 @@
  */
 package uk.gov.gchq.palisade.client.util;
 
-import uk.gov.gchq.palisade.client.ClientException;
+import clientException;
 
 /**
  * An exception which is thrown when a configuration error occurs

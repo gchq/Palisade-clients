@@ -27,14 +27,13 @@ import java.util.StringJoiner;
 
 /**
  * The {@link DataRequest} is the input for the data-service where the resource is read.
- * This message is created by the response from the filtered-resource-service to the uk.gov.gchq.palisade.client.client.
+ * This message is created by the response from the filtered-resource-service to the client.
  * It is then routed via the resource's connectionDetail to the appropriate instance of a data-service.
- * This message is used to retrieve the {@link uk.gov.gchq.palisade.reader.request.DataReaderRequest} from the attribute-masking-service.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public final class DataRequest {
 
-    private final String token;  // Unique identifier for the uk.gov.gchq.palisade.client.client's request
+    private final String token;  // Unique identifier for the client's request
     private final String leafResourceId;  // Leaf Resource ID that that is being asked to access
 
     @JsonCreator
@@ -81,7 +80,7 @@ public final class DataRequest {
             /**
              * Adds the token to the request
              *
-             * @param token the uk.gov.gchq.palisade.client.client's unique token
+             * @param token the client's unique token
              * @return interface {@link ILeafResourceId} for the next step in the build.
              */
             ILeafResourceId withToken(String token);

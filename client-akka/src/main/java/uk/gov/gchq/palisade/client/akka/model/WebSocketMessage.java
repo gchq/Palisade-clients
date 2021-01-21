@@ -31,6 +31,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
+/**
+ * Response message that is returned to the client from the filtered-resource-service web-socket.
+ * The message contains information that will identify this request for access to the data and be
+ * used in a subsequent request to the data-service to see the resources.
+ */
 public final class WebSocketMessage {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

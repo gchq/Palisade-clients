@@ -30,13 +30,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 
 /**
- * Represents the original data that has been sent from the uk.gov.gchq.palisade.client.client to Palisade Service for a request to access data.
- * This data will be forwarded to a set of services with each contributing to the processing of this request.
- * This version represents the original request.
- * Next in the sequence is the input for user-service where this data will be used as a request for a User.
- * Note there are two classes that effectively represent the same data but represent a different stage of the process.
- * uk.gov.gchq.palisade.service.palisade.uk.gov.gchq.palisade.client.client.model.PalisadeRequest is the uk.gov.gchq.palisade.client.client request that has come into the Palisade Service.
- * uk.gov.gchq.palisade.service.user.request.UserRequest is the input for the User Service.
+ * Represents the original data that has been sent from the client to Palisade Service for a request to access data.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public final class PalisadeRequest {
