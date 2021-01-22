@@ -15,7 +15,7 @@
  */
 package uk.gov.gchq.palisade.client.resource;
 
-import clientException;
+import uk.gov.gchq.palisade.client.ClientException;
 
 /**
  * An instance of this class is thrown if the body of a resource message is not

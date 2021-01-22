@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.wnameless.json.flattener.JsonFlattener;
 
-import clientException;
+import uk.gov.gchq.palisade.client.ClientException;
 
 import java.io.File;
 import java.io.IOException;

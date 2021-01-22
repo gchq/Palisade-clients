@@ -19,7 +19,7 @@ import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
-import client;
+import uk.gov.gchq.palisade.client.Client;
 import uk.gov.gchq.palisade.client.job.state.ISavedJobState.IStateJobRequest;
 import uk.gov.gchq.palisade.client.receiver.FileReceiver;
 import uk.gov.gchq.palisade.client.util.Configuration;

@@ -23,7 +23,7 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import clientException;
+import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.Job;
 import uk.gov.gchq.palisade.client.download.DownloadCompletedEvent;
 import uk.gov.gchq.palisade.client.download.DownloadFailedEvent;
