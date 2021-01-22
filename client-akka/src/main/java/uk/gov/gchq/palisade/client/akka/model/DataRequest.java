@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import uk.gov.gchq.palisade.Generated;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -99,26 +98,6 @@ public final class DataRequest {
             DataRequest withLeafResourceId(String leafResourceId);
         }
 
-    }
-
-    @Override
-    @Generated
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof DataRequest)) {
-            return false;
-        }
-        final DataRequest that = (DataRequest) o;
-        return Objects.equals(token, that.token) &&
-                Objects.equals(leafResourceId, that.leafResourceId);
-    }
-
-    @Override
-    @Generated
-    public int hashCode() {
-        return Objects.hash(token, leafResourceId);
     }
 
     @Override

@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import uk.gov.gchq.palisade.Generated;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -60,24 +59,5 @@ public final class PalisadeResponse {
         return new StringJoiner(", ", PalisadeResponse.class.getSimpleName() + "[", "]")
                 .add("token='" + token + "'")
                 .toString();
-    }
-
-    @Override
-    @Generated
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final PalisadeResponse palisadeResponse = (PalisadeResponse) o;
-        return Objects.equals(token, palisadeResponse.token);
-    }
-
-    @Override
-    @Generated
-    public int hashCode() {
-        return Objects.hash(token);
     }
 }

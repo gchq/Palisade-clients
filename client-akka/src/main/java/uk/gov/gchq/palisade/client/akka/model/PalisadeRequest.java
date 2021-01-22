@@ -25,7 +25,6 @@ import uk.gov.gchq.palisade.Context;
 import uk.gov.gchq.palisade.Generated;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -67,38 +66,6 @@ public final class PalisadeRequest {
     @Generated
     public Map<String, String> getContext() {
         return context;
-    }
-
-    @Override
-    @Generated
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof PalisadeRequest)) {
-            return false;
-        }
-        PalisadeRequest that = (PalisadeRequest) o;
-        return userId.equals(that.userId) &&
-                resourceId.equals(that.resourceId) &&
-                context.equals(that.context);
-    }
-
-    @Override
-    @Generated
-    public int hashCode() {
-        return Objects.hash(userId, resourceId, context);
-    }
-
-    @Override
-    @Generated
-    public String toString() {
-        return new StringJoiner(", ", PalisadeRequest.class.getSimpleName() + "[", "]")
-                .add("userId='" + userId + "'")
-                .add("resourceId='" + resourceId + "'")
-                .add("context=" + context)
-                .add(super.toString())
-                .toString();
     }
 
     /**
@@ -156,5 +123,15 @@ public final class PalisadeRequest {
              */
             PalisadeRequest withContext(Map<String, String> context);
         }
+    }
+
+    @Override
+    @Generated
+    public String toString() {
+        return new StringJoiner(", ", PalisadeRequest.class.getSimpleName() + "[", "]")
+                .add("userId='" + userId + "'")
+                .add("resourceId='" + resourceId + "'")
+                .add("context=" + context)
+                .toString();
     }
 }
