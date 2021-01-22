@@ -25,7 +25,7 @@ import java.util.concurrent.Flow.Publisher;
 
 /**
  * Interface for a palisade client that defines the connections to the three outward-facing services.
- * The expected interaction would be {@link #register} -> {@link #fetch} -> {@link #read}.
+ * The expected interaction would be {@link #register} then {@link #fetch} then {@link #read}.
  */
 public interface Client {
 
