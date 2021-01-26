@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Crown Copyright
+ * Copyright 2018-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,13 @@ public class AkkaClient implements Client {
     private final Materializer materializer;
     private final Http http;
 
+    /**
+     * Constructor used to create the AkkaClient
+     *
+     * @param palisadeUrl the location of the Palisade Service
+     * @param filteredResourceUrl the location of the Filtered Resource Service
+     * @param actorSystem the akka Actor System bean
+     */
     public AkkaClient(final String palisadeUrl, final String filteredResourceUrl, final ActorSystem actorSystem) {
         this.palisadeUrl = palisadeUrl;
         this.filteredResourceUrl = filteredResourceUrl;
@@ -71,6 +78,14 @@ public class AkkaClient implements Client {
         this.http = Http.get(actorSystem);
     }
 
+    /**
+     * Registers a request into the Palisade Service, taking a userId, resourceId and Map as a context, it then sends the request to the
+     * Palisade registerDataRequest endpoint via rest and returns the token after the request has ben processed.
+     * @param userId     the userId of the user making the request.
+     * @param resourceId the resourceId requested to read - note this is not necessarily the filename.
+     * @param context    the context for this data access.
+     * @return a String uuid token in a CompletionStage object
+     */
     public CompletionStage<String> register(final String userId, final String resourceId, final Map<String, String> context) {
         return http
                 .singleRequest(HttpRequest.POST(String.format("http://%s/api/registerDataRequest", palisadeUrl))
@@ -79,11 +94,16 @@ public class AkkaClient implements Client {
                                         .withUserId(userId)
                                         .withResourceId(resourceId)
                                         .withContext(context)
-                        ).getBytes()))
+                        )))
                 .thenApply(this::readHttpMessage)
                 .thenApply(PalisadeResponse::getToken);
     }
 
+    /**
+     * By taking the uuid token, this method deserializes the message from the websocket, and if completed, returns the processed LeafResource to the user
+     * @param token uuid of the request
+     * @return a processed LeafResource that has been processed by the Palisade Service
+     */
     public Source<LeafResource, CompletionStage<NotUsed>> fetchSource(final String token) {
         // Send out CTS messages after each RESOURCE
         WebSocketMessage cts = WebSocketMessage.Builder.create().withType(MessageType.CTS).noHeaders().noBody();
@@ -103,7 +123,7 @@ public class AkkaClient implements Client {
                 // Take until COMPLETE message is seen
                 .takeWhile(wsMessage -> !wsMessage.getType().equals(MessageType.COMPLETE))
                 // Handle how to 'echo back' a message
-                .map(wsMessage -> {
+                .map((WebSocketMessage wsMessage) -> {
                     switch (wsMessage.getType()) {
                         case RESOURCE:
                         case ERROR:
@@ -136,6 +156,12 @@ public class AkkaClient implements Client {
                 .map(msg -> msg.getBodyObject(LeafResource.class));
     }
 
+    /**
+     * Converts the akka stream to a reactive stream publisher
+     * for use in the {@link #fetchSource(String)} method
+     * @param token the token returned from the palisade-service by the {@link #register} method.
+     * @return a Reactive streams publisher containing the LeafResource from the Palisade Service
+     */
     public Publisher<LeafResource> fetch(final String token) {
         // Convert akka source to reactive-streams publisher
         org.reactivestreams.Publisher<LeafResource> rsPub = fetchSource(token)
@@ -145,17 +171,28 @@ public class AkkaClient implements Client {
         return FlowAdapters.toFlowPublisher(rsPub);
     }
 
+    /**
+     * This method connects to the data service to read the leafResource from the original request, linked by the uuid token
+     * @param token the token returned from the palisade-service by the {@link #register} method.
+     * @param resource that the user wants to read
+     * @return a stream of bytes representing the contents of the resource
+     */
     public Source<ByteString, CompletionStage<NotUsed>> readSource(final String token, final LeafResource resource) {
         return Source.completionStageSource(http.singleRequest(
                 HttpRequest.POST(String.format("http://%s/read/chunked", resource.getConnectionDetail().createConnection()))
                         .withEntity(ContentTypes.APPLICATION_JSON, serialize(DataRequest.Builder.create()
                                 .withToken(token)
-                                .withLeafResourceId(resource.getId()))
-                                .getBytes()))
+                                .withLeafResourceId(resource.getId()))))
                 .thenApply(response -> response.entity().getDataBytes()
                         .mapMaterializedValue(ignored -> NotUsed.notUsed())));
     }
 
+    /**
+     * Converts an akka ByteString source to java a stdlib InputStream
+     * @param token    the token returned from the palisade-service by the {@link #register(String, String, Map)} method.
+     * @param resource a resource returned by the filtered-resource-service that the client wishes to read.
+     * @return a java stdlib InputStream
+     */
     public InputStream read(final String token, final LeafResource resource) {
         // Convert akka ByteString source to java stdlib InputStream
         return readSource(token, resource)
