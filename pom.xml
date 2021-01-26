@@ -73,6 +73,7 @@
         <module>clients-simple</module>
         <module>clients-mapreduce</module>
         <module>clients-cat</module>
+        <module>client-akka</module>
         <module>client-java</module>
     </modules>
 
