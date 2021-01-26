@@ -182,8 +182,7 @@ public class AkkaClient implements Client {
                 HttpRequest.POST(String.format("http://%s/read/chunked", resource.getConnectionDetail().createConnection()))
                         .withEntity(ContentTypes.APPLICATION_JSON, serialize(DataRequest.Builder.create()
                                 .withToken(token)
-                                .withLeafResourceId(resource.getId()))
-                                .getBytes()))
+                                .withLeafResourceId(resource.getId()))))
                 .thenApply(response -> response.entity().getDataBytes()
                         .mapMaterializedValue(ignored -> NotUsed.notUsed())));
     }
