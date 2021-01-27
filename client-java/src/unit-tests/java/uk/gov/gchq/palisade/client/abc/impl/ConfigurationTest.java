@@ -82,8 +82,7 @@ class ConfigurationTest {
     @Test
     void testUserFromAuthority() {
         var config = Configuration.fromDefaults(Map.of(
-            "service.url", "pal://user_from_authority@localhost:8081/cluster?wsport=8082,user=user_from_param",
-            "service.user", "user_from_property"));
+            "service.url", "pal://user_from_authority@localhost:8081/cluster?wsport=8082"));
         assertThat(config.getUser()).as("check user from authority").isEqualTo("user_from_authority");
     }
 

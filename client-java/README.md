@@ -1,93 +1,102 @@
 # Palisade Client (Java)
 
-The palisade client provides access to resources.
+The Java Palisade Client API provides universal resource access a Palisade service. The design of the API loosely follows that of other well known API's (e.g. JDBC). This design decision was made to provide a familiar feel to accessing Palisade.
 
-Example usage:
+Of course there are differences. One of the big differences is that Palisade clients deal with returning resource files and not data in Columnar format.
 
-```
-client = Client.create(Map.of(
-    Configuration.KEY_SERVICE_HOST, "host.my",
-    Configuration.KEY_SERVICE_PORT, 12091,
-    Configuration.KEY_DOWNLOAD_THREADS, 2));
+### Example Usage
 
-var futureResult = client
-    .submit(b -> b
-        .userId("user_id")
-        .resourceId("resource_id")
-        .purpose("purpose")
-        .properties(Map.of(
-             "key1", "value1",
-             "key2", "value2"))
-        .receiverClass("my.class.name");
-        
-var state = result.future().join();
+A unit test to assert that resources are returned may look like the following. Note that here we are using Micronaut to create endpoints for the following with Palisade:
 
-for (IStateDownload dl : state.getDownloads()) {
-    System.out.println(dl.getResourceId());
+* Palisade Service
+* Filtered Resource Service
+* Data Service
+
+Micronaut will find these services and create and then inject an EmbeddedServer to expose them. The embedded server can be used to get the port which it is listening on. The port will be dynamically created enabling parallel tests.
+
+```java
+@MicronautTest
+class FullTest {
+
+    @Inject
+    EmbeddedServer embeddedServer;
+
+    @Test
+    void testWithDownloadOutsideStream() throws Exception {
+
+        var port = ""+embeddedServer.getPort();
+(1)     var properties = Map.<String, String>of(
+            "service.palisade.port", port,
+            "service.filteredResource.port", port);
+
+(2)     var session = ClientManager.openSession("pal://mrblobby@localhost/cluster", properties);
+(3)     var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
+(4)     var publisher = query
+            .execute()
+            .thenApply(QueryResponse::stream)
+            .get();
+
+(5)     var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
+            .filter(m -> m.getType() == MessageType.RESOURCE)
+            .map(Resource.class::cast)
+            .collect(Collectors.toList())
+            .blockingGet();
+
+        assertThat(resources).hasSizeGreaterThan(0);
+
+(6)     var resource = resources.get(0);
+        assertThat(resource.getLeafResourceId()).isEqualTo("resources/pi0.txt");
+
+(7)     var download = session.fetch(resource);
+        assertThat(download).isNotNull();
+
+        var actual = download.getInputStream();
+        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/pi0.txt");
+
+(8)     assertThat(actual).hasSameContentAs(expected);
+
+
+    }
 }
+
 ```
+
+1. Creates a map of properties to be passed to the client. Here we are overriding the port for the palisade and filtered resource service.
+2. Uses the `ClientManager` to create a `Session` from a palisade url. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
+3. A new Query is created by passing `QueryInfo`.
+4. The query is executed. The request is submitted to Palisade at this point and a `CompleteableFuture` is returned asynchronously. Once Palisade has processed the request, the future will emit a `Publisher` of `Messages` instances.
+5. Convert the `java.util.current.Flow.Publisher` to an RxJava `Flowable` in order to apply filtering and retrieval into a collection of `Resource` instances.
+6. Use the first resource as a test and make sure it's not null
+7. Using the session we fetch the reource. A `Download` instance is returned. At this point the request has been sent and received from the data service. The download opbject provides access to an `InputStream`. The data is not returned from the server until the input stream is first accessed.
+8. Using AssertJ the two input streams are checked for equality.
+
+### Client properties
+
+__Note:__ These  properties will override any query parameters or other values within the url (e.g. port/user).
+
+| Property | Description |
+| --- | --- |
+| service.user | The userId |
+| service.password | Optional passord if required |
+| service.palisade.port | The palisade service port. If not set will equal any port provided within the service.url |
+| service.filteredResource.port | The port for the filtered resource (websocket) service |
+| service.url | The main cluster url .e.g. pal://user@localhost:12345/cluster |
+
+### URL Query Parameters
+
+These parameters can be added to the url in the normal way.
+
+__Note:__ These  parameters will be overriden by propeties 
+
+| Parameter | Description |
+| --- | --- |
+| port | Base port for the palisade cluster |
+| psport | The port for the Palisade Service |
+| wsport | The port for the filtered resource service. Specifiy this if it is different from the palisade service. If not supplied it will be set to that of the palisade service |
+
+
 
 Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
-
-## Overview
-
-## Logical Diagram
-
-![Logical Diagram](doc/java-client-logical-diagram-1.svg)
-
-## Events
-
-The Java Client has at its core an EventBus which handles the communication between the major parts of the code. The reasoning behind this is that it keeps the components loosely coupled. This makes the code much easier to maintain and easier to test. The EventBus has the ability to alter how events are posted. Currently, this client uses the `ThreadMode.MAIN_ORDERED` setting. This allows the posted events to be non-blocking.
-
-Following is a breakdown of which classes subscribe and post events:
-
-### Resource Client
-
-The `ResourceClientListener` handles the messages that are received via the websocket. When these messages are received, the listener will post the following events when messages are received from the `FilteredResourceService`. This class does not subscribe to any events via the EventBus, it only posts:
-
-* __ResourceReadyEvent__ - is posted when a message of type `RESOURCE` is received.
-* __ResourcesExhaustedEvent__ - is posted when a message of type `COMPLETE` has been received.
-* __ErrorEvent__ - is posted when a message of type `Error` has been received.
-
-The `ResourceClient` only handles a single event and that is the `ResourcesExhaustedEvent` which signifies that the Filtered Resource Service does not have thin else to send. This will handle the event by releasing the latch that allows the CompletableFuture returned as part of the result, to complete.
-
-### DownloadManager
-
-The `DownloaderManager` class handles the creation of a runnable to actually control the calling of the `Downloader` instance. The download manager will post the following events during the creation and processing of the runnable:
-
-* __DownloadScheduledEvent__ - posted as soon as `schedule` is called on the download manager and before the executor starts to execute the Runnable.
-* __DownloadStartedEvent__ - posted when the process starts within a thread in the pooled executor, but before control is passed to the Downloader. 
-* __DownloadCompletedEvent__ - posted as soon as the Downloader returns successfully.
-* __DownloadFailedEvent__ - posted when the Downloader exists abnormally.
-
-The download manager does not subscribe to any messages.
-
-### ClientJob
-
-This class is the main class handling all the events during the running of a job. This class also provides the status once it is complete.
-
-The following events are subscribed to:
-
-* __DownloadCompletedEvent__ - updates the state for this job and optionally countdown the shutdown latch if enabled.
-* __DownloadFailedEvent__ - updates the state for this job and optionally countdown the shutdown latch if enabled.
-* __DownloadStartedEvent__ - updates the state
-* __DownloadScheduledEvent__ - updates the state
-* __ResourceReadyEvent__ - schedules a new download with the download manager
-* __ResourcesExhaustedEvent__ - updates the state as finished
-* __ErrorEvent__ - updates the state
-
-A countdown latch is created (with the outstanding number of downloads) once the resource client has closed the websocket. This signifies that no more resources are going to arrive from the Filtered Resource Service. As each download event is received, the latch is decremented. Once it hits 0, the future is completed and the final state is returned.
-
-## Code
-
-The main classes within the client are as follows:
-
-* JavaClient - This is the main entry point and the manager of all events
-* DownloadManager - Manages the submission of requests, contains the thread pool
-* Downloader - Executes requests to the data service and provides a stream to a Receiver
-* FileReceiver - Reads a data stream and writes to a file
-* ResourceClient - Manages the flow of message to/from the Filtered resource Service via web sockets
-* ResourceClientListener - Receives messages from the websocket, handles them and posts events
 
 ## Technologies Used
 
@@ -95,7 +104,6 @@ The main classes within the client are as follows:
 
 * [Immutables](https://immutables.github.io/) - Java annotation processors to generate simple, safe and consistent value objects.
 * [Jackson]() - JSON for Java. Handles all the (de)serialisation of objects to/from the Palisade servers.
-* [EventBus](https://github.com/greenrobot/EventBus) - Publish/subscribe event bus for Android and Java.
 * [JSON Flattener](https://github.com/wnameless/json-flattener) - A Java utility is used to FLATTEN nested JSON objects and even more to UNFLATTEN it back.
 
 ### Test Only

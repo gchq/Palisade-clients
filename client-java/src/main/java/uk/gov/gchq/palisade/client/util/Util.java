@@ -148,9 +148,9 @@ public final class Util {
      * @param uri to extract query parameters from
      * @return a map of the query parameters in the provided url
      */
-    public static Map<String, String> extractQueryParams(final URI uri) {
+    public static Map<String, Object> extractQueryParams(final URI uri) {
         var query = Checks.checkNotNull(uri).getQuery();
-        var queryParams = new HashMap<String, String>();
+        var queryParams = new HashMap<String, Object>();
         if (query != null && query.trim().length() > 0) {
             for (String string : uri.getQuery().split("&")) {
                 var a = string.split("=");

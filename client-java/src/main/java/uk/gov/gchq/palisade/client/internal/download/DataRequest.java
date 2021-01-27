@@ -57,6 +57,7 @@ public interface DataRequest {
      * @param func The builder function
      * @return a newly created data request instance
      */
+    @SuppressWarnings("java:S3242")
     static DataRequest createDataRequest(final UnaryOperator<Builder> func) {
         return func.apply(new Builder()).build();
     }

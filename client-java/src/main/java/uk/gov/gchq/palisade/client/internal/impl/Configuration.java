@@ -49,25 +49,20 @@ public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
-    /**
-     * The domain/host to connect to
-     */
     private static final String KEY_SERVICE_URL = "service.url";
-
-    /**
-     * The domain/host to connect to
-     */
+    private static final String KEY_SERVICE_PORT = "service.port";
     private static final String KEY_SERVICE_USER = "service.user";
-
-    /**
-     * palisade service context
-     */
     private static final String KEY_SERVICE_PS_URL = "service.palisade.url";
-
-    /**
-     * palisade service context
-     */
+    private static final String KEY_SERVICE_PS_PORT = "service.palisade.port";
+    private static final String KEY_SERVICE_PS_PATH = "service.palisade.path";
     private static final String KEY_SERVICE_FRS_URL = "service.filteredResource.url";
+    private static final String KEY_SERVICE_FRS_PORT = "service.filteredResource.port";
+    private static final String KEY_SERVICE_FRS_PATH = "service.filteredResource.path";
+    private static final String KEY_SERVICE_DATA_PATH = "service.data.path";
+    private static final String PARAM_PORT = "port";
+    private static final String PARAM_USER = "user";
+    private static final String PARAM_WS_PORT = "wsport";
+    private static final String PARAM_PS_PORT = "psport";
 
     private final Map<String, Object> properties;
 
@@ -250,7 +245,7 @@ public final class Configuration {
      * @return the path that will be appended to url returned for a resource
      */
     public String getDataPath() {
-        return getProperty("service.data.path");
+        return getProperty(KEY_SERVICE_DATA_PATH);
     }
 
     /**
@@ -299,7 +294,6 @@ public final class Configuration {
         return findProperty(properties, key, String.class);
     }
 
-    @SuppressWarnings("unchecked")
     private static <T> Optional<T> findProperty(final Map<String, Object> properties, final String key,
         final Class<T> clazz) {
         return Optional.ofNullable(getProperty(properties, key, clazz));
@@ -321,11 +315,47 @@ public final class Configuration {
                 throw new ClientException("Invalid palisade url: " + url, e);
             }
 
+            // convert any properties that should not be strings
+
+            properties.computeIfPresent(KEY_SERVICE_PORT, (k, v) -> Integer.valueOf(v.toString()));
+            properties.computeIfPresent(KEY_SERVICE_PS_PORT, (k, v) -> Integer.valueOf(v.toString()));
+            properties.computeIfPresent(KEY_SERVICE_FRS_PORT, (k, v) -> Integer.valueOf(v.toString()));
+
+            // get the port from the url. if it's present then ports for all services.
+
+            var port = baseUri.getPort();
+            if (port > -1) {
+                properties.put(KEY_SERVICE_PORT, port);
+                properties.put(KEY_SERVICE_PS_PORT, port);
+                properties.put(KEY_SERVICE_FRS_PORT, port);
+            }
+
             var queryParams = Util.extractQueryParams(baseUri);
 
-            extractUser(baseUri, queryParams).ifPresent(u -> properties.put(KEY_SERVICE_USER, u));
+            // override each port if found as a query parameter
+
+            findProperty(queryParams, PARAM_PORT)
+                .map(Integer::valueOf)
+                .ifPresent(v -> properties.put(KEY_SERVICE_PORT, v));
+
+            findProperty(queryParams, PARAM_PS_PORT)
+                .map(Integer::valueOf)
+                .ifPresent(v -> properties.put(KEY_SERVICE_PS_PORT, v));
+
+            findProperty(queryParams, PARAM_WS_PORT)
+                .map(Integer::valueOf)
+                .ifPresent(v -> properties.put(KEY_SERVICE_FRS_PORT, v));
+
+            // get the user from the url and then see if a query parameter
+            // should override it
+
+            extractUser(baseUri).ifPresent(u -> properties.put(KEY_SERVICE_USER, u));
+
+            findProperty(queryParams, PARAM_USER)
+                .ifPresent(v -> properties.put(KEY_SERVICE_USER, v));
+
             properties.put(KEY_SERVICE_PS_URL, createrPalisadeUrl(baseUri, properties));
-            properties.put(KEY_SERVICE_FRS_URL, createFilteredResourceUrl(baseUri, properties, queryParams));
+            properties.put(KEY_SERVICE_FRS_URL, createFilteredResourceUrl(baseUri, properties));
 
         }
 
@@ -335,58 +365,47 @@ public final class Configuration {
 
     private static String createrPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
 
-        final var bldr1 = new StringBuilder().append("http://").append(baseUri.getHost());
+        final var bldr = new StringBuilder()
+            .append("http://")
+            .append(baseUri.getHost());
 
-        if (baseUri.getPort() > -1) {
-            bldr1.append(":").append(baseUri.getPort());
-        } else {
-            findProperty(properties, "service.palisade.port").ifPresent(p -> bldr1.append(":").append(p));
-        }
+        findProperty(properties, KEY_SERVICE_PS_PORT, Integer.class)
+            .ifPresent(p -> bldr.append(":").append(p));
 
-        bldr1.append(baseUri.getPath())
+        bldr.append(baseUri.getPath())
             .append("/")
-            .append(trimSlashes(getProperty(properties, "service.palisade.path")));
+            .append(trimSlashes(getProperty(properties, KEY_SERVICE_PS_PATH)));
 
-        return bldr1.toString();
+        return bldr.toString();
 
     }
 
-    private static String createFilteredResourceUrl(
-            final URI baseUri,
-            final Map<String, Object> properties,
-            final Map<String, String> queryParams) {
-        var bldr2 = new StringBuilder().append("ws://").append(baseUri.getHost());
-        var wsport = queryParams.get("wsport");
-        if (wsport != null) {
-            bldr2.append(":").append(wsport);
-        } else {
-            findProperty(properties, "service.filteredResource.port").ifPresent(p -> bldr2.append(":").append(p));
-        }
-        bldr2.append(baseUri.getPath())
+    private static String createFilteredResourceUrl(final URI baseUri, final Map<String, Object> properties) {
+
+        var bldr = new StringBuilder()
+            .append("ws://")
+            .append(baseUri.getHost());
+
+        findProperty(properties, KEY_SERVICE_FRS_PORT, Integer.class)
+            .ifPresent(p -> bldr.append(":").append(p));
+
+        bldr.append(baseUri.getPath())
             .append("/")
-            .append(trimSlashes(getProperty(properties, "service.filteredResource.path")));
-        return bldr2.toString();
+            .append(trimSlashes(getProperty(properties, KEY_SERVICE_FRS_PATH)));
+
+        return bldr.toString();
     }
 
-    static Optional<String> extractUser(final URI baseUri, final Map<String, String> queryParams) {
+    static Optional<String> extractUser(final URI baseUri) {
 
-        // add user from authority
-
-        String user = null;
+        Object user = null;
 
         var authority = baseUri.getAuthority();
         if (authority != null && authority.contains("@")) {
             user = authority.split("@")[0];
         }
 
-        // add user from query parameter if supplied
-
-        var paramUser = queryParams.get("user");
-        if (paramUser != null) {
-            user = paramUser;
-        }
-
-        return Optional.ofNullable(user);
+        return Optional.ofNullable((String) user);
 
     }
 }

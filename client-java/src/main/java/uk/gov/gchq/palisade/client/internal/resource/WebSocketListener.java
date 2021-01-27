@@ -145,6 +145,7 @@ public class WebSocketListener implements Listener {
          * @param func The builder function
          * @return a newly created {@code RequestId}
          */
+        @SuppressWarnings("java:S4276")
         static Item createMessage(final Function<Item.Builder, Item.Builder> func) {
             return func.apply(new Item.Builder()).build();
         }
@@ -198,6 +199,7 @@ public class WebSocketListener implements Listener {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
+    @SuppressWarnings("java:S3242")
     public static WebSocketListener createResourceClientListener(
         final UnaryOperator<ResourceClientListenerSetup.Builder> func) {
         return new WebSocketListener(func.apply(new ResourceClientListenerSetup.Builder()).build());
@@ -269,6 +271,7 @@ public class WebSocketListener implements Listener {
         handler.accept(event);
     }
 
+    @SuppressWarnings("java:S4276")
     private void send(final WebSocket ws, final UnaryOperator<Item.Builder> func) {
         var f1 = func.andThen(b -> b.putHeader("token", token));
         var message = Item.createMessage(f1);

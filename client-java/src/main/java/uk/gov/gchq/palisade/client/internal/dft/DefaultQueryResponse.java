@@ -156,6 +156,7 @@ public class DefaultQueryResponse implements QueryResponse {
          * @param func The builder function
          * @return a newly created data request instance
          */
+        @SuppressWarnings("java:S3242")
         static EmittedResource createResource(final UnaryOperator<EmittedResource.Builder> func) {
             return func.apply(new EmittedResource.Builder()).build();
         }
@@ -193,6 +194,7 @@ public class DefaultQueryResponse implements QueryResponse {
          * @return a newly created data request instance
          */
 
+        @SuppressWarnings("java:S3242")
         static EmittedError createError(final UnaryOperator<EmittedError.Builder> func) {
             return func.apply(new EmittedError.Builder()).build();
         }

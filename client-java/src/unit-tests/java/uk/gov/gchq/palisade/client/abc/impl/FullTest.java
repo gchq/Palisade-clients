@@ -55,9 +55,11 @@ class FullTest {
     @Test
     void testWithDownloadOutsideStream() throws Exception {
 
+        var port = embeddedServer.getPort();
+
         var properties = Map.<String, String>of(
-            "service.palisade.port", "" + embeddedServer.getPort(),
-            "service.filteredResource.port", "" + embeddedServer.getPort());
+            "service.palisade.port", "" + port,
+            "service.filteredResource.port", "" + port);
 
         var session = ClientManager.openSession("pal://mrblobby@localhost/cluster", properties);
         var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
