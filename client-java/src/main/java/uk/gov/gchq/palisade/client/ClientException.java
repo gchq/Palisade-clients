@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Crown Copyright
+ * Copyright 2020-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package uk.gov.gchq.palisade.client;
 
 /**
- * Root class of client exceptions
+ * The base {@code Throwable} type for Palisade Clients.
  *
  * @since 0.5.0
  */
@@ -24,9 +24,9 @@ public class ClientException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Creates a new instance with the provided {@code message}
+     * Constructs a new instance with the provided {@code message}
      *
-     * @param message The message attached to the exception
+     * @param message a description of the exception
      * @see RuntimeException#RuntimeException(String)
      */
     public ClientException(final String message) {
@@ -34,10 +34,12 @@ public class ClientException extends RuntimeException {
     }
 
     /**
-     * Creates a new instance with the provided {@code message} and {@code cause}
+     * Constructs a new instance with the provided {@code message} and {@code cause}
      *
-     * @param message The message attached to the exception
-     * @param cause   The underlying cause of the exception
+     * @param message a description of the exception
+     * @param cause   the underlying reason for this {@code ClientException} (which
+     *                is saved for later retrieval by the getCause() method); may be
+     *                null indicating the cause is non-existent or unknown.
      * @see RuntimeException#RuntimeException(String, Throwable)
      */
     public ClientException(final String message, final Throwable cause) {

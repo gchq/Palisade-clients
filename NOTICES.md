@@ -12,6 +12,7 @@ List of third-party dependencies grouped by their license type
 * Micronaut ([io.micronaut:micronaut-inject-java:2.1.1](http://micronaut.io))
 * Micronaut ([io.micronaut:micronaut-runtime:2.1.1](http://micronaut.io))
 * Micronaut Test ([io.micronaut.test:micronaut-test-junit5:2.1.1](http://micronaut.io))
+* RxJava ([io.reactivex.rxjava3:rxjava:3.0.8](https://github.com/ReactiveX/RxJava))
 * Apache Commons Lang ([org.apache.commons:commons-lang3:3.8.1](http://commons.apache.org/proper/commons-lang/))
 * Apache Hadoop Common ([org.apache.hadoop:hadoop-common:3.2.1](no url defined))
 * Apache Hadoop MapReduce Core ([org.apache.hadoop:hadoop-mapreduce-client-core:3.2.1](no url defined))
@@ -21,8 +22,8 @@ List of third-party dependencies grouped by their license type
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
 * Spring Cloud Starter OpenFeign ([org.springframework.cloud:spring-cloud-starter-openfeign:2.2.0.RELEASE](https://projects.spring.io/spring-cloud))
 * clients-common ([uk.gov.gchq.palisade:clients-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/clients-common))
-* common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
-* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
+* common ([uk.gov.gchq.palisade:common:0.5.0-20210121.151104-22](https://github.com/gchq/Palisade-common))
+* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-20210126.160626-27](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
 
 ### [Eclipse Public License 1.0](./licenses/eclipse_public_license_1.0.html):
 * Logback Classic Module ([ch.qos.logback:logback-classic:1.2.3](http://logback.qos.ch/logback-classic))
@@ -37,3 +38,4 @@ List of third-party dependencies grouped by their license type
 ### [MIT License](./licenses/mit_license.txt):
 * Mockito ([org.mockito:mockito-all:1.10.19](http://www.mockito.org))
 * SLF4J API Module ([org.slf4j:slf4j-api:1.7.25](http://www.slf4j.org))
+* SLF4J API Module ([org.slf4j:slf4j-api:1.7.26](http://www.slf4j.org))

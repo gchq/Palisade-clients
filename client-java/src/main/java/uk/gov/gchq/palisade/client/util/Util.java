@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Crown Copyright
+ * Copyright 2020-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,6 +117,18 @@ public final class Util {
      * @return a uri from the provide base path and endpoint(s)
      */
     public static URI createUri(final String baseUri, final String endpoint, final String... endpoints) {
+        return URI.create(createUrl(baseUri, endpoint, endpoints));
+    }
+
+    /**
+     * Returns a uri from the provide base path and endpoint(s)
+     *
+     * @param baseUri   the base uri
+     * @param endpoint  the endpoint
+     * @param endpoints further endpoints
+     * @return a uri from the provide base path and endpoint(s)
+     */
+    public static String createUrl(final String baseUri, final String endpoint, final String... endpoints) {
 
         var uri = new StringBuilder(trimSlashes(baseUri))
             .append("/")
@@ -126,7 +138,26 @@ public final class Util {
             uri.append("/").append(trimSlashes(string));
         }
 
-        return URI.create(uri.toString());
+        return uri.toString();
+    }
+
+    /**
+     * Returns a map of the query parameters in the provided url. Note that all
+     * escape sequences contained in the properties are decoded.
+     *
+     * @param uri to extract query parameters from
+     * @return a map of the query parameters in the provided url
+     */
+    public static Map<String, String> extractQueryParams(final URI uri) {
+        var query = Checks.checkNotNull(uri).getQuery();
+        var queryParams = new HashMap<String, String>();
+        if (query != null && query.trim().length() > 0) {
+            for (String string : uri.getQuery().split("&")) {
+                var a = string.split("=");
+                queryParams.put(a[0], a[1]);
+            }
+        }
+        return queryParams;
     }
 
 }

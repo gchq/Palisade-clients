@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Crown Copyright
+ * Copyright 2020-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class ChecksTest {
 
@@ -27,27 +29,29 @@ class ChecksTest {
 
     @Test
     void testCheckArgumentT() {
-        assertThatExceptionOfType(CLASS).isThrownBy(() -> Checks.checkArgument(null));
+        assertThatExceptionOfType(CLASS).isThrownBy(() -> Checks.checkNotNull(null));
     }
 
     @Test
     void testCheckArgumentTObject() {
         assertThatExceptionOfType(CLASS)
-            .isThrownBy(() -> Checks.checkArgument(null, "oops"))
+            .isThrownBy(() -> Checks.checkNotNull(null, "oops"))
             .withMessage("oops");
+        assertThat(Checks.checkNotNull("boo", "oops")).isEqualTo("boo");
     }
 
     @Test
     void testCheckArgumentTStringObjectArray() {
         assertThatExceptionOfType(CLASS)
-            .isThrownBy(() -> Checks.checkArgument(null, "oops %s %s", "one", "two"))
+            .isThrownBy(() -> Checks.checkNotNull(null, "oops %s %s", "one", "two"))
             .withMessage("oops one two");
+        assertThat(Checks.checkNotNull("boo", "oops %s %s", "one", "two")).isEqualTo("boo");
     }
 
     @Test
     void testCheckArgumentBoolean() {
-        assertThatExceptionOfType(CLASS)
-            .isThrownBy(() -> Checks.checkArgument(1 == 2));
+        assertThatExceptionOfType(CLASS).isThrownBy(() -> Checks.checkArgument(1 == 2));
+        assertThatNoException().isThrownBy(() -> Checks.checkArgument(1 == 1));
     }
 
     @Test
@@ -55,6 +59,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops"))
             .withMessage("oops");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops"));
     }
 
     @Test
@@ -62,6 +68,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", "one", "two"))
             .withMessage("oops one two");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", "one", "two"));
     }
 
     @Test
@@ -69,6 +77,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s", 'x'))
             .withMessage("oops x");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s", 'x'));
     }
 
     @Test
@@ -76,6 +86,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s", 2))
             .withMessage("oops 2");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s", 2));
     }
 
     @Test
@@ -83,6 +95,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s", 2L))
             .withMessage("oops 2");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s", 2L));
     }
 
     @Test
@@ -90,6 +104,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s", new BigDecimal("12")))
             .withMessage("oops 12");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s", new BigDecimal("12")));
     }
 
     @Test
@@ -97,6 +113,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 'x', 'y'))
             .withMessage("oops x y");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 'x', 'y'));
     }
 
     @Test
@@ -104,6 +122,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 'x', 2))
             .withMessage("oops x 2");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 'x', 2));
     }
 
     @Test
@@ -111,6 +131,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 'x', 2L))
             .withMessage("oops x 2");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 'x', 2L));
     }
 
     @Test
@@ -118,6 +140,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 'x', new BigDecimal("12")))
             .withMessage("oops x 12");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 'x', new BigDecimal("12")));
     }
 
     @Test
@@ -125,6 +149,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2, 'x'))
             .withMessage("oops 2 x");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2, 'x'));
     }
 
     @Test
@@ -132,6 +158,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2, 4))
             .withMessage("oops 2 4");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2, 4));
     }
 
     @Test
@@ -139,6 +167,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2, 4L))
             .withMessage("oops 2 4");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2, 4L));
     }
 
     @Test
@@ -146,6 +176,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2, new BigDecimal("12")))
             .withMessage("oops 2 12");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2, new BigDecimal("12")));
     }
 
     @Test
@@ -153,6 +185,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2L, 'x'))
             .withMessage("oops 2 x");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2L, 'x'));
     }
 
     @Test
@@ -160,6 +194,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2L, 4))
             .withMessage("oops 2 4");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2L, 4));
     }
 
     @Test
@@ -167,6 +203,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2L, 4L))
             .withMessage("oops 2 4");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2L, 4L));
     }
 
     @Test
@@ -174,6 +212,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", 2L, new BigDecimal("12")))
             .withMessage("oops 2 12");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", 2L, new BigDecimal("12")));
     }
 
     @Test
@@ -181,6 +221,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", new BigDecimal("12"), 'x'))
             .withMessage("oops 12 x");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", new BigDecimal("12"), 'x'));
     }
 
     @Test
@@ -188,6 +230,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", new BigDecimal("12"), 2))
             .withMessage("oops 12 2");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", new BigDecimal("12"), 2));
     }
 
     @Test
@@ -195,6 +239,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", new BigDecimal("12"), 2L))
             .withMessage("oops 12 2");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", new BigDecimal("12"), 2L));
     }
 
     @Test
@@ -202,6 +248,8 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s", new BigDecimal("12"), new BigDecimal("24")))
             .withMessage("oops 12 24");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s", new BigDecimal("12"), new BigDecimal("24")));
     }
 
     @Test
@@ -210,6 +258,9 @@ class ChecksTest {
             .isThrownBy(() -> Checks.checkArgument(1 == 2, "oops %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
                 new BigDecimal("36")))
             .withMessage("oops 12 24 36");
+        assertThatNoException()
+            .isThrownBy(() -> Checks.checkArgument(1 == 1, "oops %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
+                new BigDecimal("36")));
     }
 
     @Test
@@ -219,6 +270,44 @@ class ChecksTest {
                 () -> Checks.checkArgument(1 == 2, "oops %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
                 new BigDecimal("36"), new BigDecimal("48")))
             .withMessage("oops 12 24 36 48");
+        assertThatNoException()
+            .isThrownBy(
+                () -> Checks.checkArgument(1 == 1, "oops %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
+                    new BigDecimal("36"), new BigDecimal("48")));
+    }
+
+    @Test
+    void testCheckArgumentExpressionTemplateObjectArray() {
+        assertThatExceptionOfType(CLASS)
+            .isThrownBy(
+                () -> Checks.checkArgument((boolean) (1 == 2), "oops %s %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
+                    new BigDecimal("36"), new BigDecimal("48"), new BigDecimal("52")))
+            .withMessage("oops 12 24 36 48 52");
+        assertThatNoException()
+            .isThrownBy(
+                () -> Checks.checkArgument((boolean) (1 == 1), "oops %s %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
+                    new BigDecimal("36"), new BigDecimal("48"), new BigDecimal("52")));
+
+    }
+
+    @Test
+    void testCheckArgumentObjectTemplateObjectArray() {
+        assertThatExceptionOfType(CLASS)
+            .isThrownBy(
+                () -> Checks.checkArgument((boolean) (1 == 2), "oops %s %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
+                    new BigDecimal("36"), new BigDecimal("48"), new BigDecimal("52")))
+            .withMessage("oops 12 24 36 48 52");
+        assertThatNoException()
+            .isThrownBy(
+                () -> Checks.checkArgument((boolean) (1 == 1), "oops %s %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
+                    new BigDecimal("36"), new BigDecimal("48"), new BigDecimal("52")));
+
+        var str1 = "boo";
+        var str2 = Checks.checkNotNull(str1, "oops %s %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
+            new BigDecimal("36"), new BigDecimal("48"), new BigDecimal("52"));
+
+        assertThat(str2).isSameAs(str1);
+
     }
 
 }

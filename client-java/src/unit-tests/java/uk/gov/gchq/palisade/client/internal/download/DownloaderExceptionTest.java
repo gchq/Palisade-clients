@@ -13,33 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.abc.impl;
+package uk.gov.gchq.palisade.client.internal.download;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import uk.gov.gchq.palisade.client.abc.QueryInfoImpl;
-import uk.gov.gchq.palisade.client.internal.dft.DefaultSession;
-import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DefaultSessionTest {
+/**
+ * @author dbell
+ *
+ */
+class DownloaderExceptionTest {
 
-    @BeforeEach
-    void setUp() throws Exception {
-    }
 
-    @AfterEach
-    void tearDown() throws Exception {
-    }
-
+    /**
+     * Test method for {@link uk.gov.gchq.palisade.client.internal.download.DownloaderException#getStatusCode()}.
+     */
     @Test
-    void testCreateQuery() {
-        var session = new DefaultSession(Configuration.fromDefaults());
-        var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
-        assertThat(query).isNotNull();
+    void testGetStatusCode() {
+        assertThat(new DownloaderException("oops", 400).getStatusCode()).isEqualTo(400);
     }
 
 }
