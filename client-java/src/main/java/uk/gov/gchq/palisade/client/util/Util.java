@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Crown Copyright
+ * Copyright 2018-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,9 +99,9 @@ public final class Util {
             var expr = entry.getValue().toString().trim();
             if (expr.startsWith("${") && expr.endsWith("}")) {
                 var key = expr.substring(2, expr.length() - 1);
-                var repl = input.get(key);
-                if (repl != null) {
-                    result.put(entry.getKey(), repl);
+                var newValue = input.get(key);
+                if (newValue != null) {
+                    result.put(entry.getKey(), newValue);
                 }
             }
         }

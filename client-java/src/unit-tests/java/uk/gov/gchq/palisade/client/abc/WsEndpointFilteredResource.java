@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Crown Copyright
+ * Copyright 2018-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,7 +161,7 @@ public class WsEndpointFilteredResource {
      */
     @OnClose
     public void onClose(final WebSocketSession session) {
-        LOGGER.debug("<-- CLOSE request received", session.getId());
+        LOGGER.debug("<-- CLOSE request received: {}", session.getId());
     }
 
     private static final void sendComplete(final WebSocketSession session) {

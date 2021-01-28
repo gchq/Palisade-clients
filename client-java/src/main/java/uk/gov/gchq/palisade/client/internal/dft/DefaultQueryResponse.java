@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Crown Copyright
+ * Copyright 2018-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,20 @@ import java.util.function.UnaryOperator;
  */
 public class DefaultQueryResponse implements QueryResponse {
 
+    /**
+     * Enum to reflect the state of reading from the websocket.
+     *
+     * @since 0.5.0
+     */
+    private enum Loop {
+        // normal state, keep reading websocket buffer
+        CONTINUE,
+        // No more left and we are done
+        COMPLETE,
+        // someone cancelled, so we should get out
+        CANCELLED
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQueryResponse.class);
 
     private final DefaultSession session;
@@ -83,31 +97,32 @@ public class DefaultQueryResponse implements QueryResponse {
 
             LOGGER.debug("Connected to websocket");
 
-            boolean leave = false;
-
+            var loop = Loop.CONTINUE;
             do {
-
                 var wsm = webSocketClient.poll(1, TimeUnit.SECONDS);
-
                 if (wsm != null) {
-
                     if (wsm instanceof CompleteMessage) {
-                        break;
+                        loop = Loop.COMPLETE;
+                    } else {
+                        createMessage(wsm).ifPresent((final Message msg) -> {
+                            LOGGER.debug("emitter.onNext: {}", msg);
+                            emitter.onNext(msg);
+                        });
                     }
-
-                    createMessage(wsm).ifPresent(emitter::onNext);
-
                 }
-
                 if (emitter.isCancelled()) {
-                    LOGGER.debug("emitter.cancelled");
-                    return;
+                    loop = Loop.CANCELLED;
                 }
+            } while (loop == Loop.CONTINUE);
 
-            } while (!leave);
-
-            LOGGER.debug("emitter.complete");
-            emitter.onComplete();
+            if (loop == Loop.COMPLETE) {
+                LOGGER.debug("emitter.complete");
+                emitter.onComplete();
+            } else if (loop == Loop.CANCELLED) {
+                LOGGER.debug("emitter.cancelled");
+            } else {
+                LOGGER.debug("emitter ended normally");
+            }
 
         }, BackpressureStrategy.BUFFER);
 

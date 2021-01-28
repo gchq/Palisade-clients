@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Crown Copyright
+ * Copyright 2018-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 /**
- * A websocket message is the actuial instance sent/received to/from the
+ * A websocket message is the actual instance sent/received to/from the
  * websocket
  *
  * @since 0.5.0

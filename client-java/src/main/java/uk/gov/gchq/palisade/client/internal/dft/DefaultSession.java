@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Crown Copyright
+ * Copyright 2018-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package uk.gov.gchq.palisade.client.internal.dft;
 
 import uk.gov.gchq.palisade.client.Download;
-import uk.gov.gchq.palisade.client.Query;
 import uk.gov.gchq.palisade.client.QueryInfo;
 import uk.gov.gchq.palisade.client.Resource;
 import uk.gov.gchq.palisade.client.Session;
@@ -43,7 +42,7 @@ public class DefaultSession implements Session {
     }
 
     @Override
-    public Query createQuery(final QueryInfo info) {
+    public DefaultQuery createQuery(final QueryInfo info) {
         return new DefaultQuery(this, info);
     }
 
