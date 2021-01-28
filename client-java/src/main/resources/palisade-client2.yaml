@@ -1,0 +1,13 @@
+#
+# replacement attributes markers:
+#  %t = token
+#  %s = timestamp (yyyyMMdd-hhmmss)
+#  %r = resource
+#
+service:
+  palisade:
+    path: palisade/registerDataRequest
+  filteredResource:
+    path: filteredResource/name/%t
+  data:
+    path: data/read/chunked    

@@ -1,6 +1,7 @@
 List of third-party dependencies grouped by their license type
 
 ### [Apache Software License 2.0](./licenses/apache_software_license_2.0.txt):
+* Jackson-annotations ([com.fasterxml.jackson.core:jackson-annotations:2.11.0](http://github.com/FasterXML/jackson))
 * jackson-databind ([com.fasterxml.jackson.core:jackson-databind:2.10.0](http://github.com/FasterXML/jackson))
 * Jackson-dataformat-Properties ([com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.10.0](http://github.com/FasterXML/jackson-dataformats-text))
 * Jackson-dataformat-YAML ([com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.0](https://github.com/FasterXML/jackson-dataformats-text))
@@ -12,6 +13,7 @@ List of third-party dependencies grouped by their license type
 * Micronaut ([io.micronaut:micronaut-inject-java:2.1.1](http://micronaut.io))
 * Micronaut ([io.micronaut:micronaut-runtime:2.1.1](http://micronaut.io))
 * Micronaut Test ([io.micronaut.test:micronaut-test-junit5:2.1.1](http://micronaut.io))
+* RxJava ([io.reactivex.rxjava3:rxjava:3.0.8](https://github.com/ReactiveX/RxJava))
 * Apache Commons Lang ([org.apache.commons:commons-lang3:3.8.1](http://commons.apache.org/proper/commons-lang/))
 * Apache Hadoop Common ([org.apache.hadoop:hadoop-common:3.2.1](no url defined))
 * Apache Hadoop MapReduce Core ([org.apache.hadoop:hadoop-mapreduce-client-core:3.2.1](no url defined))
@@ -20,8 +22,14 @@ List of third-party dependencies grouped by their license type
 * EventBus ([org.greenrobot:eventbus:3.2.0](http://greenrobot.org/eventbus/))
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
 * Spring Cloud Starter OpenFeign ([org.springframework.cloud:spring-cloud-starter-openfeign:2.2.0.RELEASE](https://projects.spring.io/spring-cloud))
-* common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
-* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
+* common ([uk.gov.gchq.palisade:common:0.5.0-20210127.140835-23](https://github.com/gchq/Palisade-common))
+* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-20210126.160626-27](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
+
+### [Apache-2.0](./licenses/not recognised):
+* akka-http-jackson ([com.typesafe.akka:akka-http-jackson_2.13:10.2.1](https://akka.io))
+* akka-http ([com.typesafe.akka:akka-http_2.13:10.2.1](https://akka.io))
+* akka-stream-typed ([com.typesafe.akka:akka-stream-typed_2.13:2.6.10](https://akka.io/))
+* akka-stream ([com.typesafe.akka:akka-stream_2.13:2.6.10](https://akka.io/))
 
 ### [Eclipse Public License 1.0](./licenses/eclipse_public_license_1.0.html):
 * Logback Classic Module ([ch.qos.logback:logback-classic:1.2.3](http://logback.qos.ch/logback-classic))

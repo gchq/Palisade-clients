@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Copyright 2018-2021 Crown Copyright
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+<!-- ~ Copyright 2020 Crown Copyright ~ ~ Licensed under the Apache License, 
+    Version 2.0 (the "License"); ~ you may not use this file except in compliance 
+    with the License. ~ You may obtain a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 
+    ~ ~ Unless required by applicable law or agreed to in writing, software ~ 
+    distributed under the License is distributed on an "AS IS" BASIS, ~ WITHOUT 
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. ~ See the 
+    License for the specific language governing permissions and ~ limitations 
+    under the License. -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://maven.apache.org/POM/4.0.0"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -41,11 +34,11 @@
 
         <jackson.version>2.10.0</jackson.version>
         <json-flattener.version>0.11.1</json-flattener.version>
-        
+
         <!-- Provided dependency versions -->
 
         <immutables.version>2.8.2</immutables.version>
-        
+
         <!-- Test dependency versions -->
 
         <micronaut.version>2.1.1</micronaut.version>
@@ -55,6 +48,7 @@
         <assertj.version>3.17.2</assertj.version>
         <logback.version>1.2.3</logback.version>
         <equalsverifier.version>3.4.2</equalsverifier.version>
+        <rxjava.version>3.0.8</rxjava.version>
 
     </properties>
 
@@ -105,9 +99,9 @@
     </dependencyManagement>
 
     <dependencies>
-    
-        <!--  RUNTIME -->
-        
+
+        <!-- RUNTIME -->
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -147,9 +141,14 @@
             <artifactId>json-flattener</artifactId>
             <version>${json-flattener.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>io.reactivex.rxjava3</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>${rxjava.version}</version>
+        </dependency>
+
         <!-- PROVIDED -->
-        
+
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>
@@ -219,7 +218,7 @@
             <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
     </dependencies>
 
     <build>
