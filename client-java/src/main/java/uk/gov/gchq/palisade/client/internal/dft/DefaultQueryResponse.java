@@ -78,6 +78,7 @@ public class DefaultQueryResponse implements QueryResponse {
         this.palisadeResponse = palisadeResponse;
     }
 
+    @SuppressWarnings("java:S3776")
     @Override
     public Publisher<Message> stream() {
 
