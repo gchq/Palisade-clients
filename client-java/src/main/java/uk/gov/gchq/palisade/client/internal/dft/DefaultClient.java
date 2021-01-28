@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This client is the default impleentation and responds to the subname of
+ * This client is the default implementation and responds to the subname of
  * "dft".
  *
  * @since 0.5.0
@@ -52,11 +52,10 @@ public class DefaultClient implements Client {
 
         props.put("service.url", url);
 
-        // load the default config and merge in overrides
+        // load the default configuration and merge in overrides
         var configuration = loadDefaultConfiguration().merge(props);
 
         return new DefaultSession(configuration);
-
     }
 
     private static Configuration loadDefaultConfiguration() {

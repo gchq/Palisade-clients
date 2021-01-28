@@ -15,8 +15,6 @@
  */
 package uk.gov.gchq.palisade.client.abc.impl;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.abc.QueryInfoImpl;
@@ -26,14 +24,6 @@ import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultSessionTest {
-
-    @BeforeEach
-    void setUp() throws Exception {
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-    }
 
     @Test
     void testCreateQuery() {
