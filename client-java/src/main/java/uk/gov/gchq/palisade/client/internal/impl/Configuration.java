@@ -159,9 +159,9 @@ public final class Configuration {
             return new Configuration(map);
 
         } catch (IOException e) {
-            throw new ClientException("Failed to load initial properties", e);
+            throw new ConfigurationException("Failed to load initial properties", e);
         } catch (URISyntaxException e) {
-            throw new ClientException("Could not load default properties (url not valid)", e);
+            throw new ConfigurationException("Could not load default properties (url not valid)", e);
         }
 
     }
@@ -301,18 +301,18 @@ public final class Configuration {
 
     private static Map<String, Object> process(final Map<String, Object> properties) {
 
-        // process the uri
+        // process the URI
 
         String url = getProperty(properties, KEY_SERVICE_URL);
 
-        // if the url is not set, then we cannot propcess it
+        // if the URL is not set, then we cannot process it
         if (url != null) {
 
             URI baseUri;
             try {
                 baseUri = new URI(url);
             } catch (URISyntaxException e) {
-                throw new ClientException("Invalid palisade url: " + url, e);
+                throw new ConfigurationException("Invalid palisade url: " + url, e);
             }
 
             // convert any properties that should not be strings
@@ -354,7 +354,7 @@ public final class Configuration {
             findProperty(queryParams, PARAM_USER)
                 .ifPresent(v -> properties.put(KEY_SERVICE_USER, v));
 
-            properties.put(KEY_SERVICE_PS_URL, createrPalisadeUrl(baseUri, properties));
+            properties.put(KEY_SERVICE_PS_URL, createPalisadeUrl(baseUri, properties));
             properties.put(KEY_SERVICE_FRS_URL, createFilteredResourceUrl(baseUri, properties));
 
         }
@@ -363,37 +363,37 @@ public final class Configuration {
 
     }
 
-    private static String createrPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
+    private static String createPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
 
-        final var bldr = new StringBuilder()
+        var urlBuilder = new StringBuilder()
             .append("http://")
             .append(baseUri.getHost());
 
         findProperty(properties, KEY_SERVICE_PS_PORT, Integer.class)
-            .ifPresent(p -> bldr.append(":").append(p));
+            .ifPresent(p -> urlBuilder.append(":").append(p));
 
-        bldr.append(baseUri.getPath())
+        urlBuilder.append(baseUri.getPath())
             .append("/")
             .append(trimSlashes(getProperty(properties, KEY_SERVICE_PS_PATH)));
 
-        return bldr.toString();
+        return urlBuilder.toString();
 
     }
 
     private static String createFilteredResourceUrl(final URI baseUri, final Map<String, Object> properties) {
 
-        var bldr = new StringBuilder()
+        var urlBuilder = new StringBuilder()
             .append("ws://")
             .append(baseUri.getHost());
 
         findProperty(properties, KEY_SERVICE_FRS_PORT, Integer.class)
-            .ifPresent(p -> bldr.append(":").append(p));
+            .ifPresent(p -> urlBuilder.append(":").append(p));
 
-        bldr.append(baseUri.getPath())
+        urlBuilder.append(baseUri.getPath())
             .append("/")
             .append(trimSlashes(getProperty(properties, KEY_SERVICE_FRS_PATH)));
 
-        return bldr.toString();
+        return urlBuilder.toString();
     }
 
     static Optional<String> extractUser(final URI baseUri) {

@@ -13,23 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.abc.impl;
+package uk.gov.gchq.palisade.client.internal.dft;
 
 import org.junit.jupiter.api.Test;
 
-import uk.gov.gchq.palisade.client.abc.QueryInfoImpl;
-import uk.gov.gchq.palisade.client.internal.dft.DefaultSession;
-import uk.gov.gchq.palisade.client.internal.impl.Configuration;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DefaultSessionTest {
+class DefaultClientTest {
 
     @Test
-    void testCreateQuery() {
-        var session = new DefaultSession(Configuration.fromDefaults());
-        var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
-        assertThat(query).isNotNull();
+    void testAcceptsURL() {
+        var client = new DefaultClient();
+        assertThat(client.acceptsURL("pal://localhost")).isTrue();
+        assertThat(client.acceptsURL("jdbc://localhost")).isFalse();
+    }
+
+    @Test
+    void testConnect() {
+        var client = new DefaultClient();
+        var session = client.connect("pal://localhost", Map.of());
+        assertThat(session).isInstanceOf(DefaultSession.class);
     }
 
 }

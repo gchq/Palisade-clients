@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.abc;
+package uk.gov.gchq.palisade.client.testing;
 
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;

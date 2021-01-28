@@ -46,7 +46,12 @@ public class DefaultSession implements Session {
         return new DefaultQuery(this, info);
     }
 
-    Configuration getConfiguration() {
+    /**
+     * Returns the configuration for this session
+     *
+     * @return the configuration for this session
+     */
+    public Configuration getConfiguration() {
         return this.configuration;
     }
 
@@ -54,5 +59,6 @@ public class DefaultSession implements Session {
     public Download fetch(final Resource resource) {
         return new Downloader(configuration.getObjectMapper(), configuration.getDataPath()).fetch(resource);
     }
+
 
 }

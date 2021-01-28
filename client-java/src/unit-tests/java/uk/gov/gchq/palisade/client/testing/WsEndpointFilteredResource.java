@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.abc;
+package uk.gov.gchq.palisade.client.testing;
 
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.websocket.WebSocketBroadcaster;
@@ -131,8 +131,6 @@ public class WsEndpointFilteredResource {
         LOGGER.debug("WebSocket Server opened");
     }
 
-    boolean completeSent = false;
-
     /**
      * Called when a new message arrives
      *
@@ -166,7 +164,9 @@ public class WsEndpointFilteredResource {
 
     private static final void sendComplete(final WebSocketSession session) {
         send(session, Item.createMessage(b -> b
-            .putHeader("token", session.get(TOKEN_KEY, String.class).get())
+            .putHeader("token",
+                session.get(TOKEN_KEY, String.class)
+                    .orElseThrow(() -> new IllegalStateException("Missing token key: " + TOKEN_KEY)))
             .type(MessageType.COMPLETE)));
     }
 

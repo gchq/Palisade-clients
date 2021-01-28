@@ -76,8 +76,7 @@ public final class ClientManager {
      *                         invalid
      */
     public static Session openSession(final String url) {
-        var client = getClient(url);
-        return client.connect(url, Map.of());
+        return openSession(url, Map.of());
     }
 
     /**

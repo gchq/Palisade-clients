@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.abc.impl;
+package uk.gov.gchq.palisade.client;
 
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
@@ -27,12 +27,7 @@ import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.ClientManager;
-import uk.gov.gchq.palisade.client.Download;
-import uk.gov.gchq.palisade.client.MessageType;
-import uk.gov.gchq.palisade.client.QueryResponse;
-import uk.gov.gchq.palisade.client.Resource;
-import uk.gov.gchq.palisade.client.abc.QueryInfoImpl;
+import uk.gov.gchq.palisade.client.testing.QueryInfoImpl;
 
 import javax.inject.Inject;
 
@@ -52,12 +47,13 @@ class FullTest {
     @Inject
     EmbeddedServer embeddedServer;
 
+    @SuppressWarnings("resource")
     @Test
     void testWithDownloadOutsideStream() throws Exception {
 
         var port = embeddedServer.getPort();
 
-        var properties = Map.<String, String>of(
+        var properties = Map.of(
             "service.palisade.port", "" + port,
             "service.filteredResource.port", "" + port);
 
@@ -101,7 +97,7 @@ class FullTest {
     @SuppressWarnings("java:S1607")
     void testWithDownloadInsideStream() throws Exception {
 
-        var properties = Map.<String, String>of(
+        var properties = Map.of(
             "service.palisade.port", "" + embeddedServer.getPort(),
             "service.filteredResource.port", "" + embeddedServer.getPort());
 
@@ -116,19 +112,18 @@ class FullTest {
             .filter(m -> m.getType() == MessageType.RESOURCE)
             .map(Resource.class::cast)
             .map(session::fetch)
-            .subscribe(new FlowableSubscriber<Download>() {
+            .subscribe(new FlowableSubscriber<>() {
 
                 @Override
                 public void onNext(final Download t) {
                     LOGGER.debug("## Got message: {}", t);
-                    var is = t.getInputStream();
-                    try {
+                    try (var is = t.getInputStream()) {
                         LOGGER.debug("## reading bytes");
                         var ba = is.readAllBytes();
                         LOGGER.debug("## read {} bytes", ba.length);
                     } catch (Throwable e) {
-                        LOGGER.error("Got error reading inputstream into byte array", e);
-                        throw new IllegalStateException("Got error reading inputstream into byte array", e);
+                        LOGGER.error("Got error reading input stream into byte array", e);
+                        throw new IllegalStateException("Got error reading input stream into byte array", e);
                     }
                 }
 

@@ -29,7 +29,7 @@ public interface Query {
      * Executes the query and immediately returns a future which contains the object
      * which will provide access to returned resources
      *
-     * @return a {@code CompleteableFuture} containing the result of the query
+     * @return a {@code CompletableFuture} containing the result of the query
      *         execution
      */
     CompletableFuture<QueryResponse> execute();

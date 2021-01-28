@@ -38,7 +38,7 @@ public class DefaultClient implements Client {
 
     @Override
     public boolean acceptsURL(final String url) {
-        return url.startsWith("pal://");
+        return url.startsWith("pal://") || url.startsWith("pal:dft://");
     }
 
     @Override

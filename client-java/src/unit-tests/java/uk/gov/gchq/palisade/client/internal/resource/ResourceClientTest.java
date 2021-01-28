@@ -61,7 +61,7 @@ public class ResourceClientTest {
     }
 
     @Test
-    void testMessageFlow() throws Exception {
+    void testMessageFlow() {
 
         // There are two resources so we should have 3 events (2 resource and 1
         // complete)

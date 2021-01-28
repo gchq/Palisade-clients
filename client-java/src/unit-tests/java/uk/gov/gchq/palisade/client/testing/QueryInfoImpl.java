@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.abc;
+package uk.gov.gchq.palisade.client.testing;
 
 import org.immutables.value.Value;
 
@@ -22,6 +22,11 @@ import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.util.function.UnaryOperator;
 
+/**
+ * Implementation of QueryInfo for testing
+ *
+ * @since 0.5.0
+ */
 @Value.Immutable
 @ImmutableStyle
 public interface QueryInfoImpl extends QueryInfo {

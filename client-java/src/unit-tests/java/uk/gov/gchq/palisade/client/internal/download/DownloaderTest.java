@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 @MicronautTest
 class DownloaderTest {
 
-    private static final String BASE_URL = "http://localhost:"; // needs port added befoire use
+    private static final String BASE_URL = "http://localhost:"; // needs port added before use
     private static final String ENDPOINT = "/data/read/chunked";
     private static final String TOKEN = "abcd-1";
     private static final String PI_0 = "resources/pi0.txt";
@@ -58,8 +58,9 @@ class DownloaderTest {
         this.downloader = new Downloader(objectMapper, ENDPOINT);
     }
 
+    @SuppressWarnings("resource")
     @Test
-    void testSuccessfulDownload() throws Exception {
+    void testSuccessfulDownload() {
 
         var filename = PI_0;
 

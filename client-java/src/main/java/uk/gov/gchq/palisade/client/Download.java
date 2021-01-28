@@ -30,7 +30,7 @@ public interface Download {
      * Returns an {@code InputStream} which contains the stream of bytes for the
      * file to be downloaded
      *
-     * @return the inputstream of bytes
+     * @return the input stream of bytes
      */
     InputStream getInputStream();
 

@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.abc.impl;
+package uk.gov.gchq.palisade.client.internal.impl;
 
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.ClientException;
-import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
 import java.util.Map;
 
@@ -93,7 +92,7 @@ class ConfigurationTest {
 
     @Test
     void testLoadFilenameNull() {
-        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> Configuration.from((String) null));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> Configuration.from(null));
     }
 
     @Test
@@ -104,11 +103,10 @@ class ConfigurationTest {
             () -> Configuration.from(FILENAME, Map.of("service.url", "\\")));
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     void testMergeNullSame() {
         var expected = defaultConfig();
-        var actual = expected.merge((Map) null);
+        var actual = expected.merge(null);
         assertThat(actual).isSameAs(expected);
     }
 }

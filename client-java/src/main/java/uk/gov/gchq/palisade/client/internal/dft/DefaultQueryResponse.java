@@ -84,7 +84,7 @@ public class DefaultQueryResponse implements QueryResponse {
 
         // our flowable must wrap the websocket client
 
-        var flowable = Flowable.<Message>create((final FlowableEmitter<Message> emitter) -> {
+        var flowable = Flowable.create((final FlowableEmitter<Message> emitter) -> {
 
             LOGGER.debug("Creating stream...");
 
