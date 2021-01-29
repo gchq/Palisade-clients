@@ -36,6 +36,9 @@ public class DefaultQuery implements Query {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQuery.class);
 
+    private static final String PURPOSE_KEY = "purpose";
+    private static final String NO_PURPOSE = "";
+
     private final QueryInfo info;
     private final DefaultSession session;
 
@@ -60,7 +63,7 @@ public class DefaultQuery implements Query {
             session.getConfiguration().getPalisadeUrl());
 
         var properties = new HashMap<>(info.getProperties());
-        properties.put("PURPOSE", info.getPurpose().orElse("client_request"));
+        properties.put(PURPOSE_KEY, info.getPurpose().orElse(NO_PURPOSE));
 
         var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
             .resourceId(info.getResourceId())

@@ -19,12 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author dbell
- *
- */
 class DownloaderExceptionTest {
-
 
     /**
      * Test method for {@link uk.gov.gchq.palisade.client.internal.download.DownloaderException#getStatusCode()}.

@@ -17,10 +17,11 @@ package uk.gov.gchq.palisade.client.internal.dft;
 
 import uk.gov.gchq.palisade.client.Client;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
-import uk.gov.gchq.palisade.client.util.Checks;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
 /**
  * This client is the default implementation and responds to the subname of
@@ -38,18 +39,17 @@ public class DefaultClient implements Client {
 
     @Override
     public boolean acceptsURL(final String url) {
+        checkNotNull(url, "url is null");
         return url.startsWith("pal://") || url.startsWith("pal:dft://");
     }
 
     @Override
     public DefaultSession connect(final String url, final Map<String, String> info) {
-        Checks.checkNotNull(url, "url is null");
-        if (!url.startsWith("pal:")) {
+        if (acceptsURL(url)) {
             return null;
         }
-        // don't write to parameter
+        // copy incoming info
         var props = new HashMap<>(info);
-
         props.put("service.url", url);
 
         // load the default configuration and merge in overrides

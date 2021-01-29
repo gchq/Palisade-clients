@@ -87,6 +87,6 @@ public interface PalisadeRequest extends Serializable {
      *
      * @return the context in support of this request
      */
-    Map<String, Object> getContext();
+    Map<String, String> getContext();
 
 }
