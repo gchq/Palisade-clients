@@ -91,6 +91,7 @@ public final class ClientManager {
      * @throws ClientException if a Palisade access error occurs or the url is
      *                         invalid
      */
+    @SuppressWarnings("java:S1488")
     public static Session openSession(final String url, final Map<String, String> info) {
         var client = getClient(url);
         var session = client.connect(url, info);
