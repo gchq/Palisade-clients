@@ -123,6 +123,8 @@ public class WsEndpointFilteredResource {
      */
     @OnOpen
     public void onOpen(final String token, final WebSocketSession session) {
+        assert token != null : "Should have the token as part of the path variable";
+        LOGGER.debug("WebSocket server opened with token {}", token);
         session.put(TOKEN_KEY, token);
         this.messages = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
         if (!messages.hasNext()) {

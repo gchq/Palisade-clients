@@ -93,7 +93,8 @@ public final class ClientManager {
      */
     public static Session openSession(final String url, final Map<String, String> info) {
         var client = getClient(url);
-        return client.connect(url, info);
+        var session = client.connect(url, info);
+        return session;
     }
 
 }

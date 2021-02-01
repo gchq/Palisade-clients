@@ -1,3 +1,20 @@
+
+<!---
+Copyright 2020 Crown Copyright
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+--->
+
 # Palisade Client (Java)
 
 The Java Palisade Client API provides universal resource access a Palisade service. The design of the API loosely follows that of other well known API's (e.g. JDBC). This design decision was made to provide a familiar feel to accessing Palisade.
@@ -6,7 +23,7 @@ Of course there are differences. One of the big differences is that Palisade cli
 
 ### Example Usage
 
-A unit test to assert that resources are returned may look like the following. Note that here we are using Micronaut to create endpoints for the following with Palisade:
+A unit test to assert that resources are returned may look like the following. Note that here we are using Micronaut to create end-points for the following with Palisade:
 
 * Palisade Service
 * Filtered Resource Service
@@ -62,39 +79,37 @@ class FullTest {
 ```
 
 1. Creates a map of properties to be passed to the client. Here we are overriding the port for the palisade and filtered resource service.
-2. Uses the `ClientManager` to create a `Session` from a palisade url. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
+2. Uses the `ClientManager` to create a `Session` from a palisade URL. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
 3. A new Query is created by passing `QueryInfo`.
 4. The query is executed. The request is submitted to Palisade at this point and a `CompleteableFuture` is returned asynchronously. Once Palisade has processed the request, the future will emit a `Publisher` of `Messages` instances.
 5. Convert the `java.util.current.Flow.Publisher` to an RxJava `Flowable` in order to apply filtering and retrieval into a collection of `Resource` instances.
 6. Use the first resource as a test and make sure it's not null
-7. Using the session we fetch the reource. A `Download` instance is returned. At this point the request has been sent and received from the data service. The download opbject provides access to an `InputStream`. The data is not returned from the server until the input stream is first accessed.
+7. Using the session we fetch the resource. A `Download` instance is returned. At this point the request has been sent and received from the data service. The download object provides access to an `InputStream`. The data is not returned from the server until the input stream is first accessed.
 8. Using AssertJ the two input streams are checked for equality.
 
 ### Client properties
 
-__Note:__ These  properties will override any query parameters or other values within the url (e.g. port/user).
+__Note:__ These  properties will override any query parameters or other values within the URL (e.g. port/user).
 
 | Property | Description |
 | --- | --- |
 | service.user | The userId |
-| service.password | Optional passord if required |
+| service.password | Optional password if required |
 | service.palisade.port | The palisade service port. If not set will equal any port provided within the service.url |
 | service.filteredResource.port | The port for the filtered resource (websocket) service |
-| service.url | The main cluster url .e.g. pal://user@localhost:12345/cluster |
+| service.url | The main cluster URL .e.g. pal://user@localhost:12345/cluster |
 
 ### URL Query Parameters
 
-These parameters can be added to the url in the normal way.
+These parameters can be added to the URL in the normal way.
 
-__Note:__ These  parameters will be overriden by propeties 
+__Note:__ These  parameters will be overridden by properties 
 
 | Parameter | Description |
 | --- | --- |
 | port | Base port for the palisade cluster |
 | psport | The port for the Palisade Service |
-| wsport | The port for the filtered resource service. Specifiy this if it is different from the palisade service. If not supplied it will be set to that of the palisade service |
-
-
+| wsport | The port for the filtered resource service. Specify this if it is different from the palisade service. If not supplied it will be set to that of the palisade service |
 
 Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
 

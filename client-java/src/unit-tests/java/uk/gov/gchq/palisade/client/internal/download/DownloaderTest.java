@@ -58,9 +58,8 @@ class DownloaderTest {
         this.downloader = new Downloader(objectMapper, ENDPOINT);
     }
 
-    @SuppressWarnings("resource")
     @Test
-    void testSuccessfulDownload() {
+    void testSuccessfulDownload() throws Exception {
 
         var filename = PI_0;
 
@@ -74,10 +73,11 @@ class DownloaderTest {
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.
 
-        var actual = download.getInputStream();
-        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
-
-        assertThat(actual).hasSameContentAs(expected);
+        try (var actual = download.getInputStream();
+             var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
+        ) {
+            assertThat(actual).hasSameContentAs(expected);
+        }
 
     }
 

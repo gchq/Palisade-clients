@@ -47,7 +47,6 @@ class FullTest {
     @Inject
     EmbeddedServer embeddedServer;
 
-    @SuppressWarnings("resource")
     @Test
     void testWithDownloadOutsideStream() throws Exception {
 
@@ -58,7 +57,8 @@ class FullTest {
             "service.filteredResource.port", "" + port);
 
         var session = ClientManager.openSession("pal://mrblobby@localhost/cluster", properties);
-        var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
+        var queryInfo = QueryInfoImpl.create(b -> b.resourceId("resource_id"));
+        var query = session.createQuery(queryInfo);
         var publisher = query
             .execute()
             .thenApply(QueryResponse::stream)
@@ -78,11 +78,11 @@ class FullTest {
         var download = session.fetch(resource);
         assertThat(download).isNotNull();
 
-        var actual = download.getInputStream();
-        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/pi0.txt");
-
-        assertThat(actual).hasSameContentAs(expected);
-
+        try (var actual = download.getInputStream();
+             var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/pi0.txt");
+        ) {
+            assertThat(actual).hasSameContentAs(expected);
+        }
 
     }
 

@@ -57,7 +57,7 @@ class ClientManagerTest {
         var port = 1234;
         var serviceUrl = "pal://mrblobby@localhost/cluster";
 
-        var properties = Map.<String, String>of(
+        var properties = Map.of(
             "service.palisade.port", "" + port,
             "service.filteredResource.port", "" + port);
 

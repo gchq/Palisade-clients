@@ -49,7 +49,7 @@ public interface ErrorMessage extends WebSocketMessage {
     /**
      * Returns the type of this message
      *
-     * @return the {code MessageType}
+     * @return the {@code MessageType}
      */
     String getText();
 

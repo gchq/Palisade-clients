@@ -15,6 +15,9 @@
  */
 package uk.gov.gchq.palisade.client.internal.dft;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.gov.gchq.palisade.client.Client;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
@@ -31,6 +34,8 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
  */
 public class DefaultClient implements Client {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
+
     /**
      * Returns a new instance of {@code DefaultClient}
      */
@@ -40,12 +45,16 @@ public class DefaultClient implements Client {
     @Override
     public boolean acceptsURL(final String url) {
         checkNotNull(url, "url is null");
-        return url.startsWith("pal://") || url.startsWith("pal:dft://");
+        boolean accepts = url.startsWith("pal://") || url.startsWith("pal:dft://");
+        if (!accepts) {
+            LOGGER.debug("Driver {} does not accept url {}", this.getClass().getName(), url);
+        }
+        return accepts;
     }
 
     @Override
     public DefaultSession connect(final String url, final Map<String, String> info) {
-        if (acceptsURL(url)) {
+        if (!acceptsURL(url)) {
             return null;
         }
         // copy incoming info

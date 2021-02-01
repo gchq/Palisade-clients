@@ -36,7 +36,7 @@ import static uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.cr
 
 /**
  * An instance of this class manages the communications to the Filtered Resource
- * Server via WebSockets
+ * Service via WebSockets
  *
  * @since 0.5.0
  */

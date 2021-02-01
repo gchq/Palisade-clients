@@ -27,6 +27,8 @@ import uk.gov.gchq.palisade.client.internal.request.PalisadeService;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
+import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
+
 /**
  * The default {@code Query} implementation for subname {@code dft}
  *
@@ -49,8 +51,8 @@ public class DefaultQuery implements Query {
      * @param info    The query information
      */
     public DefaultQuery(final DefaultSession session, final QueryInfo info) {
-        this.info = info;
-        this.session = session;
+        this.info = checkNotNull(info);
+        this.session = checkNotNull(session);
     }
 
     @Override
