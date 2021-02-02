@@ -44,6 +44,7 @@ public class HttpEndpointData {
      * @param request The request
      * @return an http response containing an inputstream
      */
+    @SuppressWarnings("resource")
     @Post("/read/chunked")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
