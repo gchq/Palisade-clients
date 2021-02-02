@@ -47,20 +47,6 @@ import java.util.function.UnaryOperator;
  */
 public class DefaultQueryResponse implements QueryResponse {
 
-    /**
-     * Enum to reflect the state of reading from the websocket.
-     *
-     * @since 0.5.0
-     */
-    private enum Loop {
-        // normal state, keep reading websocket buffer
-        CONTINUE,
-        // No more left and we are done
-        COMPLETE,
-        // someone cancelled, so we should get out
-        CANCELLED
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQueryResponse.class);
 
     private final DefaultSession session;
@@ -98,12 +84,15 @@ public class DefaultQueryResponse implements QueryResponse {
 
             LOGGER.debug("Connected to websocket");
 
-            var loop = Loop.CONTINUE;
+            var loop = true;
             do {
                 var wsm = webSocketClient.poll(1, TimeUnit.SECONDS);
                 if (wsm != null) {
                     if (wsm instanceof CompleteMessage) {
-                        loop = Loop.COMPLETE;
+                        // we're done, so signal complete and set flag to get out
+                        emitter.onComplete();
+                        loop = false;
+                        LOGGER.debug("emitter.complete");
                     } else {
                         createMessage(wsm).ifPresent((final Message msg) -> {
                             LOGGER.debug("emitter.onNext: {}", msg);
@@ -112,18 +101,11 @@ public class DefaultQueryResponse implements QueryResponse {
                     }
                 }
                 if (emitter.isCancelled()) {
-                    loop = Loop.CANCELLED;
+                    // we're cancelled, so set flag to get out
+                    loop = false;
+                    LOGGER.debug("emitter.cancelled");
                 }
-            } while (loop == Loop.CONTINUE);
-
-            if (loop == Loop.COMPLETE) {
-                LOGGER.debug("emitter.complete");
-                emitter.onComplete();
-            } else if (loop == Loop.CANCELLED) {
-                LOGGER.debug("emitter.cancelled");
-            } else {
-                LOGGER.debug("emitter ended normally");
-            }
+            } while (loop);
 
         }, BackpressureStrategy.BUFFER);
 

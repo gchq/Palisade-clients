@@ -1,6 +1,6 @@
 
 <!---
-Copyright 2020 Crown Copyright
+Copyright 2018-2021 Crown Copyright
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ class FullTest {
 
 ```
 
-1. Creates a map of properties to be passed to the client. Here we are overriding the port for the palisade and filtered resource service.
+1. Creates a map of properties to be passed to the client. Here we are overriding the port for the Palisade Service and Filtered Resource Service.
 2. Uses the `ClientManager` to create a `Session` from a palisade URL. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
 3. A new Query is created by passing `QueryInfo`.
 4. The query is executed. The request is submitted to Palisade at this point and a `CompleteableFuture` is returned asynchronously. Once Palisade has processed the request, the future will emit a `Publisher` of `Messages` instances.
@@ -95,8 +95,8 @@ __Note:__ These  properties will override any query parameters or other values w
 | --- | --- |
 | service.user | The userId |
 | service.password | Optional password if required |
-| service.palisade.port | The palisade service port. If not set will equal any port provided within the service.url |
-| service.filteredResource.port | The port for the filtered resource (websocket) service |
+| service.palisade.port | The Palisade Service port. If not set will equal any port provided within the service.url |
+| service.filteredResource.port | The port for the Filtered Fesource (websocket) Fervice |
 | service.url | The main cluster URL .e.g. pal://user@localhost:12345/cluster |
 
 ### URL Query Parameters
@@ -107,9 +107,9 @@ __Note:__ These  parameters will be overridden by properties
 
 | Parameter | Description |
 | --- | --- |
-| port | Base port for the palisade cluster |
+| port | Base port for the Palisade cluster |
 | psport | The port for the Palisade Service |
-| wsport | The port for the filtered resource service. Specify this if it is different from the palisade service. If not supplied it will be set to that of the palisade service |
+| wsport | The port for the Filtered Resource Rervice. Specify this if it is different from the Palisade Service. If not supplied it will be set to that of the Palisade Service |
 
 Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
 
