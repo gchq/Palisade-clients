@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client;
 
+import java.util.Map;
+
 /**
  * A session represents a connection to palisade
  *
@@ -25,10 +27,21 @@ public interface Session {
     /**
      * Returns a new query
      *
-     * @param info The query information
+     * @param queryString The query string
      * @return a new query
      */
-    Query createQuery(QueryInfo info);
+    default Query createQuery(final String queryString) {
+        return createQuery(queryString, Map.of());
+    }
+
+    /**
+     * Returns a new query
+     *
+     * @param queryString The query string
+     * @param properties  The properties for this query
+     * @return a new query
+     */
+    Query createQuery(String queryString, Map<String, String> properties);
 
     /**
      * Returns a new download of the provided resource

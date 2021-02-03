@@ -27,8 +27,6 @@ import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.testing.QueryInfoImpl;
-
 import javax.inject.Inject;
 
 import java.util.Map;
@@ -56,9 +54,8 @@ class FullTest {
             "service.palisade.port", "" + port,
             "service.filteredResource.port", "" + port);
 
-        var session = ClientManager.openSession("pal://mrblobby@localhost/cluster", properties);
-        var queryInfo = QueryInfoImpl.create(b -> b.resourceId("resource_id"));
-        var query = session.createQuery(queryInfo);
+        var session = ClientManager.openSession("pal://dave@localhost/cluster", properties);
+        var query = session.createQuery("resource_id");
         var publisher = query
             .execute()
             .thenApply(QueryResponse::stream)
@@ -101,8 +98,8 @@ class FullTest {
             "service.palisade.port", "" + embeddedServer.getPort(),
             "service.filteredResource.port", "" + embeddedServer.getPort());
 
-        var session = ClientManager.openSession("pal://mrblobby@localhost/cluster", properties);
-        var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
+        var session = ClientManager.openSession("pal://dave@localhost/cluster", properties);
+        var query = session.createQuery("resource_id");
         var publisher = query
             .execute()
             .thenApply(QueryResponse::stream)

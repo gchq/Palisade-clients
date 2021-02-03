@@ -19,12 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.Query;
-import uk.gov.gchq.palisade.client.QueryInfo;
 import uk.gov.gchq.palisade.client.QueryResponse;
 import uk.gov.gchq.palisade.client.internal.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.internal.request.PalisadeService;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
@@ -38,37 +38,34 @@ public class DefaultQuery implements Query {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQuery.class);
 
-    private static final String PURPOSE_KEY = "purpose";
-    private static final String NO_PURPOSE = "";
-
-    private final QueryInfo info;
     private final DefaultSession session;
+    private final String queryString;
+    private final Map<String, String> properties;
 
     /**
-     * Creates a new query with the provided {@code session} and query {@code info}
+     * Creates a new query with the provided {@code session}, and query {@code info}
      *
-     * @param session The open session to the cluster
-     * @param info    The query information
+     * @param session     The open session to the cluster
+     * @param queryString The resource query string
+     * @param properties  Properties to be forwarded with the query
      */
-    public DefaultQuery(final DefaultSession session, final QueryInfo info) {
-        this.info = checkNotNull(info);
+    public DefaultQuery(final DefaultSession session, final String queryString, final Map<String, String> properties) {
         this.session = checkNotNull(session);
+        this.queryString = checkNotNull(queryString);
+        this.properties = new HashMap<>(checkNotNull(properties));
     }
 
     @Override
     public CompletableFuture<QueryResponse> execute() {
 
-        LOGGER.debug("Executing query: {}", info);
+        LOGGER.debug("Executing query: {}", queryString);
 
         var palisadeService = new PalisadeService(
             session.getConfiguration().getObjectMapper(),
             session.getConfiguration().getPalisadeUrl());
 
-        var properties = new HashMap<>(info.getProperties());
-        properties.put(PURPOSE_KEY, info.getPurpose().orElse(NO_PURPOSE));
-
         var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
-            .resourceId(info.getResourceId())
+            .resourceId(queryString)
             .userId(session.getConfiguration().getUser())
             .context(properties));
 

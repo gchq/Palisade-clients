@@ -21,7 +21,7 @@ The Java Palisade Client API provides universal resource access a Palisade servi
 
 ### API Design
 
-The design of the API loosely follows that of other well known API's (e.g. JDBC and Hibernate). This design decision was made to provide a familiar feel to accessing Palisade.
+The design of the API loosely follows that of other well known API's. This design decision was made to provide a familiar feel to accessing Palisade.
 
 Of course there are differences. One of the big differences is that Palisade clients deal with returning resource files and not data in Columnar format.
 
@@ -32,7 +32,7 @@ The URL follows the JDBC specification of not exposing the underlying communicat
 If you are familiar with the JDBC url, then the Palisade URL should be familiar. See the examples below:
 
 ```
-pal://mrblobby@localhost/cluster
+pal://dave@localhost/cluster
 pal://localhost/cluster
 pal://localhost:1234/cluster?wsport=4321
 ```
@@ -51,7 +51,6 @@ The API is split into many different interface, which again, are loosely based u
 | Message | Two types of messages can be returned from the Filtered Resource Service and these are abstracted into two subclasses of `Message`. The design choice was to either have two sub types, or have a single type (resource) that can contain an Error. Either way is not wrong. This could change quite easily if needed.  Currently two subclasses exist for Message. These are `Error` and `Resource`. |
 | Download |  A `Download` is retrieved by passing a `Resource` object to the `Session`. The Download abstracts the call to the data service and provides access to an `InputStream` to consume its contents. |
 
-Hopefully that gives a brief but hopefully informative look at the interfaces of the Palisade Client API
 
 ### Example Usage
 
@@ -78,8 +77,8 @@ class FullTest {
             "service.palisade.port", port,
             "service.filteredResource.port", port);
 
-(2)     var session = ClientManager.openSession("pal://mrblobby@localhost/cluster", properties);
-(3)     var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
+(2)     var session = ClientManager.openSession("pal://dave@localhost/cluster", properties);
+(3)     var query = session.createQuery("good_morning", Map.of("purpose","dave's purpose"));
 (4)     var publisher = query
             .execute()
             .thenApply(QueryResponse::stream)
@@ -100,7 +99,9 @@ class FullTest {
         assertThat(download).isNotNull();
 
         var actual = download.getInputStream();
-        var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/pi0.txt");
+        var expected = Thread.currentThread()
+            .getContextClassLoader()
+            .getResourceAsStream("resources/pi0.txt");
 
 (8)     assertThat(actual).hasSameContentAs(expected);
 
@@ -112,7 +113,7 @@ class FullTest {
 
 1. Creates a map of properties to be passed to the client. Here we are overriding the port for the Palisade Service and Filtered Resource Service.
 2. Uses the `ClientManager` to create a `Session` from a palisade URL. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
-3. A new Query is created by passing `QueryInfo`.
+3. A new Query is created by passing a query string and an optional map of properties.
 4. The query is executed. The request is submitted to Palisade at this point and a `CompleteableFuture` is returned asynchronously. Once Palisade has processed the request, the future will emit a `Publisher` of `Messages` instances.
 5. Convert the `java.util.current.Flow.Publisher` to an RxJava `Flowable` in order to apply filtering and retrieval into a collection of `Resource` instances.
 6. Use the first resource as a test and make sure it's not null
@@ -140,10 +141,19 @@ __Note:__ These  parameters will be overridden by properties, if provided
 | Parameter | Description |
 | --- | --- |
 | port | Base port for the Palisade cluster |
-| psport | The port for the Palisade Service |
-| wsport | The port for the Filtered Resource Rervice. Specify this if it is different from the Palisade Service. If not supplied it will be set to that of the Palisade Service |
+| psport | The port for the Palisade Service. If not supplied will be set to the value of `port` |
+| wsport | The port for the Filtered Resource Rervice. Specify this if it is different from the Palisade Service. If not supplied it will be set to the value of `psport` |
 
 Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
+
+### Query Parameters
+
+Any number of of properties can be pass when constructing the query. Below are those properties currently known to Palisade:
+
+| Property | Required | Description |
+| --- | --- | --- |
+| purpose | No | This property is provide by the user to describe the purpose of the request |
+
 
 ## Technologies Used
 

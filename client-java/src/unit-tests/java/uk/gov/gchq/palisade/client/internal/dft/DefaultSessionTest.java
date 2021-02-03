@@ -18,7 +18,6 @@ package uk.gov.gchq.palisade.client.internal.dft;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
-import uk.gov.gchq.palisade.client.testing.QueryInfoImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +26,7 @@ class DefaultSessionTest {
     @Test
     void testCreateQuery() {
         var session = new DefaultSession(Configuration.fromDefaults());
-        var query = session.createQuery(QueryInfoImpl.create(b -> b.resourceId("resource_id")));
+        var query = session.createQuery("resource_id");
         assertThat(query).isNotNull();
     }
 

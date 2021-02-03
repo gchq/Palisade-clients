@@ -16,11 +16,12 @@
 package uk.gov.gchq.palisade.client.internal.dft;
 
 import uk.gov.gchq.palisade.client.Download;
-import uk.gov.gchq.palisade.client.QueryInfo;
 import uk.gov.gchq.palisade.client.Resource;
 import uk.gov.gchq.palisade.client.Session;
 import uk.gov.gchq.palisade.client.internal.download.Downloader;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
+
+import java.util.Map;
 
 /**
  * A session for the "dft" subname
@@ -42,8 +43,8 @@ public class DefaultSession implements Session {
     }
 
     @Override
-    public DefaultQuery createQuery(final QueryInfo info) {
-        return new DefaultQuery(this, info);
+    public DefaultQuery createQuery(final String queryString, final Map<String, String> properties) {
+        return new DefaultQuery(this, queryString, properties);
     }
 
     /**
