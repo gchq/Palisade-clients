@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
 import uk.gov.gchq.palisade.client.internal.dft.DefaultSession;
 
+import java.net.URI;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,9 +47,9 @@ class ClientManagerTest {
 
         assertThat(configuration.getServiceUrl()).isEqualTo(serviceUrl);
         assertThat(configuration.getPalisadeUrl())
-            .isEqualTo("http://localhost:1234/cluster/palisade/registerDataRequest");
+            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/registerDataRequest"));
         assertThat(configuration.getFilteredResourceUrl())
-            .isEqualTo("ws://localhost:1234/cluster/filteredResource/name/%t");
+            .isEqualTo(URI.create("ws://localhost:1234/cluster/filteredResource/name/%25t"));
     }
 
     @Test
@@ -68,9 +69,9 @@ class ClientManagerTest {
 
         assertThat(configuration.getServiceUrl()).isEqualTo(serviceUrl);
         assertThat(configuration.getPalisadeUrl())
-            .isEqualTo("http://localhost:1234/cluster/palisade/registerDataRequest");
+            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/registerDataRequest"));
         assertThat(configuration.getFilteredResourceUrl())
-            .isEqualTo("ws://localhost:1234/cluster/filteredResource/name/%t");
+            .isEqualTo(URI.create("ws://localhost:1234/cluster/filteredResource/name/%25t"));
 
     }
 

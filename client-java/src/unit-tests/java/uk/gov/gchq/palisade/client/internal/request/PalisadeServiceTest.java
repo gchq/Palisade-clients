@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
+import java.net.URI;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @MicronautTest
@@ -31,16 +33,16 @@ class PalisadeServiceTest {
     @Inject EmbeddedServer embeddedServer;
 
     @Test
-    void testSubmit() {
+    void testSubmit() throws Exception {
 
         var port = embeddedServer.getPort();
+        var uri = new URI("http://localhost:" + port + "/cluster/palisade/registerDataRequest");
         var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
             .resourceId("resource_id")
             .userId("user_id")
             .putContext("key", "value"));
 
-        var service = new PalisadeService(objectMapper,
-            "http://localhost:" + port + "/cluster/palisade/registerDataRequest");
+        var service = new PalisadeService(objectMapper, uri);
 
         var palisadeResponse = service.submit(palisadeRequest);
 

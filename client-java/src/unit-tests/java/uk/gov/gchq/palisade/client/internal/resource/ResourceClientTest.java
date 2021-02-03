@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -52,10 +53,11 @@ public class ResourceClientTest {
     void setup() {
         this.port = embeddedServer.getPort();
         this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+
         this.resourceClient = WebSocketClient
             .createResourceClient(b -> b
                 .token(TOKEN)
-                .baseUri("ws://localhost:" + port + "/cluster/filteredResource/name/%t")
+                .uri(URI.create("ws://localhost:" + port + "/cluster/filteredResource/name/%25t"))
                 .objectMapper(objectMapper))
             .connect();
     }

@@ -15,10 +15,12 @@
  */
 package uk.gov.gchq.palisade.client.internal.impl;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.ClientException;
 
+import java.net.URI;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +30,13 @@ class ConfigurationTest {
 
     private static final String FILENAME = "palisade-client2.yaml";
 
+    private static Configuration configuration;
+
+    @BeforeAll
+    static void setupAll() {
+        configuration = Configuration
+            .fromDefaults(Map.of("service.url", "pal://localhost:8081/cluster?wsport=8082"));
+    }
 
     private Configuration defaultConfig() {
         return Configuration
@@ -36,30 +45,30 @@ class ConfigurationTest {
 
     @Test
     void testServiceUrl() {
-        assertThat(defaultConfig().getServiceUrl())
+        assertThat(configuration.getServiceUrl())
             .isEqualTo("pal://localhost:8081/cluster?wsport=8082");
     }
 
     @Test
     void testPalisadeUri() {
-        assertThat(defaultConfig().getPalisadeUrl())
-            .isEqualTo("http://localhost:8081/cluster/palisade/registerDataRequest");
+        assertThat(configuration.getPalisadeUrl())
+            .isEqualTo(URI.create("http://localhost:8081/cluster/palisade/registerDataRequest"));
     }
 
     @Test
     void testFilteredResourceUri() {
-        assertThat(defaultConfig().getFilteredResourceUrl())
-            .isEqualTo("ws://localhost:8082/cluster/filteredResource/name/%t");
+        assertThat(configuration.getFilteredResourceUrl())
+            .isEqualTo(URI.create("ws://localhost:8082/cluster/filteredResource/name/%25t"));
     }
 
     @Test
     void testDataPath() {
-        assertThat(defaultConfig().getDataPath()).isEqualTo("data/read/chunked");
+        assertThat(configuration.getDataPath()).isEqualTo("data/read/chunked");
     }
 
     @Test
     void testUserNone() {
-        assertThat(defaultConfig().getUser()).as("check no user").isNull();
+        assertThat(configuration.getUser()).as("check no user").isNull();
     }
 
     @Test
@@ -105,7 +114,7 @@ class ConfigurationTest {
 
     @Test
     void testMergeNullSame() {
-        var expected = defaultConfig();
+        var expected = configuration;
         var actual = expected.merge(null);
         assertThat(actual).isSameAs(expected);
     }

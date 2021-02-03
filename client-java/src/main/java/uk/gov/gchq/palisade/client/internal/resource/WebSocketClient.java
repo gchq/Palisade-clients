@@ -73,7 +73,7 @@ public class WebSocketClient {
          *
          * @return the base web socket uri
          */
-        String getBaseUri();
+        URI getUri();
 
         /**
          * Returns the object mapper used for (de)serialisation of websocket messages
@@ -87,7 +87,7 @@ public class WebSocketClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClient.class);
 
     private final String token;
-    private final String baseUri;
+    private final URI uri;
     private final ObjectMapper objectMapper;
     private final BlockingQueue<WebSocketMessage> next = new LinkedBlockingQueue<>(1);
 
@@ -103,7 +103,7 @@ public class WebSocketClient {
     public WebSocketClient(final ResourceClientSetup setup) {
         Checks.checkNotNull(setup);
         this.token = setup.getToken();
-        this.baseUri = setup.getBaseUri();
+        this.uri = setup.getUri();
         this.objectMapper = setup.getObjectMapper();
     }
 
@@ -147,14 +147,16 @@ public class WebSocketClient {
         // as soon as a client subscribes, the connection to the filtered resource
         // service should be instantiated and messages should start to be emitted
 
-        var uri = URI.create(baseUri.replace("%t", token));
+        // note that %t has been encoded as %25t in the URI
+
+        var replacedUri = URI.create(uri.toString().replace("%25t", token));
 
         LOGGER.debug("Connecting to websocket at: {}", uri);
 
         this.webSocket = HttpClient
             .newHttpClient()
             .newWebSocketBuilder()
-            .buildAsync(uri, createResourceClientListener(b -> b
+            .buildAsync(replacedUri, createResourceClientListener(b -> b
                 .eventsHandler(this::put)
                 .objectMapper(objectMapper)
                 .token(token)))

@@ -64,6 +64,8 @@ public final class Configuration {
     private static final String PARAM_WS_PORT = "wsport";
     private static final String PARAM_PS_PORT = "psport";
 
+    private static final String FORWARD_SLASH = "/";
+
     private final Map<String, Object> properties;
 
     private final ObjectMapper objectMapper = new ObjectMapper()
@@ -226,8 +228,8 @@ public final class Configuration {
      *
      * @return the full Palisade service uri
      */
-    public String getPalisadeUrl() {
-        return getProperty(KEY_SERVICE_PS_URL);
+    public URI getPalisadeUrl() {
+        return getProperty(KEY_SERVICE_PS_URL, URI.class);
     }
 
     /**
@@ -235,8 +237,8 @@ public final class Configuration {
      *
      * @return the full filtered resource service uri
      */
-    public String getFilteredResourceUrl() {
-        return getProperty(KEY_SERVICE_FRS_URL);
+    public URI getFilteredResourceUrl() {
+        return getProperty(KEY_SERVICE_FRS_URL, URI.class);
     }
 
     /**
@@ -363,37 +365,33 @@ public final class Configuration {
 
     }
 
-    private static String createPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
 
-        var urlBuilder = new StringBuilder()
-            .append("http://")
-            .append(baseUri.getHost());
+    private static URI createPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
 
-        findProperty(properties, KEY_SERVICE_PS_PORT, Integer.class)
-            .ifPresent(p -> urlBuilder.append(":").append(p));
+        var port = findProperty(properties, KEY_SERVICE_PS_PORT, Integer.class).orElse(baseUri.getPort());
+        var path = baseUri.getPath() + FORWARD_SLASH + trimSlashes(getProperty(properties, KEY_SERVICE_PS_PATH));
+        var host = baseUri.getHost();
 
-        urlBuilder.append(baseUri.getPath())
-            .append("/")
-            .append(trimSlashes(getProperty(properties, KEY_SERVICE_PS_PATH)));
-
-        return urlBuilder.toString();
+        try {
+            return new URI("http", null, host, port, path, null, null);
+        } catch (URISyntaxException e) {
+            throw new ConfigurationException("Failed to create Palisade Service URI", e);
+        }
 
     }
 
-    private static String createFilteredResourceUrl(final URI baseUri, final Map<String, Object> properties) {
+    private static URI createFilteredResourceUrl(final URI baseUri, final Map<String, Object> properties) {
 
-        var urlBuilder = new StringBuilder()
-            .append("ws://")
-            .append(baseUri.getHost());
+        var port = findProperty(properties, KEY_SERVICE_FRS_PORT, Integer.class).orElse(baseUri.getPort());
+        var path = baseUri.getPath() + FORWARD_SLASH + trimSlashes(getProperty(properties, KEY_SERVICE_FRS_PATH));
+        var host = baseUri.getHost();
 
-        findProperty(properties, KEY_SERVICE_FRS_PORT, Integer.class)
-            .ifPresent(p -> urlBuilder.append(":").append(p));
+        try {
+            return new URI("ws", null, host, port, path, null, null);
+        } catch (URISyntaxException e) {
+            throw new ConfigurationException("Failed to create Filtered Resource Service URI", e);
+        }
 
-        urlBuilder.append(baseUri.getPath())
-            .append("/")
-            .append(trimSlashes(getProperty(properties, KEY_SERVICE_FRS_PATH)));
-
-        return urlBuilder.toString();
     }
 
     static Optional<String> extractUser(final URI baseUri) {

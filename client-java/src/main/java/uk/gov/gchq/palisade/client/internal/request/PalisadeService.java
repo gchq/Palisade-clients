@@ -45,10 +45,10 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 public class PalisadeService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeService.class);
-    private static final IntPredicate IS_HTTP_OK = sts -> sts == 200;
+    private static final IntPredicate IS_HTTP_OK = sts -> sts == 200 || sts == 202;
 
     private final ObjectMapper objectMapper;
-    private final String baseUri;
+    private final URI uri;
 
     // Once created, an HttpClient instance is immutable, thus automatically
     // thread-safe, and multiple requests can be sent with it
@@ -59,10 +59,10 @@ public class PalisadeService {
      *
      * @param objectMapper The mapper used to {@code PalisadeRequest} and
      *                     {@code PalisadeResponse} objects to/from JSON.
-     * @param baseUri      The uri to send requests to
+     * @param uri          The uri to send requests to
      */
-    public PalisadeService(final ObjectMapper objectMapper, final String baseUri) {
-        this.baseUri = checkNotNull(baseUri);
+    public PalisadeService(final ObjectMapper objectMapper, final URI uri) {
+        this.uri = checkNotNull(uri);
         this.objectMapper = checkNotNull(objectMapper);
     }
 
@@ -94,7 +94,6 @@ public class PalisadeService {
 
         var requestBody = toJson(palisadeRequest);
         var body = BodyPublishers.ofString(requestBody);
-        var uri = URI.create(baseUri);
 
         LOGGER.debug("Submitting request to: {}", uri);
 

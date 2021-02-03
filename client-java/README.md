@@ -17,9 +17,41 @@ limitations under the License.
 
 # Palisade Client (Java)
 
-The Java Palisade Client API provides universal resource access a Palisade service. The design of the API loosely follows that of other well known API's (e.g. JDBC). This design decision was made to provide a familiar feel to accessing Palisade.
+The Java Palisade Client API provides universal resource access a Palisade service. 
+
+### API Design
+
+The design of the API loosely follows that of other well known API's (e.g. JDBC and Hibernate). This design decision was made to provide a familiar feel to accessing Palisade.
 
 Of course there are differences. One of the big differences is that Palisade clients deal with returning resource files and not data in Columnar format.
+
+#### URL
+
+The URL follows the JDBC specification of not exposing the underlying communication protocol. To this end the scheme is set as `pal:[subname]`. 
+
+If you are familiar with the JDBC url, then the Palisade URL should be familiar. See the examples below:
+
+```
+pal://mrblobby@localhost/cluster
+pal://localhost/cluster
+pal://localhost:1234/cluster?wsport=4321
+```
+
+#### Interfaces
+
+The API is split into many different interface, which again, are loosely based upon those of JDBC. Some of these interfaces include:
+
+| Interface | Description |
+| --- | --- |
+| Client | This is analogous to JDBCs driver. This class provides access to actually open and retrieve a session to the palisade cluster. Clients are not instantated directly, but by the `ClientManager ` asking the client whether it supports a given url. This way the user of the API does not need to know about its implementation. |
+| Session | This is roughly the same as JDBCs Connection class. A `Session` provides access to create queries and fetch downloads. At this point there is no security for a session as Palisade does not require it. If this changes in the future, the client API will be uneffected. |
+| Query | This is the instance that sends the request to the Palisade Service. This is where the client deviates from JDBC as the design for this is (very) loosely based upon Hibernate's Query. |
+| QueryInfo | An implementationm of this class is required to be provided when creatying a query. This is one area where the API is a bit restrictive and could cause breakage if anythingh changes. The best solution would be to provide a "where clause" instead of an object. This would be like `where resourceId="blah" and purpose="blahblah"`. This would remove the problems of breakages and make it more future proof. |
+| QueryResponse | Once the query is executes and the `Query` has returned this via a `Future`, a stream of `Message`'s can be retrieved. This class abstracts the underlying mechanisms of how the Filtered Resource Service is accessed. This has no analogue to JDBC or Hibernate as those libraries do not support streams yet. |
+| Message | Two types of messages can be returned from the Filtered Resource Service and these are abstracted into two subclasses of `Message`. The design choice was to either have two sub types, or have a single type (resource) that can contain an Error. Either way is not wrong. This could change quite easily if needed.  Currently two subclasses exist for Message. These are `Error` and `Resource`. |
+| Download |  A `Download` is retrieved by passing a `Resource` object to the `Session`. The Download abstracts the call to the data service and provides access to an `InputStream` to consume its contents. |
+
+Hopefully that gives a brief but hopefully informative look at the interfaces of the Palisade Client API
 
 ### Example Usage
 
@@ -93,17 +125,17 @@ __Note:__ These  properties will override any query parameters or other values w
 
 | Property | Description |
 | --- | --- |
-| service.user | The userId |
+| service.user | The userId. Overrides the authority section of the url |
 | service.password | Optional password if required |
-| service.palisade.port | The Palisade Service port. If not set will equal any port provided within the service.url |
-| service.filteredResource.port | The port for the Filtered Fesource (websocket) Fervice |
+| service.palisade.port | The Palisade Service port. If not set will equal any port provided within the service.url. Overrides the port in the url |
+| service.filteredResource.port | The port for the Filtered Resource (websocket) Service, if different from the palisade Service. |
 | service.url | The main cluster URL .e.g. pal://user@localhost:12345/cluster |
 
 ### URL Query Parameters
 
 These parameters can be added to the URL in the normal way.
 
-__Note:__ These  parameters will be overridden by properties 
+__Note:__ These  parameters will be overridden by properties, if provided
 
 | Parameter | Description |
 | --- | --- |

@@ -78,7 +78,7 @@ public class DefaultQueryResponse implements QueryResponse {
             var webSocketClient = WebSocketClient.createResourceClient(b -> b
                 .token(palisadeResponse.getToken())
                 .objectMapper(configuration.getObjectMapper())
-                .baseUri(configuration.getFilteredResourceUrl()));
+                .uri(configuration.getFilteredResourceUrl()));
 
             webSocketClient.connect();
 
