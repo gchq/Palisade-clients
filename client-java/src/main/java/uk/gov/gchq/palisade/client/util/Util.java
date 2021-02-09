@@ -16,13 +16,9 @@
 package uk.gov.gchq.palisade.client.util;
 
 import java.net.URI;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
 
 /**
  * Utility functions
@@ -31,43 +27,12 @@ import java.util.function.Supplier;
  */
 public final class Util {
 
+    /**
+     * URI separator
+     */
     public static final String URI_SEP = "/";
 
-    private static final DateTimeFormatter DATE_STAMP_FORMATTER = DateTimeFormatter
-        .ofPattern("yyyyMMdd-HHmmss")
-        .withZone(ZoneId.systemDefault());
-
-    private Util() {
-        // cannot instantiate
-    }
-
-    /**
-     * Replaces tokens in the provide template by using the functions provided. This
-     * is useful when replacing path tokens in a template. For example
-     * <pre>{@code /tmp/%t/%s/%r}</pre>
-     *
-     * @param template     The source template
-     * @param replacements The replacement functions
-     * @return the template with tokens replaced
-     */
-    public static String replaceTokens(final String template, final Map<String, Supplier<String>> replacements) {
-        String result = template;
-        for (Map.Entry<String, Supplier<String>> entry : replacements.entrySet()) {
-            result = result.replace(entry.getKey(), entry.getValue().get());
-        }
-        return result;
-    }
-
-    /**
-     * Formats the provided date, time, offset etc as a string to be used in a file
-     * path
-     *
-     * @param accessor The accessor
-     * @return the provided date, time, offset etc as a string to be used in a file
-     *         path
-     */
-    public static String timeStampFormat(final TemporalAccessor accessor) {
-        return DATE_STAMP_FORMATTER.format(accessor);
+    private Util() { // should not be instantiated
     }
 
     /**

@@ -32,7 +32,7 @@ The URL follows the JDBC specification of not exposing the underlying communicat
 If you are familiar with the JDBC url, then the Palisade URL should be familiar. See the examples below:
 
 ```
-pal://dave@localhost/cluster
+pal://alice@localhost/cluster
 pal://localhost/cluster
 pal://localhost:1234/cluster?wsport=4321
 ```
@@ -76,8 +76,8 @@ class FullTest {
             "service.palisade.port", port,
             "service.filteredResource.port", port);
 
-(2)     var session = ClientManager.openSession("pal://dave@localhost/cluster", properties);
-(3)     var query = session.createQuery("good_morning", Map.of("purpose","dave's purpose"));
+(2)     var session = ClientManager.openSession("pal://alice@localhost/cluster", properties);
+(3)     var query = session.createQuery("good_morning", Map.of("purpose","Alice's purpose"));
 (4)     var publisher = query
             .execute()
             .thenApply(QueryResponse::stream)

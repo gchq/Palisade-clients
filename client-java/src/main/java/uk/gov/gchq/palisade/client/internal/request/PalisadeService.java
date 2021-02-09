@@ -17,10 +17,13 @@ package uk.gov.gchq.palisade.client.internal.request;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.ClientException;
+import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
+import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,6 +35,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.IntPredicate;
+import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
@@ -42,28 +46,73 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
  *
  * @since 0.5.0
  */
-public class PalisadeService {
+@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
+public final class PalisadeService {
+
+    /**
+     * Provides the setup for the downloader
+     *
+     * @since 0.5.0
+     */
+    @Value.Immutable
+    @ImmutableStyle
+    public interface PalisadeServiceSetup {
+
+        /**
+         * Exposes the generated builder outside this package
+         * <p>
+         * While the generated implementation (and consequently its builder) is not
+         * visible outside of this package. This builder inherits and exposes all public
+         * methods defined on the generated implementation's Builder class.
+         */
+        class Builder extends ImmutablePalisadeServiceSetup.Builder { // empty
+        }
+
+        /**
+         * Returns the {@code HttpClient}
+         *
+         * @return the {@code HttpClient}
+         */
+        HttpClient getHttpClient();
+
+        /**
+         * Returns the object mapper used for (de)serialisation of websocket messages
+         *
+         * @return the object mapper used for (de)serialisation of websocket messages
+         */
+        ObjectMapper getObjectMapper();
+
+        /**
+         * Returns the full URI of the palisade service endpoint to call
+         *
+         * @return the full URI of the palisade service endpoint to call
+         */
+        URI getUri();
+
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PalisadeService.class);
     private static final IntPredicate IS_HTTP_OK = sts -> sts == 200 || sts == 202;
 
-    private final ObjectMapper objectMapper;
-    private final URI uri;
-
-    private final HttpClient httpClient;
+    private final PalisadeServiceSetup setup;
 
     /**
      * Creates a new Palisade service
      *
-     * @param httpClient   to use when making calls to Palisade Service
-     * @param objectMapper The mapper used to {@code PalisadeRequest} and
-     *                     {@code PalisadeResponse} objects to/from JSON.
-     * @param uri          The URI to send requests to
+     * @param setup The setup
      */
-    public PalisadeService(final HttpClient httpClient, final ObjectMapper objectMapper, final URI uri) {
-        this.uri = checkNotNull(uri);
-        this.objectMapper = checkNotNull(objectMapper);
-        this.httpClient = checkNotNull(httpClient);
+    private PalisadeService(final PalisadeServiceSetup setup) {
+        this.setup = checkNotNull(setup);
+    }
+
+    /**
+     * Helper method to create a {@link Item} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
+    public static PalisadeService createPalisadeService(final UnaryOperator<PalisadeServiceSetup.Builder> func) {
+        return new PalisadeService(func.apply(new PalisadeServiceSetup.Builder()).build());
     }
 
     /**
@@ -92,6 +141,7 @@ public class PalisadeService {
 
         LOGGER.debug("Submitting request to Palisade: {}", palisadeRequest);
 
+        var uri = getUri();
         var requestBody = toJson(palisadeRequest);
         var body = BodyPublishers.ofString(requestBody);
 
@@ -103,7 +153,7 @@ public class PalisadeService {
             .POST(body)
             .build();
 
-        return httpClient
+        return getHttpClient()
             .sendAsync(httpRequest, BodyHandlers.ofString())
             .thenApply(PalisadeService::checkStatusOK)
             .thenApply(HttpResponse::body)
@@ -114,12 +164,18 @@ public class PalisadeService {
     private static <T> HttpResponse<T> checkStatusOK(final HttpResponse<T> resp) {
         int status = resp.statusCode();
         if (!IS_HTTP_OK.test(status)) {
-            throw new ClientException(
-                "Request to palisade service failed (" + status + "), response\n" + resp.body().toString());
+            var body = resp.body();
+            if (body != null) {
+                throw new ClientException(String.format(
+                    "Request to palisade service failed (%s) with body:%n%s", status, body));
+            }
+            throw new ClientException(String.format(
+                "Request to palisade service failed (%s) with no body", status));
         }
         return resp;
     }
 
+    // placed in a method to be use fluently as a method reference
     private String toJson(final Object object) {
         try {
             return objectMapper().writeValueAsString(object);
@@ -128,6 +184,7 @@ public class PalisadeService {
         }
     }
 
+    // placed in a method to be use fluently as a method reference
     private PalisadeResponse toResponse(final String string) {
         try {
             return objectMapper().readValue(string, PalisadeResponse.class);
@@ -136,8 +193,20 @@ public class PalisadeService {
         }
     }
 
+    private PalisadeServiceSetup getSetup() {
+        return this.setup;
+    }
+
     private ObjectMapper objectMapper() {
-        return this.objectMapper;
+        return getSetup().getObjectMapper();
+    }
+
+    private HttpClient getHttpClient() {
+        return getSetup().getHttpClient();
+    }
+
+    private URI getUri() {
+        return getSetup().getUri();
     }
 
 }

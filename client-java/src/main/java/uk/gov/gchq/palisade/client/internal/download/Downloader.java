@@ -43,10 +43,11 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
  *
  * @since 0.5.0
  */
+@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 public final class Downloader {
 
     /**
-     * Provides service and configuration for a resource client
+     * Provides the setup for the downloader
      *
      * @since 0.5.0
      */
@@ -110,7 +111,6 @@ public final class Downloader {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242")
     public static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
         return new Downloader(func.apply(new DownloaderSetup.Builder()).build());
     }
@@ -135,7 +135,7 @@ public final class Downloader {
             // create the url which is made p of the base url which is provided as part of
             // the resource returned from the filtered resource service and the endpoint
 
-            var uri = new URI(Util.createUrl(resource.getUrl(), getPath()));
+            var uri = Util.createUri(resource.getUrl(), getPath());
 
             var requestBody = getObjectMapper()
                 .writeValueAsString(DataRequest.createDataRequest(b -> b

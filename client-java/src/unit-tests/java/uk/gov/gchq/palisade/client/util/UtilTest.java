@@ -17,28 +17,11 @@ package uk.gov.gchq.palisade.client.util;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UtilTest {
-
-    @Test
-    void testReplaceTokens() {
-
-        var token = "abcd-1";
-        var now = Util.timeStampFormat(Instant.now());
-
-        var replacementMap = Map.<String, Supplier<String>>of(
-            "%t", () -> token,
-            "%s", () -> now);
-
-        var path = Util.replaceTokens("/my/path/t-%t/s-%s.json", replacementMap);
-
-        assertThat(path).isEqualTo(("/my/path/t-" + token + "/s-" + now + ".json"));
-    }
 
     @Test
     void testSubstituteWholeVariables() {

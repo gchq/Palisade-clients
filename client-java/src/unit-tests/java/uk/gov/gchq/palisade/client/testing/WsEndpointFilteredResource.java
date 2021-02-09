@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.MessageType;
+import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.WebSocketMessageType;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage;
 
 import javax.inject.Inject;
@@ -74,17 +74,17 @@ public class WsEndpointFilteredResource {
                     .token(token)
                     .leafResourceId(filename)
                     .url(url)))
-                .map(rsc -> message(rsc, MessageType.RESOURCE))
+                .map(rsc -> message(rsc, WebSocketMessageType.RESOURCE))
                 .collect(Collectors.toList());
             this.messages
                 .add(message(WebSocketMessage.createErrorMessage(b -> b
                     .token(token)
                     .text("test error")),
-                MessageType.ERROR));
+                WebSocketMessageType.ERROR));
 
         }
 
-        private Item message(final Object body, final MessageType type) {
+        private Item message(final Object body, final WebSocketMessageType type) {
             return Item.createItem(builder -> builder
                 .putHeader(TOKEN_KEY, token)
                 .type(type)
@@ -143,7 +143,7 @@ public class WsEndpointFilteredResource {
     public void onMessage(final Item inmsg, final WebSocketSession session) {
         LOGGER.debug("<-- {}", inmsg);
         var type = inmsg.getType();
-        if (type == MessageType.CTS) {
+        if (type == WebSocketMessageType.CTS) {
             if (messages.hasNext()) {
                 send(session, messages.next());
             } else {
@@ -169,7 +169,7 @@ public class WsEndpointFilteredResource {
             .putHeader("token",
                 session.get(TOKEN_KEY, String.class)
                     .orElseThrow(() -> new IllegalStateException("Missing token key: " + TOKEN_KEY)))
-            .type(MessageType.COMPLETE)));
+            .type(WebSocketMessageType.COMPLETE)));
     }
 
     private static void send(final WebSocketSession session, final Item message) {

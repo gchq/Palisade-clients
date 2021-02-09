@@ -27,6 +27,7 @@ import java.util.function.UnaryOperator;
  *
  * @since 0.5.0
  */
+@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 @ImmutableStyle
 public interface WebSocketMessage extends Serializable {
 
@@ -36,7 +37,6 @@ public interface WebSocketMessage extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242")
     static CompleteMessage createCompleteMessage(final UnaryOperator<CompleteMessage.Builder> func) {
         return func.apply(new CompleteMessage.Builder()).build();
     }
@@ -47,7 +47,6 @@ public interface WebSocketMessage extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242")
     static ErrorMessage createErrorMessage(final UnaryOperator<ErrorMessage.Builder> func) {
         return func.apply(new ErrorMessage.Builder()).build();
     }
@@ -58,7 +57,6 @@ public interface WebSocketMessage extends Serializable {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242")
     static ResourceMessage createResourceMessage(final UnaryOperator<ResourceMessage.Builder> func) {
         return func.apply(new ResourceMessage.Builder()).build();
     }

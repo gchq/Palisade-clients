@@ -42,6 +42,7 @@ import java.util.function.UnaryOperator;
  *
  * @since 0.5.0
  */
+@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 public class WebSocketListener implements Listener {
 
     /**
@@ -93,7 +94,7 @@ public class WebSocketListener implements Listener {
      *
      * @since 0.5.0
      */
-    public enum MessageType {
+    public enum WebSocketMessageType {
 
         /**
          * Indicates that the client is ready to receive. This type of message is send
@@ -153,9 +154,9 @@ public class WebSocketListener implements Listener {
         /**
          * Returns the type of this message
          *
-         * @return the {@link MessageType}
+         * @return the {@link WebSocketMessageType}
          */
-        MessageType getType();
+        WebSocketMessageType getType();
 
         /**
          * Returns the headers for this message an empty map if there are none
@@ -166,7 +167,7 @@ public class WebSocketListener implements Listener {
 
         /**
          * Returns the body of this message or empty if there is none. At this point
-         * there should only be a body for {@link MessageType} of RESOURCE.
+         * there should only be a body for {@link WebSocketMessageType} of RESOURCE.
          *
          * @return the body of this message or empty if there is none
          */
@@ -199,7 +200,6 @@ public class WebSocketListener implements Listener {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    @SuppressWarnings("java:S3242")
     public static WebSocketListener createResourceClientListener(
         final UnaryOperator<ResourceClientListenerSetup.Builder> func) {
         return new WebSocketListener(func.apply(new ResourceClientListenerSetup.Builder()).build());
@@ -215,7 +215,7 @@ public class WebSocketListener implements Listener {
     public void onOpen(final WebSocket ws) {
         Listener.super.onOpen(ws);
         LOGGER.debug("WebSocket Listener has been opened for requests.");
-        send(ws, b -> b.type(MessageType.CTS));
+        send(ws, b -> b.type(WebSocketMessageType.CTS));
     }
 
     @Override
@@ -225,26 +225,26 @@ public class WebSocketListener implements Listener {
 
         ws.request(1); // omit this and no methods are called listener
 
-        Item message;
+        Item item;
         try {
-            message = objectMapper.readValue(text, Item.class);
+            item = objectMapper.readValue(text, Item.class);
         } catch (JsonProcessingException e) {
             onError(ws, e);
             return null;
         }
 
-        LOGGER.debug("<-- {}", message);
+        LOGGER.debug("<-- {}", item);
 
-        var type = message.getType();
+        var type = item.getType();
         WebSocketMessage webSocketMessage = null;
 
         switch (type) {
             case RESOURCE:
-                var resourceBody = message.getBody().orElseThrow(() -> new WebSocketMessageException(message));
+                var resourceBody = item.getBody().orElseThrow(() -> new MissingBodyException(item));
                 webSocketMessage = objectMapper.convertValue(resourceBody, ResourceMessage.class);
                 break;
             case ERROR:
-                var errorBody = message.getBody().orElseThrow(() -> new WebSocketMessageException(message));
+                var errorBody = item.getBody().orElseThrow(() -> new MissingBodyException(item));
                 webSocketMessage = objectMapper.convertValue(errorBody, ErrorMessage.class);
                 break;
             case COMPLETE:
@@ -260,8 +260,8 @@ public class WebSocketListener implements Listener {
             handler.accept(webSocketMessage);
         }
 
-        if (type != MessageType.COMPLETE) {
-            send(ws, b -> b.type(MessageType.CTS));
+        if (type != WebSocketMessageType.COMPLETE) {
+            send(ws, b -> b.type(WebSocketMessageType.CTS));
         }
 
         return null;

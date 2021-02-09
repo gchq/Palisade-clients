@@ -43,7 +43,10 @@ class PalisadeServiceTest {
             .userId("user_id")
             .putContext("key", "value"));
 
-        var service = new PalisadeService(HttpClient.newHttpClient(), objectMapper, uri);
+        var service = PalisadeService.createPalisadeService(b -> b
+            .httpClient(HttpClient.newHttpClient())
+            .objectMapper(objectMapper)
+            .uri(uri));
 
         var palisadeResponse = service.submit(palisadeRequest);
 

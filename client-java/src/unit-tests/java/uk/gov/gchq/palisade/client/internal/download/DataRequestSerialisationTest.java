@@ -46,7 +46,7 @@ class DataRequestSerialisationTest {
 
     static Object[] instances() {
         return new Object[] {
-            createDataRequest(b -> b.token("blah").leafResourceId("leaf-resource-id"))
+            createDataRequest(b -> b.token("test-request-token").leafResourceId("leaf-resource-id"))
         };
     }
 

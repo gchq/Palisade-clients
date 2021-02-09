@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.MessageType;
+import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.WebSocketMessageType;
 
 import java.util.Map;
 
@@ -51,7 +51,7 @@ class ResourceSerialisationTest {
 
     static Object[] instances() {
         return new Object[] {
-            createItem(b -> b.type(MessageType.RESOURCE).body("string").body("body").headers(map)),
+            createItem(b -> b.type(WebSocketMessageType.RESOURCE).body("string").body("body").headers(map)),
             createResourceMessage(b -> b.token("token").leafResourceId("leaf-resource-id").url("url").properties(map)),
             createErrorMessage(b -> b.token("token").text("error").properties(map)),
             createCompleteMessage(b -> b.token("token").properties(map))

@@ -24,7 +24,7 @@ import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
  *
  * @since 0.5.0
  */
-public class WebSocketMessageException extends ClientException {
+public class MissingBodyException extends ClientException {
 
     private static final long serialVersionUID = 6617992103641504671L;
 
@@ -33,10 +33,10 @@ public class WebSocketMessageException extends ClientException {
     /**
      * Creates a new {@code MissingResourceException} with the provided {@link Item}
      *
-     * @param item The offending message
+     * @param item The offending item
      */
-    public WebSocketMessageException(final Item item) {
-        super("Received a message with a missing resource. Message was: " + item);
+    public MissingBodyException(final Item item) {
+        super("Received an item with a missing body. Message was: " + item);
         this.resourceMessage = item;
     }
 
@@ -45,7 +45,7 @@ public class WebSocketMessageException extends ClientException {
      *
      * @return the message that caused this error
      */
-    public Item getResourceMessage() {
+    public Item getItem() {
         return this.resourceMessage;
     }
 

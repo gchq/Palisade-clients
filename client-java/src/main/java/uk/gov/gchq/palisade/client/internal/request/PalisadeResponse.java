@@ -42,6 +42,7 @@ import java.util.function.UnaryOperator;
 @ImmutableStyle
 @JsonDeserialize(as = ImmutablePalisadeResponse.class)
 @JsonSerialize(as = ImmutablePalisadeResponse.class)
+@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 public interface PalisadeResponse extends Serializable {
 
     /**
@@ -60,7 +61,6 @@ public interface PalisadeResponse extends Serializable {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242")
     static PalisadeResponse create(final UnaryOperator<Builder> func) {
         return func.apply(new Builder()).build();
     }
@@ -73,7 +73,6 @@ public interface PalisadeResponse extends Serializable {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242")
     static PalisadeResponse createPalisadeResponse(final UnaryOperator<Builder> func) {
         return create(func);
     }

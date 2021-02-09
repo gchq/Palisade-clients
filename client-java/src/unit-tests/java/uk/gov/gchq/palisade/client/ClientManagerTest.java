@@ -29,16 +29,16 @@ class ClientManagerTest {
 
     @Test
     void testGetClient() {
-        var client = ClientManager.getClient("pal://dave@localhost:1234/cluster");
+        var client = ClientManager.getClient("pal://alice@localhost:1234/cluster");
         assertThat(client).isInstanceOf(DefaultClient.class);
-        client = ClientManager.getClient("pal:dft://dave@localhost:1234/cluster");
+        client = ClientManager.getClient("pal:dft://alice@localhost:1234/cluster");
         assertThat(client).isInstanceOf(DefaultClient.class);
     }
 
     @Test
     void testOpenSessionUrlNoProperties() {
 
-        var serviceUrl = "pal://dave@localhost:1234/cluster";
+        var serviceUrl = "pal://alice@localhost:1234/cluster";
 
         var session = ClientManager.openSession(serviceUrl);
         var dftSession = (DefaultSession) session;
@@ -56,7 +56,7 @@ class ClientManagerTest {
     void testOpenSessionWithUrlAndProperties() {
 
         var port = 1234;
-        var serviceUrl = "pal://dave@localhost/cluster";
+        var serviceUrl = "pal://alice@localhost/cluster";
 
         var properties = Map.of(
             "service.palisade.port", "" + port,

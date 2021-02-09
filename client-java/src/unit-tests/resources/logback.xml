@@ -28,9 +28,9 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="uk.gov.gchq.palisade.client" level="DEBUG"/>
-    <logger name="uk.gov.gchq.palisade.client.abc.impl" level="DEBUG"/>
-    <logger name="uk.gov.gchq.palisade.client.internal.download" level="DEBUG"/>
+    <logger name="uk.gov.gchq.palisade.client" level="INFO"/>
+    <logger name="uk.gov.gchq.palisade.client.abc.impl" level="INFO"/>
+    <logger name="uk.gov.gchq.palisade.client.internal.download" level="INFO"/>
 
     <!--
         <logger name="io.micronaut.discovery" level="TRACE"/>

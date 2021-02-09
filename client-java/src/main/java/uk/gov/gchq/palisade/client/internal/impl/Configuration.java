@@ -42,8 +42,8 @@ public final class Configuration {
 
     /*
      * The service url simply represents the original url supplied to the
-     * ClientManager. e.g. - "pal://dave@localhost:8090/cluster?wsport=8091" -
-     * "pal://localhost/cluster?port=8090&wsport=8091&user=dave"
+     * ClientManager. e.g. - "pal://alice@localhost:8090/cluster?wsport=8091" -
+     * "pal://localhost/cluster?port=8090&wsport=8091&user=alice"
      */
     private static final String KEY_SERVICE_URL = "service.url";
 
@@ -56,9 +56,7 @@ public final class Configuration {
     /*
      * The user credentials supplied as part of the authority or within the query
      * string. Not that the property supplied in the query string takes precedence
-     * e.g.
-     * - "pal://dave@localhost/cluster"
-     * - "pal://localhost/cluster?user=dave"
+     * e.g. - "pal://alice@localhost/cluster" - "pal://localhost/cluster?user=alice"
      */
     private static final String KEY_SERVICE_USER = "service.user";
 

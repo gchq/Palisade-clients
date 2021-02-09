@@ -39,6 +39,7 @@ import java.util.function.UnaryOperator;
 @ImmutableStyle
 @JsonDeserialize(as = ImmutableDataRequest.class)
 @JsonSerialize(as = ImmutableDataRequest.class)
+@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 public interface DataRequest {
 
     /**
@@ -57,7 +58,6 @@ public interface DataRequest {
      * @param func The builder function
      * @return a newly created data request instance
      */
-    @SuppressWarnings("java:S3242")
     static DataRequest createDataRequest(final UnaryOperator<Builder> func) {
         return func.apply(new Builder()).build();
     }

@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.Query;
 import uk.gov.gchq.palisade.client.QueryResponse;
-import uk.gov.gchq.palisade.client.internal.request.PalisadeRequest;
-import uk.gov.gchq.palisade.client.internal.request.PalisadeService;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static uk.gov.gchq.palisade.client.internal.request.PalisadeRequest.createPalisadeRequest;
+import static uk.gov.gchq.palisade.client.internal.request.PalisadeService.createPalisadeService;
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
 /**
@@ -60,12 +60,12 @@ public class DefaultQuery implements Query {
 
         LOGGER.debug("Executing query: {}", queryString);
 
-        var palisadeService = new PalisadeService(
-            session.getHttpClient(),
-            session.getObjectMapper(),
-            session.getConfiguration().getPalisadeUrl());
+        var palisadeService = createPalisadeService(b -> b
+            .httpClient(session.getHttpClient())
+            .objectMapper(session.getObjectMapper())
+            .uri(session.getConfiguration().getPalisadeUrl()));
 
-        var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
+        var palisadeRequest = createPalisadeRequest(b -> b
             .resourceId(queryString)
             .userId(session.getConfiguration().getUser())
             .context(properties));
