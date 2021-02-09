@@ -17,30 +17,47 @@ package uk.gov.gchq.palisade.client.internal.download;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.gchq.palisade.client.internal.download.DataRequest.createDataRequest;
 
 class DataRequestSerialisationTest {
 
-    private ObjectMapper objectMapper;
+    private static Map<String, String> map;
+    private static ObjectMapper mapper;
 
-    @BeforeEach
-    void setup() {
-        this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+    @BeforeAll
+    static void setupAll() {
+        mapper = new ObjectMapper().registerModules(new Jdk8Module());
+        map = Map.of("key", "value");
     }
 
-    @Test
-    @DisplayName("Test DataRequest [De]Serialisation")
-    void testDataRequestSerialisation() throws Exception {
-        DataRequest expected = DataRequest.createDataRequest(b -> b
-            .token("blah")
-            .leafResourceId("leaf-resource-id"));
-        String string = objectMapper.writeValueAsString(expected);
-        DataRequest actual = objectMapper.readValue(string, DataRequest.class);
-        assertThat(actual).isEqualTo(expected);
+    @AfterAll
+    static void afterAll() {
+        mapper = null;
+        map = null;
+    }
+
+    static Object[] instances() {
+        return new Object[] {
+            createDataRequest(b -> b.token("blah").leafResourceId("leaf-resource-id"))
+        };
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    void testSerialisation(final Object expected) throws Exception {
+        var valueType = expected.getClass();
+        var content = mapper.writeValueAsString(expected);
+        var actual = mapper.readValue(content, valueType);
+        assertThat(actual).as(valueType.getSimpleName() + " equals").isEqualTo(expected);
+        assertThat(actual).as(valueType + " recursive equals").usingRecursiveComparison().isEqualTo(expected);
     }
 
 }

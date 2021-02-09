@@ -70,14 +70,14 @@ public class WsEndpointFilteredResource {
             var url = "http://localhost:" + port;
             this.token = token;
             this.messages = FILENAMES.stream()
-                .map(filename -> WebSocketMessage.createResource(b -> b
+                .map(filename -> WebSocketMessage.createResourceMessage(b -> b
                     .token(token)
                     .leafResourceId(filename)
                     .url(url)))
                 .map(rsc -> message(rsc, MessageType.RESOURCE))
                 .collect(Collectors.toList());
             this.messages
-                .add(message(WebSocketMessage.createError(b -> b
+                .add(message(WebSocketMessage.createErrorMessage(b -> b
                     .token(token)
                     .text("test error")),
                 MessageType.ERROR));
@@ -85,7 +85,7 @@ public class WsEndpointFilteredResource {
         }
 
         private Item message(final Object body, final MessageType type) {
-            return Item.createMessage(builder -> builder
+            return Item.createItem(builder -> builder
                 .putHeader(TOKEN_KEY, token)
                 .type(type)
                 .body(body));
@@ -165,7 +165,7 @@ public class WsEndpointFilteredResource {
     }
 
     private static final void sendComplete(final WebSocketSession session) {
-        send(session, Item.createMessage(b -> b
+        send(session, Item.createItem(b -> b
             .putHeader("token",
                 session.get(TOKEN_KEY, String.class)
                     .orElseThrow(() -> new IllegalStateException("Missing token key: " + TOKEN_KEY)))

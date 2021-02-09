@@ -28,19 +28,19 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class ConfigurationTest {
 
-    private static final String FILENAME = "palisade-client2.yaml";
+    private static final String FILENAME = "palisade-client.yaml";
 
     private static Configuration configuration;
 
     @BeforeAll
     static void setupAll() {
         configuration = Configuration
-            .fromDefaults(Map.of("service.url", "pal://localhost:8081/cluster?wsport=8082"));
+            .create(Map.of("service.url", "pal://localhost:8081/cluster?wsport=8082"));
     }
 
     private Configuration defaultConfig() {
         return Configuration
-            .fromDefaults(Map.of("service.url", "pal://localhost:8081/cluster?wsport=8082"));
+            .create(Map.of("service.url", "pal://localhost:8081/cluster?wsport=8082"));
     }
 
     @Test
@@ -68,12 +68,14 @@ class ConfigurationTest {
 
     @Test
     void testUserNone() {
-        assertThat(configuration.getUser()).as("check no user").isNull();
+        assertThatExceptionOfType(ConfigurationException.class)
+            .as("check no user")
+            .isThrownBy(() -> configuration.getUser());
     }
 
     @Test
     void testUserFromProperty() {
-        var config = Configuration.fromDefaults(Map.of(
+        var config = Configuration.create(Map.of(
             "service.url", "pal://localhost:8081/cluster?wsport=8082",
             "service.user", "user_from_property"));
         assertThat(config.getUser()).as("check user from property").isEqualTo("user_from_property");
@@ -81,7 +83,7 @@ class ConfigurationTest {
 
     @Test
     void testUserFromQueryParam() {
-        var config = Configuration.from(FILENAME, Map.of(
+        var config = Configuration.create(Map.of(
             "service.url", "pal://localhost:8081/cluster?wsport=8082&user=user_from_param",
             "service.user", "user_from_property"));
         assertThat(config.getUser()).as("check user from query param").isEqualTo("user_from_param");
@@ -89,33 +91,17 @@ class ConfigurationTest {
 
     @Test
     void testUserFromAuthority() {
-        var config = Configuration.fromDefaults(Map.of(
+        var config = Configuration.create(Map.of(
             "service.url", "pal://user_from_authority@localhost:8081/cluster?wsport=8082"));
         assertThat(config.getUser()).as("check user from authority").isEqualTo("user_from_authority");
     }
 
     @Test
-    void testLoadFilenameNotFound() {
-        assertThatExceptionOfType(ClientException.class).isThrownBy(() -> Configuration.from("doesnotexist"));
-    }
-
-    @Test
-    void testLoadFilenameNull() {
-        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> Configuration.from(null));
-    }
-
-    @Test
     void testInvalidServiceUrl() {
         assertThatExceptionOfType(ClientException.class).isThrownBy(
-            () -> Configuration.fromDefaults(Map.of("service.url", "\\")));
+            () -> Configuration.create(Map.of("service.url", "\\")));
         assertThatExceptionOfType(ClientException.class).isThrownBy(
-            () -> Configuration.from(FILENAME, Map.of("service.url", "\\")));
+            () -> Configuration.create(Map.of("service.url", "\\")));
     }
 
-    @Test
-    void testMergeNullSame() {
-        var expected = configuration;
-        var actual = expected.merge(null);
-        assertThat(actual).isSameAs(expected);
-    }
 }

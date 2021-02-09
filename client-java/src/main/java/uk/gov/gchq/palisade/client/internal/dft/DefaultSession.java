@@ -15,13 +15,22 @@
  */
 package uk.gov.gchq.palisade.client.internal.dft;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import uk.gov.gchq.palisade.client.Download;
 import uk.gov.gchq.palisade.client.Resource;
 import uk.gov.gchq.palisade.client.Session;
 import uk.gov.gchq.palisade.client.internal.download.Downloader;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
+import java.net.http.HttpClient;
 import java.util.Map;
+
+import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
 /**
  * A session for the "dft" subname
@@ -32,6 +41,17 @@ public class DefaultSession implements Session {
 
     private final Configuration configuration;
 
+    /*
+     * Once created, an HttpClient instance is immutable, thus automatically
+     * thread-safe, and multiple requests can be sent with it
+     */
+    private final HttpClient httpClient;
+
+    /*
+     * Shared object mapper passed to downstream services
+     */
+    private final ObjectMapper objectMapper;
+
     /**
      * Returns a new instance of {@code DefaultSession} with the provided
      * {@code configuration}
@@ -40,11 +60,43 @@ public class DefaultSession implements Session {
      */
     public DefaultSession(final Configuration configuration) {
         this.configuration = configuration;
+        this.httpClient = HttpClient.newHttpClient(); // new client with all the defaults
+        this.objectMapper = new ObjectMapper()
+            .registerModule(new Jdk8Module())
+            .registerModule(new JavaTimeModule())
+            // comment out the 3 include directives below to tell jackson to output all
+            // attributes, even if null, absent or empty (e.g. empty optional and
+            // collection)
+            .setSerializationInclusion(Include.NON_NULL)
+            .setSerializationInclusion(Include.NON_ABSENT)
+            .setSerializationInclusion(Include.NON_EMPTY)
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    }
+
+    @SuppressWarnings("java:S1774")
+    @Override
+    public DefaultQuery createQuery(final String queryString, final Map<String, String> properties) {
+        checkNotNull(queryString, "Missing query");
+        return new DefaultQuery(this, queryString, properties != null ? properties : Map.of());
     }
 
     @Override
-    public DefaultQuery createQuery(final String queryString, final Map<String, String> properties) {
-        return new DefaultQuery(this, queryString, properties);
+    public Download fetch(final Resource resource) {
+        checkNotNull(resource, "Missing resource");
+        var downloader = Downloader.createDownloader(b -> b
+            .httpClient(getHttpClient())
+            .objectMapper(getObjectMapper())
+            .path(configuration.getDataPath()));
+        return downloader.fetch(resource);
+    }
+
+    /**
+     * Returns the shared {@code HttpClient} for this session
+     *
+     * @return the shared {@code HttpClient} for this session
+     */
+    public HttpClient getHttpClient() {
+        return this.httpClient;
     }
 
     /**
@@ -56,10 +108,13 @@ public class DefaultSession implements Session {
         return this.configuration;
     }
 
-    @Override
-    public Download fetch(final Resource resource) {
-        return new Downloader(configuration.getObjectMapper(), configuration.getDataPath()).fetch(resource);
+    /**
+     * Returns the shared object mapper
+     *
+     * @return the shared object mapper
+     */
+    public ObjectMapper getObjectMapper() {
+        return this.objectMapper;
     }
-
 
 }

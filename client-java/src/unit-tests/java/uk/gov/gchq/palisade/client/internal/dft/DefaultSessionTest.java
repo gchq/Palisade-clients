@@ -25,7 +25,7 @@ class DefaultSessionTest {
 
     @Test
     void testCreateQuery() {
-        var session = new DefaultSession(Configuration.fromDefaults());
+        var session = new DefaultSession(Configuration.create());
         var query = session.createQuery("resource_id");
         assertThat(query).isNotNull();
     }

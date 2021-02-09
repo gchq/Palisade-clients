@@ -61,7 +61,8 @@ public class DefaultQuery implements Query {
         LOGGER.debug("Executing query: {}", queryString);
 
         var palisadeService = new PalisadeService(
-            session.getConfiguration().getObjectMapper(),
+            session.getHttpClient(),
+            session.getObjectMapper(),
             session.getConfiguration().getPalisadeUrl());
 
         var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b

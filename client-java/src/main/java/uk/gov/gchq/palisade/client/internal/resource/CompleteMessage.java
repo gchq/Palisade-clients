@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client.internal.resource;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 /**
@@ -30,6 +32,8 @@ import org.immutables.value.Value;
  * @since 0.5.0
  */
 @Value.Immutable
+@JsonDeserialize(as = ImmutableCompleteMessage.class)
+@JsonSerialize(as = ImmutableCompleteMessage.class)
 public interface CompleteMessage extends WebSocketMessage {
 
     /**

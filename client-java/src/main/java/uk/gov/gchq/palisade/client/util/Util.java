@@ -31,6 +31,8 @@ import java.util.function.Supplier;
  */
 public final class Util {
 
+    public static final String URI_SEP = "/";
+
     private static final DateTimeFormatter DATE_STAMP_FORMATTER = DateTimeFormatter
         .ofPattern("yyyyMMdd-HHmmss")
         .withZone(ZoneId.systemDefault());

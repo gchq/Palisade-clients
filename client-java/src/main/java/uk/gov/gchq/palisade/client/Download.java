@@ -49,7 +49,7 @@ public interface Download {
      *
      * @return the name of the resource
      */
-    default Optional<String> getName() {
+    default Optional<String> getFilename() {
         return Optional.empty();
     }
 

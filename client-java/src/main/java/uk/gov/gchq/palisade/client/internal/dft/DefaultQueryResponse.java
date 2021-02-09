@@ -35,6 +35,7 @@ import uk.gov.gchq.palisade.client.internal.resource.ResourceMessage;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketClient;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage;
 
+import java.net.http.HttpClient;
 import java.util.Optional;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.TimeUnit;
@@ -74,19 +75,30 @@ public class DefaultQueryResponse implements QueryResponse {
 
             LOGGER.debug("Creating stream...");
 
+            /*
+             * Must use a new client here for the websocket connection If we use the one
+             * from the session, the websocket listener seems to fail
+             */
+
+            var httpClient = HttpClient.newHttpClient();
+
             var configuration = session.getConfiguration();
+
             var webSocketClient = WebSocketClient.createResourceClient(b -> b
+                .httpClient(httpClient)
+                .objectMapper(session.getObjectMapper())
                 .token(palisadeResponse.getToken())
-                .objectMapper(configuration.getObjectMapper())
                 .uri(configuration.getFilteredResourceUrl()));
 
             webSocketClient.connect();
 
             LOGGER.debug("Connected to websocket");
 
+            var timeout = session.getConfiguration().getQueryStreamPollTimeout();
             var loop = true;
+
             do {
-                var wsm = webSocketClient.poll(1, TimeUnit.SECONDS);
+                var wsm = webSocketClient.poll(timeout, TimeUnit.SECONDS);
                 if (wsm != null) {
                     if (wsm instanceof CompleteMessage) {
                         // we're done, so signal complete and set flag to get out

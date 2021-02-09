@@ -82,13 +82,18 @@ public class WebSocketClient {
          */
         ObjectMapper getObjectMapper();
 
+        /**
+         * Returns the HTTP client that should be used by the {@code WebSocketClient}
+         *
+         * @return the HTTP client that should be used by the {@code WebSocketClient}
+         */
+        HttpClient getHttpClient();
+
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClient.class);
 
-    private final String token;
-    private final URI uri;
-    private final ObjectMapper objectMapper;
+    private final ResourceClientSetup setup;
     private final BlockingQueue<WebSocketMessage> next = new LinkedBlockingQueue<>(1);
 
     private WebSocket webSocket;
@@ -101,10 +106,7 @@ public class WebSocketClient {
      * @param setup The setup instance
      */
     public WebSocketClient(final ResourceClientSetup setup) {
-        Checks.checkNotNull(setup);
-        this.token = setup.getToken();
-        this.uri = setup.getUri();
-        this.objectMapper = setup.getObjectMapper();
+        this.setup = Checks.checkNotNull(setup);
     }
 
     /**
@@ -149,20 +151,19 @@ public class WebSocketClient {
 
         // note that %t has been encoded as %25t in the URI
 
-        var replacedUri = URI.create(uri.toString().replace("%25t", token));
+        var replacedUri = URI.create(getUri().toString().replace("%25t", getToken()));
 
-        LOGGER.debug("Connecting to websocket at: {}", uri);
+        LOGGER.debug("Connecting to websocket at: {}", getUri());
 
-        this.webSocket = HttpClient
-            .newHttpClient()
+        this.webSocket = getHttpClient()
             .newWebSocketBuilder()
             .buildAsync(replacedUri, createResourceClientListener(b -> b
                 .eventsHandler(this::put)
-                .objectMapper(objectMapper)
-                .token(token)))
+                .objectMapper(getObjectMapper())
+                .token(getToken())))
             .join();
 
-        LOGGER.debug("WebSocket created to handle token: {}", token);
+        LOGGER.debug("WebSocket created to handle token: {}", getToken());
 
         return this;
 
@@ -188,4 +189,21 @@ public class WebSocketClient {
             this.webSocket = null;
         }
     }
+
+    private ObjectMapper getObjectMapper() {
+        return setup.getObjectMapper();
+    }
+
+    private String getToken() {
+        return setup.getToken();
+    }
+
+    private URI getUri() {
+        return setup.getUri();
+    }
+
+    private HttpClient getHttpClient() {
+        return setup.getHttpClient();
+    }
+
 }

@@ -15,9 +15,6 @@
  */
 package uk.gov.gchq.palisade.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
 
 import java.util.ArrayList;
@@ -37,11 +34,10 @@ import java.util.Map;
  */
 public final class ClientManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientManager.class);
     private static final List<Client> CLIENTS = new ArrayList<>();
 
     static {
-        // adds the default client which responds to "pal:dft:" urls
+        // adds the default client which responds to "pal:dft:" URLs
         // note that this client will also respond to "pal:" to keep things simple.
         CLIENTS.add(new DefaultClient());
     }
@@ -50,29 +46,25 @@ public final class ClientManager {
     }
 
     /**
-     * Returns a client for the given palisade url. The ClientManager attempts to
+     * Returns a client for the given palisade URL. The ClientManager attempts to
      * select an appropriate client from the set of registered Clients.
      *
-     * @param url a palisade url of the form pal:subname://host:port/context
+     * @param url a palisade URL of the form pal:subname://host:port/context
      * @return a client for the provided URL
      */
     public static Client getClient(final String url) {
-        for (Client client : CLIENTS) {
-            if (client.acceptsURL(url)) {
-                // Success!
-                LOGGER.debug("getClient returning {}", client.getClass().getName());
-                return (client);
-            }
-        }
-        throw new ClientException("No suitable client");
+        return CLIENTS.stream()
+            .filter(c -> c.acceptsURL(url))
+            .findFirst()
+            .orElseThrow(() -> new ClientException("No suitable client found accepting url: " + url));
     }
 
     /**
      * Attempts to establish a session to the given Palisade cluster {@code url}.
      *
-     * @param url a palisade url of the form pal:subprotocol:subname
+     * @param url a palisade URL of the form pal:subprotocol:subname
      * @return a session for the provided {@code url}
-     * @throws ClientException if a Palisade access error occurs or the url is
+     * @throws ClientException if a Palisade access error occurs or the URL is
      *                         invalid
      */
     public static Session openSession(final String url) {
@@ -84,11 +76,11 @@ public final class ClientManager {
      * The ClientManager attempts to select an appropriate client from the set of
      * registered Palisade clients.
      *
-     * @param url  a palisade url of the form pal:subprotocol:subname
+     * @param url  a palisade URL of the form pal:subprotocol:subname
      * @param info a list of arbitrary string tag/value pairs as connection
      *             arguments; normally at least a "user" property should be included
      * @return a session for the provided {@code url}
-     * @throws ClientException if a Palisade access error occurs or the url is
+     * @throws ClientException if a Palisade access error occurs or the URL is
      *                         invalid
      */
     @SuppressWarnings("java:S1488")

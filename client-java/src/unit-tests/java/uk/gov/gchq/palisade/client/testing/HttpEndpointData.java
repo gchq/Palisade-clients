@@ -28,7 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.internal.download.DataRequest;
 
-import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 /**
  * A controller containing our test endpoints
@@ -58,15 +62,30 @@ public class HttpEndpointData {
 
         LOG.debug("### Trying to load: {}", filename);
 
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
+        FileInputStream is;
+        long length = -1;
 
-        LOG.debug("### Loaded OK: {}", filename);
-
-        if (is == null) {
+        try {
+            var url = Thread.currentThread().getContextClassLoader().getResource(filename);
+            if (url == null) {
+                return HttpResponse.notFound();
+            }
+            var uri = url.toURI();
+            var file = new File(uri);
+            length = file.length();
+            is = new FileInputStream(file);
+        } catch (URISyntaxException | FileNotFoundException e1) {
             return HttpResponse.notFound();
         }
 
-        StreamedFile sf = new StreamedFile(is, octetStream).attach("filename");
+        LOG.debug("### Loaded OK: {}", filename);
+
+        StreamedFile sf = new StreamedFile(
+            is,
+            octetStream,
+            System.currentTimeMillis(),
+            length)
+                .attach(Path.of(filename).getFileName().toString());
 
         LOG.debug("### Returning stream");
 

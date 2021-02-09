@@ -37,7 +37,7 @@ public interface WebSocketMessage extends Serializable {
      * @return a newly created {@code RequestId}
      */
     @SuppressWarnings("java:S3242")
-    static CompleteMessage createComplete(final UnaryOperator<CompleteMessage.Builder> func) {
+    static CompleteMessage createCompleteMessage(final UnaryOperator<CompleteMessage.Builder> func) {
         return func.apply(new CompleteMessage.Builder()).build();
     }
 
@@ -48,7 +48,7 @@ public interface WebSocketMessage extends Serializable {
      * @return a newly created {@code RequestId}
      */
     @SuppressWarnings("java:S3242")
-    static ErrorMessage createError(final UnaryOperator<ErrorMessage.Builder> func) {
+    static ErrorMessage createErrorMessage(final UnaryOperator<ErrorMessage.Builder> func) {
         return func.apply(new ErrorMessage.Builder()).build();
     }
 
@@ -59,7 +59,7 @@ public interface WebSocketMessage extends Serializable {
      * @return a newly created {@code RequestId}
      */
     @SuppressWarnings("java:S3242")
-    static ResourceMessage createResource(final UnaryOperator<ResourceMessage.Builder> func) {
+    static ResourceMessage createResourceMessage(final UnaryOperator<ResourceMessage.Builder> func) {
         return func.apply(new ResourceMessage.Builder()).build();
     }
 

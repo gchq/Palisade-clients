@@ -61,8 +61,21 @@ public interface PalisadeResponse extends Serializable {
      * @return a newly created data request instance
      */
     @SuppressWarnings("java:S3242")
-    static PalisadeResponse createPalisadeResponse(final UnaryOperator<Builder> func) {
+    static PalisadeResponse create(final UnaryOperator<Builder> func) {
         return func.apply(new Builder()).build();
+    }
+
+    /**
+     * Helper method to create a {@code PalisadeResponse} using a builder function.
+     * This is an alias of {@link #createPalisadeResponse} in case it should be
+     * statically imported.
+     *
+     * @param func The builder function
+     * @return a newly created data request instance
+     */
+    @SuppressWarnings("java:S3242")
+    static PalisadeResponse createPalisadeResponse(final UnaryOperator<Builder> func) {
+        return create(func);
     }
 
     /**

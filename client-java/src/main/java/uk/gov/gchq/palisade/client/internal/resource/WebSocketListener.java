@@ -146,7 +146,7 @@ public class WebSocketListener implements Listener {
          * @return a newly created {@code RequestId}
          */
         @SuppressWarnings("java:S4276")
-        static Item createMessage(final Function<Item.Builder, Item.Builder> func) {
+        static Item createItem(final Function<Item.Builder, Item.Builder> func) {
             return func.apply(new Item.Builder()).build();
         }
 
@@ -236,26 +236,28 @@ public class WebSocketListener implements Listener {
         LOGGER.debug("<-- {}", message);
 
         var type = message.getType();
+        WebSocketMessage webSocketMessage = null;
 
-        if (type == MessageType.RESOURCE) {
+        switch (type) {
+            case RESOURCE:
+                var resourceBody = message.getBody().orElseThrow(() -> new WebSocketMessageException(message));
+                webSocketMessage = objectMapper.convertValue(resourceBody, ResourceMessage.class);
+                break;
+            case ERROR:
+                var errorBody = message.getBody().orElseThrow(() -> new WebSocketMessageException(message));
+                webSocketMessage = objectMapper.convertValue(errorBody, ErrorMessage.class);
+                break;
+            case COMPLETE:
+                webSocketMessage = WebSocketMessage.createCompleteMessage(b -> b.token(token));
+                break;
+            default:
+                LOGGER.warn("Ignoring unsupported {} message type", type);
+                break;
+        }
 
-            var body = message.getBody().orElseThrow(() -> new WebSocketMessageException(message));
-            var item = objectMapper.convertValue(body, ResourceMessage.class);
-            emit(item);
-
-        } else if (type == MessageType.COMPLETE) {
-
-            var item = WebSocketMessage.createComplete(b -> b.token(token));
-            emit(item);
-
-        } else if (type == MessageType.ERROR) {
-
-            var body = message.getBody().orElseThrow(() -> new WebSocketMessageException(message));
-            var item = objectMapper.convertValue(body, ErrorMessage.class);
-            emit(item);
-
-        } else {
-            LOGGER.warn("Ignoring unsupported {} message type", type);
+        if (webSocketMessage != null) {
+            LOGGER.debug("emit {}", webSocketMessage);
+            handler.accept(webSocketMessage);
         }
 
         if (type != MessageType.COMPLETE) {
@@ -266,15 +268,10 @@ public class WebSocketListener implements Listener {
 
     }
 
-    private void emit(final WebSocketMessage event) {
-        LOGGER.debug("emit {}", event);
-        handler.accept(event);
-    }
-
     @SuppressWarnings("java:S4276")
     private void send(final WebSocket ws, final UnaryOperator<Item.Builder> func) {
         var f1 = func.andThen(b -> b.putHeader("token", token));
-        var message = Item.createMessage(f1);
+        var message = Item.createItem(f1);
         try {
             var text = objectMapper.writeValueAsString(message);
             ws.sendText(text, true);

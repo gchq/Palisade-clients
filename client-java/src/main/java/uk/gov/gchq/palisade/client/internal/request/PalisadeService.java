@@ -50,20 +50,20 @@ public class PalisadeService {
     private final ObjectMapper objectMapper;
     private final URI uri;
 
-    // Once created, an HttpClient instance is immutable, thus automatically
-    // thread-safe, and multiple requests can be sent with it
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient;
 
     /**
      * Creates a new Palisade service
      *
+     * @param httpClient   to use when making calls to Palisade Service
      * @param objectMapper The mapper used to {@code PalisadeRequest} and
      *                     {@code PalisadeResponse} objects to/from JSON.
-     * @param uri          The uri to send requests to
+     * @param uri          The URI to send requests to
      */
-    public PalisadeService(final ObjectMapper objectMapper, final URI uri) {
+    public PalisadeService(final HttpClient httpClient, final ObjectMapper objectMapper, final URI uri) {
         this.uri = checkNotNull(uri);
         this.objectMapper = checkNotNull(objectMapper);
+        this.httpClient = checkNotNull(httpClient);
     }
 
     /**

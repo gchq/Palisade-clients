@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,7 +43,7 @@ class PalisadeServiceTest {
             .userId("user_id")
             .putContext("key", "value"));
 
-        var service = new PalisadeService(objectMapper, uri);
+        var service = new PalisadeService(HttpClient.newHttpClient(), objectMapper, uri);
 
         var palisadeResponse = service.submit(palisadeRequest);
 

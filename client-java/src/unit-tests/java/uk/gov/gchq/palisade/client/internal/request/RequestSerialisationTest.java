@@ -17,34 +17,49 @@ package uk.gov.gchq.palisade.client.internal.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.gchq.palisade.client.internal.request.PalisadeRequest.createPalisadeRequest;
+import static uk.gov.gchq.palisade.client.internal.request.PalisadeResponse.createPalisadeResponse;
 
 class RequestSerialisationTest {
 
-    private ObjectMapper objectMapper;
+    private static Map<String, String> map;
+    private static ObjectMapper mapper;
 
-    @BeforeEach
-    void setup() {
-        this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+    @BeforeAll
+    static void setupAll() {
+        mapper = new ObjectMapper().registerModules(new Jdk8Module());
+        map = Map.of("key", "value");
     }
 
-    @Test
-    void testPalisadeResponseSerialisation() throws Exception {
-        var expected = PalisadeResponse.createPalisadeResponse(b -> b.token("blah"));
-        var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, PalisadeResponse.class);
-        assertThat(actual).isEqualTo(expected);
+    @AfterAll
+    static void afterAll() {
+        mapper = null;
+        map = null;
     }
 
-    @Test
-    void testPalisadeRequestSerialisation() throws Exception {
-        var expected = PalisadeRequest.createPalisadeRequest(b -> b.resourceId("resourceId").userId("userId"));
-        var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, PalisadeRequest.class);
-        assertThat(actual).isEqualTo(expected);
+    static Object[] instances() {
+        return new Object[] {
+            createPalisadeResponse(b -> b.token("blah")),
+            createPalisadeRequest(b -> b.resourceId("resourceId").userId("userId"))
+        };
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    void testSerialisation(final Object expected) throws Exception {
+        var valueType = expected.getClass();
+        var content = mapper.writeValueAsString(expected);
+        var actual = mapper.readValue(content, valueType);
+        assertThat(actual).as(valueType.getSimpleName() + " equals").isEqualTo(expected);
+        assertThat(actual).as(valueType + " recursive equals").usingRecursiveComparison().isEqualTo(expected);
     }
 
 }

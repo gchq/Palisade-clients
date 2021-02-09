@@ -17,46 +17,55 @@ package uk.gov.gchq.palisade.client.internal.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.MessageType;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item.createItem;
+import static uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage.createCompleteMessage;
+import static uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage.createErrorMessage;
+import static uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage.createResourceMessage;
 
 class ResourceSerialisationTest {
 
-    private ObjectMapper objectMapper;
+    private static Map<String, String> map;
+    private static ObjectMapper mapper;
 
-    @BeforeEach
-    void setup() {
-        this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
+    @BeforeAll
+    static void setupAll() {
+        mapper = new ObjectMapper().registerModules(new Jdk8Module());
+        map = Map.of("key", "value");
     }
 
-    @Test
-    void testMessageSerialisation() throws Exception {
-        var expected = Item.createMessage(b -> b
-            .type(MessageType.RESOURCE)
-            .body("string")
-            .headers(Map.of("key", "value")));
-        var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, Item.class);
-        assertThat(actual).isEqualTo(expected);
+    @AfterAll
+    static void afterAll() {
+        mapper = null;
+        map = null;
     }
 
-    @Test
-    void testResourceSerialisation() throws Exception {
-        var expected = WebSocketMessage.createResource(b -> b
-            .token("token")
-            .leafResourceId("leaf-resource-id")
-            .url("url")
-            .properties(Map.of("key", "value")));
-        var string = objectMapper.writeValueAsString(expected);
-        var actual = objectMapper.readValue(string, ResourceMessage.class);
-        assertThat(actual).isEqualTo(expected);
+    static Object[] instances() {
+        return new Object[] {
+            createItem(b -> b.type(MessageType.RESOURCE).body("string").body("body").headers(map)),
+            createResourceMessage(b -> b.token("token").leafResourceId("leaf-resource-id").url("url").properties(map)),
+            createErrorMessage(b -> b.token("token").text("error").properties(map)),
+            createCompleteMessage(b -> b.token("token").properties(map))
+        };
+    }
+
+    @ParameterizedTest
+    @MethodSource("instances")
+    void testSerialisation(final Object expected) throws Exception {
+        var valueType = expected.getClass();
+        var content = mapper.writeValueAsString(expected);
+        var actual = mapper.readValue(content, valueType);
+        assertThat(actual).as(valueType.getSimpleName() + " equals").isEqualTo(expected);
+        assertThat(actual).as(valueType + " recursive equals").usingRecursiveComparison().isEqualTo(expected);
     }
 
 }

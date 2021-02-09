@@ -39,14 +39,13 @@ pal://localhost:1234/cluster?wsport=4321
 
 #### Interfaces
 
-The API is split into many different interface, which again, are loosely based upon those of JDBC. Some of these interfaces include:
+The API is split into many different interfaces, which again, are loosely based upon those of JDBC. Some of these interfaces include:
 
 | Interface | Description |
 | --- | --- |
-| Client | This is analogous to JDBCs driver. This class provides access to actually open and retrieve a session to the palisade cluster. Clients are not instantated directly, but by the `ClientManager ` asking the client whether it supports a given url. This way the user of the API does not need to know about its implementation. |
-| Session | This is roughly the same as JDBCs Connection class. A `Session` provides access to create queries and fetch downloads. At this point there is no security for a session as Palisade does not require it. If this changes in the future, the client API will be uneffected. |
+| Client | This is analogous to JDBCs driver. This class provides access to actually open and retrieve a session to the palisade cluster. Clients are not instantiated directly, but by the `ClientManager ` asking the client whether it supports a given url. This way the user of the API does not need to know about its implementation. |
+| Session | This is roughly the same as JDBCs Connection class. A `Session` provides access to create queries and fetch downloads. At this point there is no security for a session as Palisade does not require it. If this changes in the future, the client API will be unaffected. |
 | Query | This is the instance that sends the request to the Palisade Service. This is where the client deviates from JDBC as the design for this is (very) loosely based upon Hibernate's Query. |
-| QueryInfo | An implementationm of this class is required to be provided when creatying a query. This is one area where the API is a bit restrictive and could cause breakage if anythingh changes. The best solution would be to provide a "where clause" instead of an object. This would be like `where resourceId="blah" and purpose="blahblah"`. This would remove the problems of breakages and make it more future proof. |
 | QueryResponse | Once the query is executes and the `Query` has returned this via a `Future`, a stream of `Message`'s can be retrieved. This class abstracts the underlying mechanisms of how the Filtered Resource Service is accessed. This has no analogue to JDBC or Hibernate as those libraries do not support streams yet. |
 | Message | Two types of messages can be returned from the Filtered Resource Service and these are abstracted into two subclasses of `Message`. The design choice was to either have two sub types, or have a single type (resource) that can contain an Error. Either way is not wrong. This could change quite easily if needed.  Currently two subclasses exist for Message. These are `Error` and `Resource`. |
 | Download |  A `Download` is retrieved by passing a `Resource` object to the `Session`. The Download abstracts the call to the data service and provides access to an `InputStream` to consume its contents. |
@@ -142,13 +141,13 @@ __Note:__ These  parameters will be overridden by properties, if provided
 | --- | --- |
 | port | Base port for the Palisade cluster |
 | psport | The port for the Palisade Service. If not supplied will be set to the value of `port` |
-| wsport | The port for the Filtered Resource Rervice. Specify this if it is different from the Palisade Service. If not supplied it will be set to the value of `psport` |
+| wsport | The port for the Filtered Resource Service. Specify this if it is different from the Palisade Service. If not supplied it will be set to the value of `psport` |
 
 Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
 
 ### Query Parameters
 
-Any number of of properties can be pass when constructing the query. Below are those properties currently known to Palisade:
+Any number of properties can be pass when constructing the query. Below are those properties currently known to Palisade:
 
 | Property | Required | Description |
 | --- | --- | --- |

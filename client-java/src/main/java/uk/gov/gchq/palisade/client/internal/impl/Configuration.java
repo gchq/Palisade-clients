@@ -15,21 +15,11 @@
  */
 package uk.gov.gchq.palisade.client.internal.impl;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.wnameless.json.flattener.JsonFlattener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.util.Util;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -37,7 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
+import static uk.gov.gchq.palisade.client.util.Util.URI_SEP;
+import static uk.gov.gchq.palisade.client.util.Util.substituteVariables;
 import static uk.gov.gchq.palisade.client.util.Util.trimSlashes;
 
 /**
@@ -49,153 +40,157 @@ public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
+    /*
+     * The service url simply represents the original url supplied to the
+     * ClientManager. e.g. - "pal://dave@localhost:8090/cluster?wsport=8091" -
+     * "pal://localhost/cluster?port=8090&wsport=8091&user=dave"
+     */
     private static final String KEY_SERVICE_URL = "service.url";
+
+    /*
+     * The port number main port for the cluster. This is the port provided on the
+     * main URL as part of the host or within the query string.
+     */
     private static final String KEY_SERVICE_PORT = "service.port";
+
+    /*
+     * The user credentials supplied as part of the authority or within the query
+     * string. Not that the property supplied in the query string takes precedence
+     * e.g.
+     * - "pal://dave@localhost/cluster"
+     * - "pal://localhost/cluster?user=dave"
+     */
     private static final String KEY_SERVICE_USER = "service.user";
-    private static final String KEY_SERVICE_PS_URL = "service.palisade.url";
+
+    /*
+     * The generated palisade URI. This URI is generated from "palisade.url". This
+     * URI does not have the user portion of the authority or the query string, but
+     * will include the port if provided. e.g. e.g. -
+     * http://localhost/palisade/registerDataRequest
+     */
+    private static final String KEY_SERVICE_PS_URI = "service.palisade.uri";
+
+    /*
+     * The palisade service port if provided
+     */
     private static final String KEY_SERVICE_PS_PORT = "service.palisade.port";
+
+    /**
+     * Contains the port from "palisade.url" if provided.
+     */
     private static final String KEY_SERVICE_PS_PATH = "service.palisade.path";
-    private static final String KEY_SERVICE_FRS_URL = "service.filteredResource.url";
+
+    /*
+     * The generated filtered resource URI. This URI is generated from
+     * "palisade.url". This URI does not have the user portion of the authority or
+     * the query string, but will include the port if provided. As the value is
+     * stored as a URI the "%t" is encoded to "%25t" e.g. -
+     * ws://localhost/filteredResource/name/%25t
+     */
+    private static final String KEY_SERVICE_FRS_URI = "service.filteredResource.uri";
+
+    /*
+     * The Filtered Resource Service port if provided
+     */
     private static final String KEY_SERVICE_FRS_PORT = "service.filteredResource.port";
+
+    /*
+     * The path portion of the Filtered Resource Service URI which defaults to
+     * "filteredResource/name/%t"
+     */
     private static final String KEY_SERVICE_FRS_PATH = "service.filteredResource.path";
+
+    /**
+     * The path portion of the Data service URI which defaults to "data/read/chunked"
+     */
     private static final String KEY_SERVICE_DATA_PATH = "service.data.path";
+
+    /*
+     * The timeout in seconds to wait for a new message to become available before being
+     * emitted into the resource stream before looping and trying again
+     */
+    private static final String KEY_QUERY_STREAM_POLL_TIMEOUT = "query.stream.poll.timeout";
+
+    /*
+     * The port provided in "service.url" property if provided
+     */
     private static final String PARAM_PORT = "port";
+
+    /*
+     * The user provided in the "service.url" property if provided
+     */
     private static final String PARAM_USER = "user";
+
+    /*
+     * The port to the Filtered Resource Service if provided as a query parameter (wsport)
+     * of the port of the main cluster if provided
+     */
     private static final String PARAM_WS_PORT = "wsport";
+
+    /*
+     * The port to the Palisade Service if provided as a query parameter (psport)
+     * of the port of the main cluster if provided
+     */
     private static final String PARAM_PS_PORT = "psport";
 
-    private static final String FORWARD_SLASH = "/";
-
     private final Map<String, Object> properties;
-
-    private final ObjectMapper objectMapper = new ObjectMapper()
-        .registerModule(new Jdk8Module())
-        .registerModule(new JavaTimeModule())
-        // comment out the 3 include directives below to tell jackson to output all
-        // attributes, even if null, absent or empty (e.g. empty optional and
-        // collection)
-        .setSerializationInclusion(Include.NON_NULL)
-        .setSerializationInclusion(Include.NON_ABSENT)
-        .setSerializationInclusion(Include.NON_EMPTY)
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     private Configuration(final Map<String, Object> properties) {
         this.properties = properties;
     }
 
     /**
-     * Creates a new configuration instance with the default overridden by values
-     * from the provided map
-     *
-     * @param properties The property overrides
-     * @return a new configuration instance with the default overridden by values
-     *         from the provided map
-     */
-    public static Configuration fromDefaults(final Map<String, Object> properties) {
-        return fromDefaults().merge(properties);
-    }
-
-
-    /**
      * Returns a new configuration instance loaded with all defaults
      *
      * @return a new configuration instance loaded with all defaults
      */
-    public static Configuration fromDefaults() {
-        return from("palisade-client2.yaml");
+    public static Configuration create() {
+        return create(Map.of());
     }
 
     /**
-     * Returns a new configuration instance loaded with all defaults
+     * Returns a new configuration instance
      *
-     * @param filename   The name of the file containing the configuration
      * @param properties The property overrides
      * @return a new configuration instance loaded with all defaults
      */
-    public static Configuration from(final String filename, final Map<String, Object> properties) {
-        return from(filename).merge(properties);
-    }
+    public static Configuration create(final Map<String, String> properties) {
 
-    /**
-     * Returns a new configuration instance loaded with all defaults
-     *
-     * @param filename The name of the file containing the configuration
-     * @return a new configuration instance loaded with all defaults
-     */
-    public static Configuration from(final String filename) {
+        // set up map with system defaults
+        // these can be overriden if needed.
 
-        checkNotNull(filename);
+        Map<String, Object> map = new HashMap<>();
+        map.put(KEY_SERVICE_PS_PATH, "palisade/registerDataRequest");
+        map.put(KEY_SERVICE_FRS_PATH, "filteredResource/name/%t");
+        map.put(KEY_SERVICE_DATA_PATH, "data/read/chunked");
 
-        try {
+        // now add in user supplied properties which can overide system defaults
 
-            var url = Thread.currentThread().getContextClassLoader().getResource(filename);
-            if (url == null) {
-                throw new ClientException("Configuration file " + filename + " not found");
+        map.putAll(properties);
+
+        map = substituteVariables(map); // replace any substitution variables
+
+        process(map); // generate the rest of the properties (e.g. palisade url)
+
+        if (LOGGER.isDebugEnabled()) {
+            var sb = new StringBuilder("Default configuration: {\n");
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                sb.append("  ");
+                sb.append(entry);
+                sb.append("\n");
             }
-            var file = new File(url.toURI());
-
-            // this will actually read the file into a nested object graph of maps (maps as
-            // values to keys etc)
-            var object = new ObjectMapper(new YAMLFactory()).readValue(file, Object.class);
-
-            // now we need to convert the map graph into json
-            var json = new ObjectMapper().writeValueAsString(object);
-
-            // ... so that the flattener can create a single flat map of dot delimited keys:
-            // e.g. "file.receiver.path=/tmp"
-            var map = JsonFlattener.flattenAsMap(json);
-            map = Util.substituteVariables(map);
-            map = process(map);
-
-            if (LOGGER.isDebugEnabled()) {
-                var sb = new StringBuilder("Default configuration: {\n");
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    sb.append("  ");
-                    sb.append(entry);
-                    sb.append("\n");
-                }
-                sb.append("}");
-                LOGGER.debug(sb.toString());
-            }
-
-            return new Configuration(map);
-
-        } catch (IOException e) {
-            throw new ConfigurationException("Failed to load initial properties", e);
-        } catch (URISyntaxException e) {
-            throw new ConfigurationException("Could not load default properties (url not valid)", e);
+            sb.append("}");
+            LOGGER.debug(sb.toString());
         }
 
-    }
+        return new Configuration(map);
 
-    /**
-     * Returns a new configuration with the map merged into this configuration. If
-     * the provided map is null or empty, then this configuration is returned
-     *
-     * @param overrides The map to merge
-     * @return a new configuration
-     */
-    public Configuration merge(final Map<String, ?> overrides) {
-
-        if (overrides == null || overrides.isEmpty()) {
-            return this;
-        }
-
-        Map<String, Object> allProperties = new HashMap<>(this.properties);
-        allProperties.putAll(overrides);
-        allProperties = Util.substituteVariables(allProperties);
-
-        var conf = new Configuration(process(allProperties));
-
-        LOGGER.debug("Merged {}", conf);
-
-        return conf;
     }
 
     @Override
     public String toString() {
         var sb = new StringBuilder("configuration: {\n");
-        var set = new TreeMap<>(properties).entrySet();
+        var set = new TreeMap<>(getProperties()).entrySet();
         for (Map.Entry<String, Object> entry : set) {
             sb.append("  ");
             sb.append(entry);
@@ -211,7 +206,18 @@ public final class Configuration {
      * @return the user
      */
     public String getUser() {
-        return getProperty(KEY_SERVICE_USER);
+        return findProperty(KEY_SERVICE_USER).orElseThrow(() -> new ConfigurationException("No user configured"));
+    }
+
+    /**
+     * Returns the number of seconds to wait before timing out when waiting for
+     * another message to become available and then emitted from the stream
+     *
+     * @return the number of seconds to wait before timing out when waiting for
+     *         another message
+     */
+    public int getQueryStreamPollTimeout() {
+        return findProperty(KEY_QUERY_STREAM_POLL_TIMEOUT).map(Integer::valueOf).orElse(1);
     }
 
     /**
@@ -229,7 +235,7 @@ public final class Configuration {
      * @return the full Palisade service uri
      */
     public URI getPalisadeUrl() {
-        return getProperty(KEY_SERVICE_PS_URL, URI.class);
+        return getProperty(KEY_SERVICE_PS_URI, URI.class);
     }
 
     /**
@@ -238,7 +244,7 @@ public final class Configuration {
      * @return the full filtered resource service uri
      */
     public URI getFilteredResourceUrl() {
-        return getProperty(KEY_SERVICE_FRS_URL, URI.class);
+        return getProperty(KEY_SERVICE_FRS_URI, URI.class);
     }
 
     /**
@@ -255,24 +261,22 @@ public final class Configuration {
      *
      * @return the properties for this configuration
      */
-    public Map<String, Object> getProperties() {
+    private Map<String, Object> getProperties() {
         return this.properties;
     }
 
-    /**
-     * Returns the object mapper
-     *
-     * @return the object mapper
-     */
-    public ObjectMapper getObjectMapper() {
-        return this.objectMapper;
+    private Optional<String> findProperty(final String key) {
+        return findProperty(key, String.class);
+    }
+
+    private <T> Optional<T> findProperty(final String key, final Class<T> clazz) {
+        return findProperty(getProperties(), key, clazz);
     }
 
     private String getProperty(final String key) {
         return getProperty(key, String.class);
     }
 
-    @SuppressWarnings({ "java:S1172" })
     private <T> T getProperty(final String key, final Class<T> clazz) {
         return getProperty(getProperties(), key, clazz);
     }
@@ -356,8 +360,8 @@ public final class Configuration {
             findProperty(queryParams, PARAM_USER)
                 .ifPresent(v -> properties.put(KEY_SERVICE_USER, v));
 
-            properties.put(KEY_SERVICE_PS_URL, createPalisadeUrl(baseUri, properties));
-            properties.put(KEY_SERVICE_FRS_URL, createFilteredResourceUrl(baseUri, properties));
+            properties.put(KEY_SERVICE_PS_URI, createPalisadeUrl(baseUri, properties));
+            properties.put(KEY_SERVICE_FRS_URI, createFilteredResourceUrl(baseUri, properties));
 
         }
 
@@ -369,7 +373,7 @@ public final class Configuration {
     private static URI createPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
 
         var port = findProperty(properties, KEY_SERVICE_PS_PORT, Integer.class).orElse(baseUri.getPort());
-        var path = baseUri.getPath() + FORWARD_SLASH + trimSlashes(getProperty(properties, KEY_SERVICE_PS_PATH));
+        var path = baseUri.getPath() + URI_SEP + trimSlashes(getProperty(properties, KEY_SERVICE_PS_PATH));
         var host = baseUri.getHost();
 
         try {
@@ -383,7 +387,7 @@ public final class Configuration {
     private static URI createFilteredResourceUrl(final URI baseUri, final Map<String, Object> properties) {
 
         var port = findProperty(properties, KEY_SERVICE_FRS_PORT, Integer.class).orElse(baseUri.getPort());
-        var path = baseUri.getPath() + FORWARD_SLASH + trimSlashes(getProperty(properties, KEY_SERVICE_FRS_PATH));
+        var path = baseUri.getPath() + URI_SEP + trimSlashes(getProperty(properties, KEY_SERVICE_FRS_PATH));
         var host = baseUri.getHost();
 
         try {
@@ -394,7 +398,7 @@ public final class Configuration {
 
     }
 
-    static Optional<String> extractUser(final URI baseUri) {
+    private static Optional<String> extractUser(final URI baseUri) {
 
         Object user = null;
 

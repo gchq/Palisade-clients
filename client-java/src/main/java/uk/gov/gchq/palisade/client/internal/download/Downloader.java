@@ -16,10 +16,13 @@
 package uk.gov.gchq.palisade.client.internal.download;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.Resource;
+import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
+import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 import uk.gov.gchq.palisade.client.util.Util;
 
 import java.io.IOException;
@@ -30,6 +33,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
@@ -41,27 +45,74 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
  */
 public final class Downloader {
 
+    /**
+     * Provides service and configuration for a resource client
+     *
+     * @since 0.5.0
+     */
+    @Value.Immutable
+    @ImmutableStyle
+    public interface DownloaderSetup {
+
+        /**
+         * Exposes the generated builder outside this package
+         * <p>
+         * While the generated implementation (and consequently its builder) is not
+         * visible outside of this package. This builder inherits and exposes all public
+         * methods defined on the generated implementation's Builder class.
+         */
+        class Builder extends ImmutableDownloaderSetup.Builder { // empty
+        }
+
+        /**
+         * Returns the {@code HttpClient}
+         *
+         * @return the {@code HttpClient}
+         */
+        HttpClient getHttpClient();
+
+        /**
+         * Returns the object mapper used for (de)serialisation of websocket messages
+         *
+         * @return the object mapper used for (de)serialisation of websocket messages
+         */
+        ObjectMapper getObjectMapper();
+
+        /**
+         * Returns the path portion of the URL
+         *
+         * @return the path portion of the URL that should be use when making calls to
+         *         the Data Service
+         */
+        String getPath();
+
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Downloader.class);
 
     private static final int HTTP_STATUS_OK = 200;
     private static final int HTTP_STATUS_NOT_FOUND = 404;
 
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().build();
-
-    private final ObjectMapper objectMapper;
-    private final String endpoint;
+    private final DownloaderSetup setup;
 
     /**
-     * Returns a new instance initialised with the provided object mapper and data
-     * service endpoint.
+     * Returns a new {@code Downloader}
      *
-     * @param objectMapper to be used to serialise the request send to the data
-     *                     service
-     * @param endpoint     The endpoint (e.g. /data/read/chunked)
+     * @param setup used to configure this instance
      */
-    public Downloader(final ObjectMapper objectMapper, final String endpoint) {
-        this.objectMapper = checkNotNull(objectMapper, "needs an object mapper");
-        this.endpoint = checkNotNull(endpoint, "needs an endpoint to create uri");
+    private Downloader(final DownloaderSetup setup) {
+        this.setup = checkNotNull(setup, "missing setup");
+    }
+
+    /**
+     * Helper method to create a {@link Item} using a builder function
+     *
+     * @param func The builder function
+     * @return a newly created {@code RequestId}
+     */
+    @SuppressWarnings("java:S3242")
+    public static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
+        return new Downloader(func.apply(new DownloaderSetup.Builder()).build());
     }
 
     /**
@@ -84,9 +135,9 @@ public final class Downloader {
             // create the url which is made p of the base url which is provided as part of
             // the resource returned from the filtered resource service and the endpoint
 
-            var uri = new URI(Util.createUrl(resource.getUrl(), endpoint));
+            var uri = new URI(Util.createUrl(resource.getUrl(), getPath()));
 
-            var requestBody = objectMapper
+            var requestBody = getObjectMapper()
                 .writeValueAsString(DataRequest.createDataRequest(b -> b
                     .token(resource.getToken())
                     .leafResourceId(resource.getLeafResourceId())));
@@ -117,7 +168,7 @@ public final class Downloader {
 
     }
 
-    private static HttpResponse<InputStream> sendRequest(final String requestBody, final URI uri) {
+    private HttpResponse<InputStream> sendRequest(final String requestBody, final URI uri) {
 
         LOGGER.debug("Preparing to send request to {}", uri);
 
@@ -129,7 +180,7 @@ public final class Downloader {
 
         try {
             LOGGER.debug("Sending...");
-            var httpResponse = HTTP_CLIENT.send(httpRequest, BodyHandlers.ofInputStream());
+            var httpResponse = getHttpClient().send(httpRequest, BodyHandlers.ofInputStream());
             LOGGER.debug("Got http status: {}", httpResponse.statusCode());
             return httpResponse;
         } catch (IOException | InterruptedException e1) {
@@ -137,6 +188,18 @@ public final class Downloader {
             throw new DownloaderException("Error occurred making request to data service", e1);
         }
 
+    }
+
+    private HttpClient getHttpClient() {
+        return setup.getHttpClient();
+    }
+
+    private ObjectMapper getObjectMapper() {
+        return setup.getObjectMapper();
+    }
+
+    private String getPath() {
+        return setup.getPath();
     }
 
 }

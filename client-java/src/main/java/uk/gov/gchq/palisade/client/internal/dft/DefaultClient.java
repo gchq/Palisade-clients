@@ -62,13 +62,9 @@ public class DefaultClient implements Client {
         props.put("service.url", url);
 
         // load the default configuration and merge in overrides
-        var configuration = loadDefaultConfiguration().merge(props);
+        var configuration = Configuration.create(props);
 
         return new DefaultSession(configuration);
-    }
-
-    private static Configuration loadDefaultConfiguration() {
-        return Configuration.fromDefaults();
     }
 
 }
