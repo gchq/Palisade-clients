@@ -67,7 +67,7 @@ public interface PalisadeResponse extends Serializable {
 
     /**
      * Helper method to create a {@code PalisadeResponse} using a builder function.
-     * This is an alias of {@link #createPalisadeResponse} in case it should be
+     * This is an alias of {@link #create(UnaryOperator)} in case it should be
      * statically imported.
      *
      * @param func The builder function

@@ -50,7 +50,7 @@ class ConfigurationTest {
     }
 
     @Test
-    void testPalisadeUri() {
+    void testGetPalisadeUri() {
         assertThat(configuration.getPalisadeUrl())
             .isEqualTo(URI.create("http://localhost:8081/cluster/palisade/registerDataRequest"));
     }
@@ -104,4 +104,22 @@ class ConfigurationTest {
             () -> Configuration.create(Map.of("service.url", "\\")));
     }
 
+    @Test
+    void testToString() {
+
+        var expected =
+            "configuration: {" + "\n" +
+            "  service.data.path=data/read/chunked" + "\n" +
+            "  service.filteredResource.path=filteredResource/name/%t" + "\n" +
+            "  service.filteredResource.port=8082" + "\n" +
+            "  service.filteredResource.uri=ws://localhost:8082/cluster/filteredResource/name/%25t" + "\n" +
+            "  service.palisade.path=palisade/registerDataRequest" + "\n" +
+            "  service.palisade.port=8081" + "\n" +
+            "  service.palisade.uri=http://localhost:8081/cluster/palisade/registerDataRequest" + "\n" +
+            "  service.port=8081" + "\n" +
+            "  service.url=pal://localhost:8081/cluster?wsport=8082" + "\n" +
+            "}";
+
+        assertThat(configuration.toString()).isEqualTo(expected);
+    }
 }

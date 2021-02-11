@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * A download is returned after a request is received from data service. This
+ * A download is returned after a request is received from Data Service. This
  * object contains access to the input stream and extra information such as size
  * in bytes and the name.
  *
@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
  */
 public class DownloadImpl implements Download {
 
-    private static final String HTTP_HEADER_CONTENT_LENGTH = "Content-Length";
     private static final String HTTP_HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final Pattern FILENAME_PATTERN = Pattern.compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
 
@@ -45,15 +44,6 @@ public class DownloadImpl implements Download {
      */
     public DownloadImpl(final HttpResponse<InputStream> response) {
         this.response = response;
-    }
-
-    @Override
-    public int getLength() {
-        return response
-            .headers()
-            .firstValue(HTTP_HEADER_CONTENT_LENGTH)
-            .map(Integer::valueOf)
-            .orElse(Download.super.getLength());
     }
 
     @SuppressWarnings("java:S1774")

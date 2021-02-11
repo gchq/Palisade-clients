@@ -15,51 +15,55 @@
  */
 package uk.gov.gchq.palisade.client.internal.request;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Map;
+import uk.gov.gchq.palisade.client.testing.AbstractSerialisationTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static uk.gov.gchq.palisade.client.internal.request.PalisadeRequest.createPalisadeRequest;
 import static uk.gov.gchq.palisade.client.internal.request.PalisadeResponse.createPalisadeResponse;
 
-class RequestSerialisationTest {
+class RequestSerialisationTest extends AbstractSerialisationTest {
 
-    private static Map<String, String> map;
-    private static ObjectMapper mapper;
-
-    @BeforeAll
-    static void setupAll() {
-        mapper = new ObjectMapper().registerModules(new Jdk8Module());
-        map = Map.of("key", "value");
+    /**
+     * Returns a stream of arguments, each having two elements. The first element is
+     * the actual object to be tested, with the second element representing it's
+     * serialised form.
+     *
+     * @return a stream of arguments, each having two elements (test object and JSON
+     *         string)
+     */
+    static Stream<Arguments> instances() {
+        return Stream.of(
+            arguments(
+                createPalisadeResponse(b -> b
+                    .token("blah")),
+                "{\"token\":\"blah\"}"),
+            arguments(
+                createPalisadeRequest(b -> b
+                    .resourceId("resourceId")
+                    .userId("userId")
+                    .context(Map.of("key", "value"))),
+                "{\"resourceId\":\"resourceId\",\"userId\":\"userId\",\"context\":{\"key\":\"value\"}}"));
     }
 
-    @AfterAll
-    static void afterAll() {
-        mapper = null;
-        map = null;
-    }
-
-    static Object[] instances() {
-        return new Object[] {
-            createPalisadeResponse(b -> b.token("blah")),
-            createPalisadeRequest(b -> b.resourceId("resourceId").userId("userId"))
-        };
-    }
-
+    /**
+     * Test the provided instance
+     *
+     * @param expectedInstance The expected instance
+     * @param expectedJson     The expected JSON of the provided instance
+     * @throws Exception if an error occurs
+     * @see AbstractSerialisationTest#testInstance(Object, String)
+     */
     @ParameterizedTest
     @MethodSource("instances")
-    void testSerialisation(final Object expected) throws Exception {
-        var valueType = expected.getClass();
-        var content = mapper.writeValueAsString(expected);
-        var actual = mapper.readValue(content, valueType);
-        assertThat(actual).as(valueType.getSimpleName() + " equals").isEqualTo(expected);
-        assertThat(actual).as(valueType + " recursive equals").usingRecursiveComparison().isEqualTo(expected);
+    void testSerialisation(final Object expectedInstance, final String expectedJson) throws Exception {
+        testInstance(expectedInstance, expectedJson);
     }
 
 }

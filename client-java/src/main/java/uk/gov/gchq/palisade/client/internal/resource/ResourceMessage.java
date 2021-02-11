@@ -21,6 +21,8 @@ import org.immutables.value.Value;
 
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
 
+import java.util.Optional;
+
 /**
  * A {@code Resource} object is received in a {@link Item} of type
  * {@code MessageType#RESOURCE} after it has sent a message of type
@@ -54,7 +56,21 @@ public interface ResourceMessage extends WebSocketMessage {
      *
      * @return the leaf resource id which is to be downloaded
      */
-    String getLeafResourceId();
+    String getId();
+
+    /**
+     * Returns the serialised format
+     *
+     * @return the serialised format or empty if null
+     */
+    Optional<String> getSerialisedFormat();
+
+    /**
+     * Returns the type
+     *
+     * @return the type or empty if null
+     */
+    Optional<String> getType();
 
     /**
      * Return the url of the download service

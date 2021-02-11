@@ -15,11 +15,20 @@
  */
 package uk.gov.gchq.palisade.client.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.net.URI;
+import java.util.Date;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class UtilTest {
 
@@ -58,5 +67,52 @@ class UtilTest {
             .isEqualTo("http://me/endpoint1/endpoint2");
         assertThat(Util.createUri("http://me", "/endpoint1/", "/endpoint2/").toString())
             .isEqualTo("http://me/endpoint1/endpoint2");
+    }
+
+    @Test
+    void testGetProperty() {
+        var key = "user";
+        var val = "pal://user_from_authority@localhost:8081/cluster?wsport=8082";
+        var map = Map.<String, Object>of(key, val);
+        assertThat(Util.getProperty(map, "user", String.class)).isEqualTo(val);
+        assertThatExceptionOfType(NoSuchElementException.class)
+            .isThrownBy(() -> Util.getProperty(map, "missing", String.class));
+        assertThatExceptionOfType(IllegalArgumentException.class)
+            .isThrownBy(() -> Util.getProperty(map, "user", Date.class));
+    }
+
+    @Test
+    void testExtractQueryParams() throws Exception {
+        var uri = new URI("http://localhost/cluster?a=one&b=two&c=three");
+        var map = Util.extractQueryParams(uri);
+        assertThat(map).containsExactlyInAnyOrderEntriesOf(Map.of("a", "one", "b", "two", "c", "three"));
+        assertThat(Util.extractQueryParams(new URI("http://localhost/cluster"))).isEmpty();
+    }
+
+    @Test
+    void testToJson() throws Exception {
+
+        var mapper = new ObjectMapper();
+        var object = Map.of("k", "v");
+        assertThat(Util.toJson(mapper, object, cause -> new RuntimeException())).isEqualTo("{\"k\":\"v\"}");
+
+        var mockedMapper = mock(ObjectMapper.class);
+        when(mockedMapper.writeValueAsString(Mockito.any())).thenThrow(IllegalArgumentException.class);
+        assertThatExceptionOfType(RuntimeException.class)
+            .isThrownBy(() -> Util.toJson(mockedMapper, "alice", cause -> new RuntimeException(cause)))
+            .withCauseExactlyInstanceOf(IllegalArgumentException.class);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testToInstance() {
+        var mapper = new ObjectMapper();
+        var object = Map.of("k", "v");
+        assertThat(Util.toInstance(mapper, "{\"k\":\"v\"}", Map.class, cause -> new RuntimeException(cause)))
+            .isEqualTo(object);
+        assertThatExceptionOfType(RuntimeException.class)
+            .isThrownBy(() -> Util.toInstance(mapper, "\"k\":\"v\"}", Map.class, cause -> new RuntimeException(cause)))
+            .withCauseExactlyInstanceOf(MismatchedInputException.class);
     }
 }

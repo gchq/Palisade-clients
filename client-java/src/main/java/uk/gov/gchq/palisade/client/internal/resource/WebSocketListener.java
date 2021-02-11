@@ -214,7 +214,7 @@ public class WebSocketListener implements Listener {
     @Override
     public void onOpen(final WebSocket ws) {
         Listener.super.onOpen(ws);
-        LOGGER.debug("WebSocket Listener has been opened for requests.");
+        LOGGER.debug("OPEN: WebSocket Listener has been opened for requests.");
         send(ws, b -> b.type(WebSocketMessageType.CTS));
     }
 
@@ -233,7 +233,7 @@ public class WebSocketListener implements Listener {
             return null;
         }
 
-        LOGGER.debug("<-- {}", item);
+        LOGGER.debug("RCVD: {}", item);
 
         var type = item.getType();
         WebSocketMessage webSocketMessage = null;
@@ -256,7 +256,7 @@ public class WebSocketListener implements Listener {
         }
 
         if (webSocketMessage != null) {
-            LOGGER.debug("emit {}", webSocketMessage);
+            LOGGER.debug("EMIT: {}", webSocketMessage);
             handler.accept(webSocketMessage);
         }
 
@@ -275,7 +275,7 @@ public class WebSocketListener implements Listener {
         try {
             var text = objectMapper.writeValueAsString(message);
             ws.sendText(text, true);
-            LOGGER.debug("--> {}", message);
+            LOGGER.debug("SEND: {}", message);
         } catch (IOException e) {
             // we should add this fail to a result object
             LOGGER.warn("Failed to send message: {}", message, e);

@@ -15,6 +15,8 @@
  */
 package uk.gov.gchq.palisade.client;
 
+import java.util.Optional;
+
 /**
  * A resource message
  *
@@ -35,5 +37,19 @@ public interface Resource extends Message {
      * @return the url of the download service
      */
     String getUrl();
+
+    /**
+     * Returns the type
+     *
+     * @return the type
+     */
+    Optional<String> getType();
+
+    /**
+     * Returns the serialised format
+     *
+     * @return the serialised format
+     */
+    Optional<String> getSerialisedFormat();
 
 }

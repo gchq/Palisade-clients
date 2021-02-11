@@ -25,6 +25,7 @@ import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.server.types.files.StreamedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import uk.gov.gchq.palisade.client.internal.download.DataRequest;
 
@@ -54,44 +55,50 @@ public class HttpEndpointData {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public HttpResponse<StreamedFile> getTest(@Body final DataRequest request) {
 
-        LOG.debug("### Test endpoint {} received body: {}", "/read/chunked", request);
-
-        MediaType octetStream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
-
-        String filename = request.getLeafResourceId(); // using this as a file name to load a file for streaming
-
-        LOG.debug("### Trying to load: {}", filename);
-
-        FileInputStream is;
-        long length = -1;
-
         try {
-            var url = Thread.currentThread().getContextClassLoader().getResource(filename);
-            if (url == null) {
+
+            // set up MDC
+            MDC.put("server", "DTA-SVC");
+
+            LOG.debug("RCVD: body: {}", request);
+
+            MediaType octetStream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+
+            String filename = request.getLeafResourceId(); // using this as a file name to load a file for streaming
+
+            LOG.debug("LOAD: Loading: {}", filename);
+
+            FileInputStream is;
+
+            try {
+                var url = Thread.currentThread().getContextClassLoader().getResource(filename);
+                if (url == null) {
+                    return HttpResponse.notFound();
+                }
+                var uri = url.toURI();
+                var file = new File(uri);
+                is = new FileInputStream(file);
+            } catch (URISyntaxException | FileNotFoundException e1) {
                 return HttpResponse.notFound();
             }
-            var uri = url.toURI();
-            var file = new File(uri);
-            length = file.length();
-            is = new FileInputStream(file);
-        } catch (URISyntaxException | FileNotFoundException e1) {
-            return HttpResponse.notFound();
-        }
 
-        LOG.debug("### Loaded OK: {}", filename);
+            LOG.debug("LOAD: Loaded OK: {}", filename);
 
-        StreamedFile sf = new StreamedFile(
-            is,
-            octetStream,
-            System.currentTimeMillis(),
-            length)
-                .attach(Path.of(filename).getFileName().toString());
+            StreamedFile sf = new StreamedFile(
+                is,
+                octetStream,
+                System.currentTimeMillis(),
+                -1)
+                    .attach(Path.of(filename).getFileName().toString());
 
-        LOG.debug("### Returning stream");
+            LOG.debug("RETN: Stream");
 
-        return HttpResponse
+            return HttpResponse
                 .ok(sf)
                 .contentType(octetStream);
+        } finally {
+            MDC.remove("server");
+        }
     }
 
 }

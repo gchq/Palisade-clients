@@ -132,8 +132,8 @@ public final class Downloader {
             // using the create method here as the url is assumed correct as it is provided
             // by palisade
 
-            // create the url which is made p of the base url which is provided as part of
-            // the resource returned from the filtered resource service and the endpoint
+            // create the url which is made up of the base url which is provided as part of
+            // the resource returned from the Filtered Resource Service and the endpoint
 
             var uri = Util.createUri(resource.getUrl(), getPath());
 

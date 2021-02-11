@@ -15,7 +15,6 @@
  */
 package uk.gov.gchq.palisade.client.internal.request;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -24,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import uk.gov.gchq.palisade.client.ClientException;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
+import uk.gov.gchq.palisade.client.util.Util;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -33,14 +32,13 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.IntPredicate;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
 /**
- * This class represents the Palisade service and handles the communication
+ * This class represents the Palisade Service and handles the communication
  * between the client and the server. A single instance of this class can be
  * used as it is thread safe.
  *
@@ -116,15 +114,15 @@ public final class PalisadeService {
     }
 
     /**
-     * Returns a response from palisade for the given request
+     * Returns a response from Palisade for the given request
      *
      * @param palisadeRequest which will be passed to Palisade
-     * @return the response from palisade
+     * @return the response from Palisade
      */
     public PalisadeResponse submit(final PalisadeRequest palisadeRequest) {
         var future = submitAsync(palisadeRequest);
         var palisadeResponse = future.join();
-        LOGGER.debug("Got response from Palisade: {}", palisadeResponse);
+        LOGGER.debug("RCVD: {}", palisadeResponse);
         return palisadeResponse;
     }
 
@@ -133,19 +131,17 @@ public final class PalisadeService {
      * for the given request
      *
      * @param palisadeRequest which will be passed to Palisade
-     * @return a completable future which will provide the response from palisade
+     * @return a completable future which will provide the response from Palisade
      */
     public CompletableFuture<PalisadeResponse> submitAsync(final PalisadeRequest palisadeRequest) {
 
         checkNotNull(palisadeRequest);
 
-        LOGGER.debug("Submitting request to Palisade: {}", palisadeRequest);
-
         var uri = getUri();
         var requestBody = toJson(palisadeRequest);
         var body = BodyPublishers.ofString(requestBody);
 
-        LOGGER.debug("Submitting request to: {}", uri);
+        LOGGER.debug("SEND: To: [{}], Body: [{}]", uri, palisadeRequest);
 
         var httpRequest = HttpRequest.newBuilder(uri)
             .setHeader("User-Agent", "Palisade Java Client")
@@ -161,36 +157,31 @@ public final class PalisadeService {
 
     }
 
-    private static <T> HttpResponse<T> checkStatusOK(final HttpResponse<T> resp) {
+    static <T> HttpResponse<T> checkStatusOK(final HttpResponse<T> resp) {
         int status = resp.statusCode();
         if (!IS_HTTP_OK.test(status)) {
             var body = resp.body();
+            String msg = null;
             if (body != null) {
-                throw new ClientException(String.format(
-                    "Request to palisade service failed (%s) with body:%n%s", status, body));
+                msg = String.format("Request to palisade service failed (%s) with body:%n%s", status, body);
+            } else {
+                msg = String.format("Request to palisade service failed (%s) with no body", status);
             }
-            throw new ClientException(String.format(
-                "Request to palisade service failed (%s) with no body", status));
+            throw new ClientException(msg);
         }
         return resp;
     }
 
     // placed in a method to be use fluently as a method reference
     private String toJson(final Object object) {
-        try {
-            return objectMapper().writeValueAsString(object);
-        } catch (JsonProcessingException e1) {
-            throw new ClientException("Failed to parse request: " + object.toString(), e1);
-        }
+        return Util.toJson(objectMapper(), object,
+            cause -> new ClientException("Failed to serialise request: " + object.toString(), cause));
     }
 
     // placed in a method to be use fluently as a method reference
     private PalisadeResponse toResponse(final String string) {
-        try {
-            return objectMapper().readValue(string, PalisadeResponse.class);
-        } catch (IOException ioe) {
-            throw new CompletionException(ioe);
-        }
+        return Util.toInstance(objectMapper(), string, PalisadeResponse.class,
+            cause -> new ClientException("Failed to deserialise request: " + string, cause));
     }
 
     private PalisadeServiceSetup getSetup() {

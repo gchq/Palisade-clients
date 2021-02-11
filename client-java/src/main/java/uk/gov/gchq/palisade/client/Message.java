@@ -27,7 +27,7 @@ public interface Message {
      *
      * @return the type of message
      */
-    MessageType getType();
+    MessageType getMessageType();
 
     /**
      * Returns the token. All messages will have a token associated with them.

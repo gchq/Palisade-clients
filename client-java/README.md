@@ -17,7 +17,7 @@ limitations under the License.
 
 # Palisade Client (Java)
 
-The Java Palisade Client API provides universal resource access a Palisade service. 
+The Java Palisade Client API provides universal resource access to a Palisade cluster.
 
 ### API Design
 
@@ -43,7 +43,7 @@ The API is split into many different interfaces, which again, are loosely based 
 
 | Interface | Description |
 | --- | --- |
-| Client | This is analogous to JDBCs driver. This class provides access to actually open and retrieve a session to the palisade cluster. Clients are not instantiated directly, but by the `ClientManager ` asking the client whether it supports a given url. This way the user of the API does not need to know about its implementation. |
+| Client | This is analogous to JDBCs driver. This class provides access to actually open and retrieve a session to the Palisade cluster. Clients are not instantiated directly, but by the `ClientManager `asking the client whether it supports a given URL. This way the user of the API does not need to know about its implementation. |
 | Session | This is roughly the same as JDBCs Connection class. A `Session` provides access to create queries and fetch downloads. At this point there is no security for a session as Palisade does not require it. If this changes in the future, the client API will be unaffected. |
 | Query | This is the instance that sends the request to the Palisade Service. This is where the client deviates from JDBC as the design for this is (very) loosely based upon Hibernate's Query. |
 | QueryResponse | Once the query is executes and the `Query` has returned this via a `Future`, a stream of `Message`'s can be retrieved. This class abstracts the underlying mechanisms of how the Filtered Resource Service is accessed. This has no analogue to JDBC or Hibernate as those libraries do not support streams yet. |
@@ -111,12 +111,12 @@ class FullTest {
 ```
 
 1. Creates a map of properties to be passed to the client. Here we are overriding the port for the Palisade Service and Filtered Resource Service.
-2. Uses the `ClientManager` to create a `Session` from a palisade URL. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
+2. Uses the `ClientManager` to create a `Session` from a Palisade URL. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
 3. A new Query is created by passing a query string and an optional map of properties.
 4. The query is executed. The request is submitted to Palisade at this point and a `CompleteableFuture` is returned asynchronously. Once Palisade has processed the request, the future will emit a `Publisher` of `Messages` instances.
 5. Convert the `java.util.current.Flow.Publisher` to an RxJava `Flowable` in order to apply filtering and retrieval into a collection of `Resource` instances.
 6. Use the first resource as a test and make sure it's not null
-7. Using the session we fetch the resource. A `Download` instance is returned. At this point the request has been sent and received from the data service. The download object provides access to an `InputStream`. The data is not returned from the server until the input stream is first accessed.
+7. Using the session we fetch the resource. A `Download` instance is returned. At this point the request has been sent and received from the Data Service. The download object provides access to an `InputStream`. The data is not returned from the server until the input stream is first accessed.
 8. Using AssertJ the two input streams are checked for equality.
 
 ### Client properties
@@ -128,7 +128,7 @@ __Note:__ These  properties will override any query parameters or other values w
 | service.user | The userId. Overrides the authority section of the url |
 | service.password | Optional password if required |
 | service.palisade.port | The Palisade Service port. If not set will equal any port provided within the service.url. Overrides the port in the url |
-| service.filteredResource.port | The port for the Filtered Resource (websocket) Service, if different from the palisade Service. |
+| service.filteredResource.port | The port for the Filtered Resource (websocket) Service, if different from the Palisade Service. |
 | service.url | The main cluster URL .e.g. pal://user@localhost:12345/cluster |
 
 ### URL Query Parameters

@@ -19,13 +19,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import uk.gov.gchq.palisade.client.ClientException;
 
 import javax.inject.Inject;
 
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @MicronautTest
 class PalisadeServiceTest {
@@ -54,4 +61,24 @@ class PalisadeServiceTest {
         assertThat(palisadeResponse.getToken()).isEqualTo("abcd-1");
 
     }
+
+    @Test
+    void testCheckStatusOK202() {
+        var response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.statusCode()).thenReturn(202);
+        assertThat(PalisadeService.checkStatusOK(response)).isEqualTo(response);
+    }
+
+    @Test
+    void testCheckStatusOK404() {
+        var response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(404);
+        assertThatExceptionOfType(ClientException.class).isThrownBy(() -> PalisadeService.checkStatusOK(response))
+            .withMessage("Request to palisade service failed (404) with no body");
+        when(response.body()).thenReturn("body");
+        assertThatExceptionOfType(ClientException.class).isThrownBy(() -> PalisadeService.checkStatusOK(response))
+            .withMessage("Request to palisade service failed (404) with body:\nbody");
+
+    }
+
 }

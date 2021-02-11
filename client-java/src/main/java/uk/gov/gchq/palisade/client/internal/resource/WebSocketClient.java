@@ -170,7 +170,7 @@ public class WebSocketClient {
     }
 
     private void put(final WebSocketMessage msg) {
-        LOGGER.debug("Emitted : {}", msg);
+        LOGGER.trace("Emitted : {}", msg);
         try {
             next.put(msg); // block if the last message has not been taken
             if (msg instanceof CompleteMessage) {

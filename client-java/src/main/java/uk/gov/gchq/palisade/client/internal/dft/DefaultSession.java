@@ -62,7 +62,6 @@ public class DefaultSession implements Session {
         this.httpClient = HttpClient.newHttpClient(); // new client with all the defaults
         this.objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
-//            .registerModule(new JavaTimeModule())
             // comment out the 3 include directives below to tell jackson to output all
             // attributes, even if null, absent or empty (e.g. empty optional and
             // collection)

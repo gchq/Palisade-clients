@@ -24,6 +24,7 @@ import io.micronaut.websocket.annotation.OnOpen;
 import io.micronaut.websocket.annotation.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.WebSocketMessageType;
@@ -72,7 +73,9 @@ public class WsEndpointFilteredResource {
             this.messages = FILENAMES.stream()
                 .map(filename -> WebSocketMessage.createResourceMessage(b -> b
                     .token(token)
-                    .leafResourceId(filename)
+                    .id(filename)
+                    .serialisedFormat("format")
+                    .type("type")
                     .url(url)))
                 .map(rsc -> message(rsc, WebSocketMessageType.RESOURCE))
                 .collect(Collectors.toList());
@@ -123,14 +126,19 @@ public class WsEndpointFilteredResource {
      */
     @OnOpen
     public void onOpen(final String token, final WebSocketSession session) {
-        assert token != null : "Should have the token as part of the path variable";
-        LOGGER.debug("WebSocket server opened with token {}", token);
-        session.put(TOKEN_KEY, token);
-        this.messages = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
-        if (!messages.hasNext()) {
-            sendComplete(session);
+        try {
+            MDC.put("server", "FRS-SVC");
+            assert token != null : "Should have the token as part of the path variable";
+            LOGGER.debug("OPEN: Opening websocket for token {}", token);
+            session.put(TOKEN_KEY, token);
+            this.messages = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
+            if (!messages.hasNext()) {
+                sendComplete(session);
+            }
+            LOGGER.debug("OPEN: WebSocket opened");
+        } finally {
+            MDC.remove("server");
         }
-        LOGGER.debug("WebSocket Server opened");
     }
 
     /**
@@ -141,16 +149,21 @@ public class WsEndpointFilteredResource {
      */
     @OnMessage
     public void onMessage(final Item inmsg, final WebSocketSession session) {
-        LOGGER.debug("<-- {}", inmsg);
-        var type = inmsg.getType();
-        if (type == WebSocketMessageType.CTS) {
-            if (messages.hasNext()) {
-                send(session, messages.next());
+        try {
+            MDC.put("server", "FRS-SVC");
+            LOGGER.debug("RCVD: {}", inmsg);
+            var type = inmsg.getType();
+            if (type == WebSocketMessageType.CTS) {
+                if (messages.hasNext()) {
+                    send(session, messages.next());
+                } else {
+                    sendComplete(session);
+                }
             } else {
-                sendComplete(session);
+                LOGGER.warn("Unknown message type: {}", inmsg.getType());
             }
-        } else {
-            LOGGER.warn("Unknown message type: {}", inmsg.getType());
+        } finally {
+            MDC.remove("server");
         }
     }
 
@@ -161,7 +174,12 @@ public class WsEndpointFilteredResource {
      */
     @OnClose
     public void onClose(final WebSocketSession session) {
-        LOGGER.debug("<-- CLOSE request received: {}", session.getId());
+        try {
+            MDC.put("server", "FRS-SVC");
+            LOGGER.debug("RCVD: Close Request: {}", session.getId());
+        } finally {
+            MDC.remove("server");
+        }
     }
 
     private static final void sendComplete(final WebSocketSession session) {
@@ -173,8 +191,13 @@ public class WsEndpointFilteredResource {
     }
 
     private static void send(final WebSocketSession session, final Item message) {
-        session.sendSync(message);
-        LOGGER.debug("--> {}", message);
+        try {
+            MDC.put("server", "FRS-SVC");
+            session.sendSync(message);
+            LOGGER.debug("SEND: {}", message);
+        } finally {
+            MDC.remove("server");
+        }
     }
 
 }

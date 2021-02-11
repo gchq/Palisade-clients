@@ -80,7 +80,6 @@ class DownloaderTest {
         var file = new File(Thread.currentThread().getContextClassLoader().getResource(PI_0_PATH).toURI());
 
         assertThat(download.getFilename()).isEqualTo(Optional.of(PI_0_FILENAME));
-        assertThat(download.getLength()).isEqualTo(file.length());
 
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.

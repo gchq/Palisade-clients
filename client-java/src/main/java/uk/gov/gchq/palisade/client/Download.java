@@ -35,16 +35,6 @@ public interface Download {
     InputStream getInputStream();
 
     /**
-     * Returns the size of the resource in bytes or -1 if not known. This can be
-     * useful for progress.
-     *
-     * @return the size of the resource in bytes or -1 if not known
-     */
-    default int getLength() {
-        return -1;
-    }
-
-    /**
      * Returns the name of the resource
      *
      * @return the name of the resource

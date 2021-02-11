@@ -19,13 +19,15 @@ import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultSessionTest {
 
     @Test
     void testCreateQuery() {
-        var session = new DefaultSession(Configuration.create());
+        var session = new DefaultSession(Configuration.create(Map.of("service.url", "pal://localhost/cluster")));
         var query = session.createQuery("resource_id");
         assertThat(query).isNotNull();
     }

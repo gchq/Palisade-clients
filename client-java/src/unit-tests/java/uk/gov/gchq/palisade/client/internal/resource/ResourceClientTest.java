@@ -85,11 +85,11 @@ public class ResourceClientTest {
         var event11 = getIfInstanceOf(messages.get(11), CompleteMessage.class);
 
         assertThat(event0)
-            .extracting("leafResourceId", "token", "url")
+            .extracting("id", "token", "url")
             .containsExactly("resources/pi0.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event1)
-            .extracting("leafResourceId", "token", "url")
+            .extracting("id", "token", "url")
             .containsExactly("resources/pi1.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event10)

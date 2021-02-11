@@ -23,6 +23,7 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import uk.gov.gchq.palisade.client.internal.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.internal.request.PalisadeResponse;
@@ -44,10 +45,17 @@ public class HttpEndpointPalisade {
     @Post("/registerDataRequest")
     @Produces(MediaType.APPLICATION_JSON)
     public HttpResponse<PalisadeResponse> registerDataRequest(@Body final PalisadeRequest request) {
-        LOG.debug("### Test endpoint {} received body: {}", "/registerDataRequest", request);
-        return HttpResponse
-            .ok(PalisadeResponse.createPalisadeResponse(b -> b.token("abcd-1")))
-            .contentType(MediaType.APPLICATION_JSON_TYPE);
+        try {
+            MDC.put("server", "PAL-SVC");
+            LOG.debug("RCVD: {}", request);
+            var palisadeResponse = PalisadeResponse.createPalisadeResponse(b -> b.token("abcd-1"));
+            LOG.debug("RETN: {}", request);
+            return HttpResponse
+                .ok(palisadeResponse)
+                .contentType(MediaType.APPLICATION_JSON_TYPE);
+        } finally {
+            MDC.remove("server");
+        }
     }
 
 }

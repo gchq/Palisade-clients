@@ -21,7 +21,6 @@ import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableSubscriber;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
@@ -62,7 +61,7 @@ class FullTest {
             .get();
 
         var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
-            .filter(m -> m.getType() == MessageType.RESOURCE)
+            .filter(m -> m.getMessageType() == MessageType.RESOURCE)
             .map(Resource.class::cast)
             .collect(Collectors.toList())
             .blockingGet();
@@ -90,7 +89,7 @@ class FullTest {
      * https://hg.openjdk.java.net/jdk/jdk/rev/e4cc5231ce2d
      */
     @Test
-    @Disabled
+//    @Disabled
     @SuppressWarnings("java:S1607")
     void testWithDownloadInsideStream() throws Exception {
 
@@ -106,7 +105,7 @@ class FullTest {
             .get();
 
         Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
-            .filter(m -> m.getType() == MessageType.RESOURCE)
+            .filter(m -> m.getMessageType() == MessageType.RESOURCE)
             .map(Resource.class::cast)
             .map(session::fetch)
             .subscribe(new FlowableSubscriber<>() {

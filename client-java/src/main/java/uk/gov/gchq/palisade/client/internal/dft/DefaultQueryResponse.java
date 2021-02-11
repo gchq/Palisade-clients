@@ -76,8 +76,8 @@ public class DefaultQueryResponse implements QueryResponse {
             LOGGER.debug("Creating stream...");
 
             /*
-             * Must use a new client here for the websocket connection If we use the one
-             * from the session, the websocket listener seems to fail
+             * Must use a new client here for the websocket connection. If we use the one
+             * from the session, the websocket listener seems to fail and hang.
              */
 
             var httpClient = HttpClient.newHttpClient();
@@ -104,10 +104,10 @@ public class DefaultQueryResponse implements QueryResponse {
                         // we're done, so signal complete and set flag to get out
                         emitter.onComplete();
                         loop = false;
-                        LOGGER.debug("emitter.complete");
+                        LOGGER.trace("emitter.complete");
                     } else {
                         createMessage(wsm).ifPresent((final Message msg) -> {
-                            LOGGER.debug("emitter.onNext: {}", msg);
+                            LOGGER.trace("emitter.onNext: {}", msg);
                             emitter.onNext(msg);
                         });
                     }
@@ -115,7 +115,7 @@ public class DefaultQueryResponse implements QueryResponse {
                 if (emitter.isCancelled()) {
                     // we're cancelled, so set flag to get out
                     loop = false;
-                    LOGGER.debug("emitter.cancelled");
+                    LOGGER.trace("emitter.cancelled");
                 }
             } while (loop);
 
@@ -135,7 +135,9 @@ public class DefaultQueryResponse implements QueryResponse {
             msg = EmittedResource.createResource(b -> b
                 .token(rm.getToken())
                 .url(rm.getUrl())
-                .leafResourceId(rm.getLeafResourceId()));
+                .leafResourceId(rm.getId())
+                .type(rm.getType())
+                .serialisedFormat(rm.getSerialisedFormat()));
 
         } else if (wsm instanceof ErrorMessage) {
 
@@ -183,7 +185,7 @@ public class DefaultQueryResponse implements QueryResponse {
 
         @Override
         @Value.Derived
-        default MessageType getType() {
+        default MessageType getMessageType() {
             return MessageType.RESOURCE;
         }
 
@@ -221,7 +223,7 @@ public class DefaultQueryResponse implements QueryResponse {
 
         @Override
         @Value.Derived
-        default MessageType getType() {
+        default MessageType getMessageType() {
             return MessageType.ERROR;
         }
 

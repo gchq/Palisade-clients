@@ -15,57 +15,74 @@
  */
 package uk.gov.gchq.palisade.client.internal.resource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.WebSocketMessageType;
+import uk.gov.gchq.palisade.client.testing.AbstractSerialisationTest;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item.createItem;
+import static uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.WebSocketMessageType.RESOURCE;
 import static uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage.createCompleteMessage;
 import static uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage.createErrorMessage;
 import static uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage.createResourceMessage;
 
-class ResourceSerialisationTest {
+class ResourceSerialisationTest extends AbstractSerialisationTest {
 
-    private static Map<String, String> map;
-    private static ObjectMapper mapper;
-
-    @BeforeAll
-    static void setupAll() {
-        mapper = new ObjectMapper().registerModules(new Jdk8Module());
-        map = Map.of("key", "value");
+    /**
+     * Returns a stream of arguments, each having two elements. The first element is
+     * the actual object to be tested, with the second element representing it's
+     * serialised form.
+     *
+     * @return a stream of arguments, each having two elements (test object and JSON
+     *         string)
+     */
+    static Stream<Arguments> instances() {
+        return Stream.of(
+            arguments(
+                createItem(b -> b
+                    .type(RESOURCE)
+                    .body("body")
+                    .headers(Map.of("key", "value"))),
+                "{\"type\":\"RESOURCE\",\"headers\":{\"key\":\"value\"},\"body\":\"body\"}"),
+            arguments(
+                createResourceMessage(b -> b
+                    .token("token")
+                    .id("leaf-resource-id")
+                    .url("url")
+                    .type("type")
+                    .serialisedFormat("format")
+                    .properties(Map.of("key", "value"))),
+                "{\"token\":\"token\",\"properties\":{\"key\":\"value\"},\"id\":\"leaf-resource-id\",\"serialisedFormat\":\"format\",\"type\":\"type\",\"url\":\"url\"}"),
+            arguments(
+                createErrorMessage(b -> b
+                    .token("token")
+                    .text("error")
+                    .properties(Map.of("key", "value"))),
+                "{\"token\":\"token\",\"properties\":{\"key\":\"value\"},\"text\":\"error\"}"),
+            arguments(
+                createCompleteMessage(b -> b
+                    .token("token")
+                    .properties(Map.of("key", "value"))),
+                "{\"token\":\"token\",\"properties\":{\"key\":\"value\"}}"));
     }
 
-    @AfterAll
-    static void afterAll() {
-        mapper = null;
-        map = null;
-    }
-
-    static Object[] instances() {
-        return new Object[] {
-            createItem(b -> b.type(WebSocketMessageType.RESOURCE).body("string").body("body").headers(map)),
-            createResourceMessage(b -> b.token("token").leafResourceId("leaf-resource-id").url("url").properties(map)),
-            createErrorMessage(b -> b.token("token").text("error").properties(map)),
-            createCompleteMessage(b -> b.token("token").properties(map))
-        };
-    }
-
+    /**
+     * Test the provided instance
+     *
+     * @param expectedInstance The expected instance
+     * @param expectedJson     The expected JSON of the provided instance
+     * @throws Exception if an error occurs
+     * @see AbstractSerialisationTest#testInstance(Object, String)
+     */
     @ParameterizedTest
     @MethodSource("instances")
-    void testSerialisation(final Object expected) throws Exception {
-        var valueType = expected.getClass();
-        var content = mapper.writeValueAsString(expected);
-        var actual = mapper.readValue(content, valueType);
-        assertThat(actual).as(valueType.getSimpleName() + " equals").isEqualTo(expected);
-        assertThat(actual).as(valueType + " recursive equals").usingRecursiveComparison().isEqualTo(expected);
+    void testSerialisation(final Object expectedInstance, final String expectedJson) throws Exception {
+        testInstance(expectedInstance, expectedJson);
     }
 
 }

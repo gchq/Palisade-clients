@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.internal.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.util.Checks;
 import uk.gov.gchq.palisade.client.util.Util;
 
 import java.net.URI;
@@ -41,7 +42,7 @@ public final class Configuration {
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
     /*
-     * The service url simply represents the original url supplied to the
+     * The service URL simply represents the original URL supplied to the
      * ClientManager. e.g. - "pal://alice@localhost:8090/cluster?wsport=8091" -
      * "pal://localhost/cluster?port=8090&wsport=8091&user=alice"
      */
@@ -61,7 +62,7 @@ public final class Configuration {
     private static final String KEY_SERVICE_USER = "service.user";
 
     /*
-     * The generated palisade URI. This URI is generated from "palisade.url". This
+     * The generated Palisade URI. This URI is generated from "palisade.url". This
      * URI does not have the user portion of the authority or the query string, but
      * will include the port if provided. e.g. e.g. -
      * http://localhost/palisade/registerDataRequest
@@ -69,7 +70,7 @@ public final class Configuration {
     private static final String KEY_SERVICE_PS_URI = "service.palisade.uri";
 
     /*
-     * The palisade service port if provided
+     * The Palisade service port if provided
      */
     private static final String KEY_SERVICE_PS_PORT = "service.palisade.port";
 
@@ -79,7 +80,7 @@ public final class Configuration {
     private static final String KEY_SERVICE_PS_PATH = "service.palisade.path";
 
     /*
-     * The generated filtered resource URI. This URI is generated from
+     * The generated Filtered Resource Service URI. This URI is generated from
      * "palisade.url". This URI does not have the user portion of the authority or
      * the query string, but will include the port if provided. As the value is
      * stored as a URI the "%t" is encoded to "%25t" e.g. -
@@ -99,7 +100,8 @@ public final class Configuration {
     private static final String KEY_SERVICE_FRS_PATH = "service.filteredResource.path";
 
     /**
-     * The path portion of the Data service URI which defaults to "data/read/chunked"
+     * The path portion of the Data Service URI which defaults to
+     * "data/read/chunked"
      */
     private static final String KEY_SERVICE_DATA_PATH = "service.data.path";
 
@@ -138,21 +140,17 @@ public final class Configuration {
     }
 
     /**
-     * Returns a new configuration instance loaded with all defaults
-     *
-     * @return a new configuration instance loaded with all defaults
-     */
-    public static Configuration create() {
-        return create(Map.of());
-    }
-
-    /**
      * Returns a new configuration instance
      *
      * @param properties The property overrides
      * @return a new configuration instance loaded with all defaults
+     * @throws ConfigurationException if the configuration could not be created
+     *                                successfully
      */
+    @SuppressWarnings("java:S2221") // really want to catch exception
     public static Configuration create(final Map<String, String> properties) {
+
+        Checks.checkNotNull(properties, "If no properties then use an empty map or use the create() method");
 
         // set up map with system defaults
         // these can be overriden if needed.
@@ -161,14 +159,16 @@ public final class Configuration {
         map.put(KEY_SERVICE_PS_PATH, "palisade/registerDataRequest");
         map.put(KEY_SERVICE_FRS_PATH, "filteredResource/name/%t");
         map.put(KEY_SERVICE_DATA_PATH, "data/read/chunked");
+        map.putAll(properties); // add in user supplied properties which can overide system defaults
 
-        // now add in user supplied properties which can overide system defaults
-
-        map.putAll(properties);
-
-        map = substituteVariables(map); // replace any substitution variables
-
-        process(map); // generate the rest of the properties (e.g. palisade url)
+        try {
+            map = substituteVariables(map); // replace any substitution variables
+            process(map); // generate the rest of the properties (e.g. palisade url)
+        } catch (ConfigurationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ConfigurationException("An unknown error occurred creating the configuratioin", e);
+        }
 
         if (LOGGER.isDebugEnabled()) {
             var sb = new StringBuilder("Default configuration: {\n");
@@ -268,7 +268,7 @@ public final class Configuration {
     }
 
     private <T> Optional<T> findProperty(final String key, final Class<T> clazz) {
-        return findProperty(getProperties(), key, clazz);
+        return Util.findProperty(getProperties(), key, clazz);
     }
 
     private String getProperty(final String key) {
@@ -276,38 +276,15 @@ public final class Configuration {
     }
 
     private <T> T getProperty(final String key, final Class<T> clazz) {
-        return getProperty(getProperties(), key, clazz);
-    }
-
-    private static String getProperty(final Map<String, Object> properties, final String key) {
-        return getProperty(properties, key, String.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T getProperty(final Map<String, Object> properties, final String key, final Class<T> clazz) {
-        var t = properties.get(key);
-        if (t != null && !clazz.isAssignableFrom(t.getClass())) {
-            throw new IllegalArgumentException(
-                "Key " + key + " found but was of type " + t.getClass().getName() + " not the expected type "
-                    + clazz.getName());
-        }
-        return (T) properties.get(key);
-    }
-
-    private static Optional<String> findProperty(final Map<String, Object> properties, final String key) {
-        return findProperty(properties, key, String.class);
-    }
-
-    private static <T> Optional<T> findProperty(final Map<String, Object> properties, final String key,
-        final Class<T> clazz) {
-        return Optional.ofNullable(getProperty(properties, key, clazz));
+        return Util.getProperty(getProperties(), key, clazz);
     }
 
     private static Map<String, Object> process(final Map<String, Object> properties) {
 
         // process the URI
 
-        String url = getProperty(properties, KEY_SERVICE_URL);
+        String url = Util.findProperty(properties, KEY_SERVICE_URL, String.class)
+            .orElseThrow(() -> new ConfigurationException("No url provided"));
 
         // if the URL is not set, then we cannot process it
         if (url != null) {
@@ -338,15 +315,15 @@ public final class Configuration {
 
             // override each port if found as a query parameter
 
-            findProperty(queryParams, PARAM_PORT)
+            Util.findProperty(queryParams, PARAM_PORT, String.class)
                 .map(Integer::valueOf)
                 .ifPresent(v -> properties.put(KEY_SERVICE_PORT, v));
 
-            findProperty(queryParams, PARAM_PS_PORT)
+            Util.findProperty(queryParams, PARAM_PS_PORT, String.class)
                 .map(Integer::valueOf)
                 .ifPresent(v -> properties.put(KEY_SERVICE_PS_PORT, v));
 
-            findProperty(queryParams, PARAM_WS_PORT)
+            Util.findProperty(queryParams, PARAM_WS_PORT, String.class)
                 .map(Integer::valueOf)
                 .ifPresent(v -> properties.put(KEY_SERVICE_FRS_PORT, v));
 
@@ -355,7 +332,7 @@ public final class Configuration {
 
             extractUser(baseUri).ifPresent(u -> properties.put(KEY_SERVICE_USER, u));
 
-            findProperty(queryParams, PARAM_USER)
+            Util.findProperty(queryParams, PARAM_USER, String.class)
                 .ifPresent(v -> properties.put(KEY_SERVICE_USER, v));
 
             properties.put(KEY_SERVICE_PS_URI, createPalisadeUrl(baseUri, properties));
@@ -367,11 +344,12 @@ public final class Configuration {
 
     }
 
+    @SuppressWarnings("java:S1488")
+    static URI createPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
 
-    private static URI createPalisadeUrl(final URI baseUri, final Map<String, Object> properties) {
-
-        var port = findProperty(properties, KEY_SERVICE_PS_PORT, Integer.class).orElse(baseUri.getPort());
-        var path = baseUri.getPath() + URI_SEP + trimSlashes(getProperty(properties, KEY_SERVICE_PS_PATH));
+        var port = Util.findProperty(properties, KEY_SERVICE_PS_PORT, Integer.class).orElse(baseUri.getPort());
+        var path = baseUri.getPath() + URI_SEP
+            + trimSlashes(Util.getProperty(properties, KEY_SERVICE_PS_PATH, String.class));
         var host = baseUri.getHost();
 
         try {
@@ -382,10 +360,11 @@ public final class Configuration {
 
     }
 
-    private static URI createFilteredResourceUrl(final URI baseUri, final Map<String, Object> properties) {
+    static URI createFilteredResourceUrl(final URI baseUri, final Map<String, Object> properties) {
 
-        var port = findProperty(properties, KEY_SERVICE_FRS_PORT, Integer.class).orElse(baseUri.getPort());
-        var path = baseUri.getPath() + URI_SEP + trimSlashes(getProperty(properties, KEY_SERVICE_FRS_PATH));
+        var port = Util.findProperty(properties, KEY_SERVICE_FRS_PORT, Integer.class).orElse(baseUri.getPort());
+        var path = baseUri.getPath() + URI_SEP
+            + trimSlashes(Util.getProperty(properties, KEY_SERVICE_FRS_PATH, String.class));
         var host = baseUri.getHost();
 
         try {
@@ -396,16 +375,16 @@ public final class Configuration {
 
     }
 
-    private static Optional<String> extractUser(final URI baseUri) {
+    static Optional<String> extractUser(final URI baseUri) {
 
-        Object user = null;
+        String user = null;
 
         var authority = baseUri.getAuthority();
         if (authority != null && authority.contains("@")) {
             user = authority.split("@")[0];
         }
 
-        return Optional.ofNullable((String) user);
+        return Optional.ofNullable(user);
 
     }
 }

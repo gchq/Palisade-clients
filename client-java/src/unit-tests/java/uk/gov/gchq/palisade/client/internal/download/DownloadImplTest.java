@@ -40,7 +40,7 @@ class DownloadImplTest {
 
     private DownloadImpl download;
 
-    @SuppressWarnings("resource") // suppress potential resource leak warning
+//    @SuppressWarnings("resource") // suppress potential resource leak warning
     @BeforeEach
     void setUp(
         @Mock final HttpResponse<InputStream> response,
@@ -49,15 +49,9 @@ class DownloadImplTest {
         lenient().when(response.headers()).thenReturn(headers);
         lenient().when(response.body()).thenReturn(BODY);
         lenient().when(headers.firstValue("Content-Disposition")).thenReturn(Optional.of(CONTENT_DISPOSITION));
-        lenient().when(headers.firstValue("Content-Length")).thenReturn(Optional.of(CONTENT_LENGTH));
 
         this.download = new DownloadImpl(response);
 
-    }
-
-    @Test
-    void testGetLength() {
-        assertThat(download.getLength()).isEqualTo(Integer.valueOf(CONTENT_LENGTH));
     }
 
     @Test
