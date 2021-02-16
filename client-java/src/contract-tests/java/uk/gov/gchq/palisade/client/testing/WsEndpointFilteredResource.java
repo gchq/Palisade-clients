@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  *
  * @since 0.5.0
  */
-@ServerWebSocket("/cluster/filteredResource/name/{token}")
+@ServerWebSocket("/cluster/resource/{token}")
 public class WsEndpointFilteredResource {
 
     private static final String TOKEN_KEY = "token";

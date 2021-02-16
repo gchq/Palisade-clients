@@ -27,9 +27,16 @@ class DefaultSessionTest {
 
     @Test
     void testCreateQuery() {
-        var session = new DefaultSession(Configuration.create(Map.of("service.url", "pal://localhost/cluster")));
+
+        var conf = Configuration.create(Map.of("service.url", "pal://localhost/cluster?userid=alice"));
+        var session = new DefaultSession(conf);
         var query = session.createQuery("resource_id");
-        assertThat(query).isNotNull();
+        var expectedClass = DefaultQuery.class;
+
+        assertThat(query)
+            .as("Query should be instanceof %s", expectedClass)
+            .isInstanceOf(expectedClass);
+
     }
 
 }

@@ -38,7 +38,7 @@ import java.nio.file.Path;
 /**
  * A controller containing our test endpoints
  */
-@Controller("data")
+@Controller()
 public class HttpEndpointData {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointData.class);

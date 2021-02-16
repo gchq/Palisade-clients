@@ -59,7 +59,7 @@ public class ResourceClientTest {
             .createResourceClient(b -> b
                 .httpClient(HttpClient.newHttpClient())
                 .token(TOKEN)
-                .uri(URI.create("ws://localhost:" + port + "/cluster/filteredResource/name/%25t"))
+                .uri(URI.create("ws://localhost:" + port + "/cluster/resource/%25t"))
                 .objectMapper(objectMapper))
             .connect();
     }
@@ -85,18 +85,22 @@ public class ResourceClientTest {
         var event11 = getIfInstanceOf(messages.get(11), CompleteMessage.class);
 
         assertThat(event0)
+            .as("event0 (resource) is correct")
             .extracting("id", "token", "url")
             .containsExactly("resources/pi0.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event1)
+            .as("event1 (resource) is correct")
             .extracting("id", "token", "url")
             .containsExactly("resources/pi1.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event10)
+            .as("event10 (error) is correct")
             .extracting("text")
             .isEqualTo("test error");
 
         assertThat(event11)
+            .as("event101 (complete) is correct")
             .extracting("token")
             .isEqualTo(TOKEN);
 
@@ -104,7 +108,9 @@ public class ResourceClientTest {
 
     @SuppressWarnings("unchecked")
     private <T> T getIfInstanceOf(final Object o, final Class<T> c) {
-        assertThat(o).isInstanceOf(c);
+        assertThat(o)
+            .as("Provided instance (%s) is of type (%s)", o.getClass(), c)
+            .isInstanceOf(c);
         return (T) o;
     }
 

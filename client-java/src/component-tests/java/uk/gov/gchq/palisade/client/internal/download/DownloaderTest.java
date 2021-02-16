@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 class DownloaderTest {
 
     private static final String BASE_URL = "http://localhost:%d"; // needs port added before use
-    private static final String ENDPOINT = "/data/read/chunked";
+    private static final String ENDPOINT = "/read/chunked";
     private static final String TOKEN = "abcd-1";
     private static final String PI_0_PATH = "resources/pi0.txt";
     private static final String PI_0_FILENAME = Path.of(PI_0_PATH).getFileName().toString();
@@ -79,7 +79,9 @@ class DownloaderTest {
         var download = downloader.fetch(resource);
         var file = new File(Thread.currentThread().getContextClassLoader().getResource(PI_0_PATH).toURI());
 
-        assertThat(download.getFilename()).isEqualTo(Optional.of(PI_0_FILENAME));
+        assertThat(download.getFilename())
+            .as("Download filename is %s", PI_0_FILENAME)
+            .isEqualTo(Optional.of(PI_0_FILENAME));
 
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.
@@ -87,7 +89,9 @@ class DownloaderTest {
         try (var actual = download.getInputStream();
              var expected = new FileInputStream(file);
         ) {
-            assertThat(actual).hasSameContentAs(expected);
+            assertThat(actual)
+                .as("Downloaded input stream same as file input stream")
+                .hasSameContentAs(expected);
         }
 
     }
@@ -102,10 +106,14 @@ class DownloaderTest {
             .token(TOKEN)
             .url(url));
 
-        assertThatExceptionOfType(DownloaderException.class)
+        var expectedClass = DownloaderException.class;
+        var expectedStatus = 404;
+
+        assertThatExceptionOfType(expectedClass)
+            .as("%s is thrown with status %s when resource is not found", expectedClass, expectedStatus)
             .isThrownBy(() -> downloader.fetch(resource))
             .withMessage("Resource \"" + filename + "\" not found")
-            .matches(ex -> ex.getStatusCode() == 404, "statuscode 404");
+            .matches(ex -> ex.getStatusCode() == expectedStatus, "statuscode " + expectedStatus);
 
     }
 

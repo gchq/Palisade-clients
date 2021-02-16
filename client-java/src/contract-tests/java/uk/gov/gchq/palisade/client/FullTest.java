@@ -53,7 +53,7 @@ class FullTest {
             "service.palisade.port", "" + port,
             "service.filteredResource.port", "" + port);
 
-        var session = ClientManager.openSession("pal://alice@localhost/cluster", properties);
+        var session = ClientManager.openSession("pal://eve@localhost/cluster?userid=alice", properties);
         var query = session.createQuery("resource_id");
         var publisher = query
             .execute()
@@ -94,10 +94,11 @@ class FullTest {
     void testWithDownloadInsideStream() throws Exception {
 
         var properties = Map.of(
+            "service.userid", "alice",
             "service.palisade.port", "" + embeddedServer.getPort(),
             "service.filteredResource.port", "" + embeddedServer.getPort());
 
-        var session = ClientManager.openSession("pal://alice@localhost/cluster", properties);
+        var session = ClientManager.openSession("pal://bob@localhost/cluster", properties);
         var query = session.createQuery("resource_id");
         var publisher = query
             .execute()

@@ -25,16 +25,28 @@ class DefaultClientTest {
 
     @Test
     void testAcceptsURL() {
+
         var client = new DefaultClient();
-        assertThat(client.acceptsURL("pal://localhost")).isTrue();
-        assertThat(client.acceptsURL("jdbc://localhost")).isFalse();
+
+        var url = "pal://localhost";
+        assertThat(client.acceptsURL(url))
+            .as("Client accepts \"%s\" URL", url)
+            .isTrue();
+
+        url = "jdbc://localhost";
+        assertThat(client.acceptsURL(url))
+            .as("Client does not accept \"%s\" URL", url)
+            .isFalse();
     }
 
     @Test
     void testConnect() {
         var client = new DefaultClient();
-        var session = client.connect("pal://localhost", Map.of());
-        assertThat(session).isInstanceOf(DefaultSession.class);
+        var session = client.connect("pal://localhost?userid=alice", Map.of());
+        var expectedClass = DefaultSession.class;
+        assertThat(session)
+            .as("Session is instance of %s", expectedClass)
+            .isInstanceOf(expectedClass);
     }
 
 }

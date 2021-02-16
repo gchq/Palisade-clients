@@ -32,10 +32,12 @@ The URL follows the JDBC specification of not exposing the underlying communicat
 If you are familiar with the JDBC url, then the Palisade URL should be familiar. See the examples below:
 
 ```
-pal://alice@localhost/cluster
-pal://localhost/cluster
-pal://localhost:1234/cluster?wsport=4321
+pal://eve@localhost/cluster?userid=alive
+pal://localhost/cluster?userid=alive
+pal://localhost:1234/cluster?userid=alice&wsport=4321
 ```
+
+Note that any user passed as part of the authority portion of the URL (e.g. "eve" in the above example) will simply be copied to the create Palisade Service and Filtered ResourceService URIs. This use is not the `user_id` that is passed as part of the REST call to the palisade service. The user id is passed via a property (`service.userid`) or as a query parameter (userid).
 
 #### Interfaces
 
@@ -73,10 +75,11 @@ class FullTest {
 
         var port = ""+embeddedServer.getPort();
 (1)     var properties = Map.<String, String>of(
+            "service.userid", "alice",
             "service.palisade.port", port,
             "service.filteredResource.port", port);
 
-(2)     var session = ClientManager.openSession("pal://alice@localhost/cluster", properties);
+(2)     var session = ClientManager.openSession("pal://eve@localhost/cluster", properties);
 (3)     var query = session.createQuery("good_morning", Map.of("purpose","Alice's purpose"));
 (4)     var publisher = query
             .execute()
@@ -111,7 +114,7 @@ class FullTest {
 ```
 
 1. Creates a map of properties to be passed to the client. Here we are overriding the port for the Palisade Service and Filtered Resource Service.
-2. Uses the `ClientManager` to create a `Session` from a Palisade URL. Here we are passing the user via the authority section of the URI. If a user is also passed via a property, this user in the URI takes precedence.
+2. Uses the `ClientManager` to create a `Session` from a Palisade URL. Here we are passing the user via the provided property map. If a user is also passed via a query parameter, this user in the query takes precedence.
 3. A new Query is created by passing a query string and an optional map of properties.
 4. The query is executed. The request is submitted to Palisade at this point and a `CompleteableFuture` is returned asynchronously. Once Palisade has processed the request, the future will emit a `Publisher` of `Messages` instances.
 5. Convert the `java.util.current.Flow.Publisher` to an RxJava `Flowable` in order to apply filtering and retrieval into a collection of `Resource` instances.
@@ -125,11 +128,10 @@ __Note:__ These  properties will override any query parameters or other values w
 
 | Property | Description |
 | --- | --- |
-| service.user | The userId. Overrides the authority section of the url |
-| service.password | Optional password if required |
+| service.userid | The userId. Overrides the authority section of the url |
 | service.palisade.port | The Palisade Service port. If not set will equal any port provided within the service.url. Overrides the port in the url |
 | service.filteredResource.port | The port for the Filtered Resource (websocket) Service, if different from the Palisade Service. |
-| service.url | The main cluster URL .e.g. pal://user@localhost:12345/cluster |
+| service.url | The main cluster URL .e.g. pal://user@localhost:12345/cluster?query.... |
 
 ### URL Query Parameters
 
@@ -139,15 +141,14 @@ __Note:__ These  parameters will be overridden by properties, if provided
 
 | Parameter | Description |
 | --- | --- |
-| port | Base port for the Palisade cluster |
-| psport | The port for the Palisade Service. If not supplied will be set to the value of `port` |
-| wsport | The port for the Filtered Resource Service. Specify this if it is different from the Palisade Service. If not supplied it will be set to the value of `psport` |
+| psport | The port for the Palisade Service. |
+| wsport | The port for the Filtered Resource Service. Specify this if it is different from the Palisade Service. If not supplied it will be set to the value of `psport`, if available |
 
 Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
 
 ### Query Parameters
 
-Any number of properties can be pass when constructing the query. Below are those properties currently known to Palisade:
+Any number of properties can be passed when constructing the query. Below are those properties currently known to Palisade:
 
 | Property | Required | Description |
 | --- | --- | --- |

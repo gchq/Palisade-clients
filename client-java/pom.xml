@@ -124,16 +124,6 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-properties</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
             <version>${rxjava.version}</version>
@@ -243,6 +233,9 @@
                 <directory>src/unit-tests/resources</directory>
             </testResource>
             <testResource>
+                <directory>src/component-tests/resources</directory>
+            </testResource>
+            <testResource>
                 <directory>src/contract-tests/resources</directory>
             </testResource>
         </testResources>
@@ -290,6 +283,7 @@
                         <configuration>
                             <sources>
                                 <source>${basedir}/src/unit-tests/java</source>
+                                <source>${basedir}/src/component-tests/java</source>
                                 <source>${basedir}/src/contract-tests/java</source>
                             </sources>
                         </configuration>
@@ -305,6 +299,7 @@
                                 <resource>
                                     <filtering>true</filtering>
                                     <directory>${basedir}/src/unit-tests/resources</directory>
+                                    <directory>${basedir}/src/component-tests/resources</directory>
                                     <directory>${basedir}/src/contract-tests/resources</directory>
                                 </resource>
                             </resources>

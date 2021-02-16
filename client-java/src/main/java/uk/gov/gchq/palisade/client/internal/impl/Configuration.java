@@ -49,17 +49,11 @@ public final class Configuration {
     private static final String KEY_SERVICE_URL = "service.url";
 
     /*
-     * The port number main port for the cluster. This is the port provided on the
-     * main URL as part of the host or within the query string.
-     */
-    private static final String KEY_SERVICE_PORT = "service.port";
-
-    /*
      * The user credentials supplied as part of the authority or within the query
      * string. Not that the property supplied in the query string takes precedence
      * e.g. - "pal://alice@localhost/cluster" - "pal://localhost/cluster?user=alice"
      */
-    private static final String KEY_SERVICE_USER = "service.user";
+    private static final String KEY_SERVICE_USER_ID = "service.userid";
 
     /*
      * The generated Palisade URI. This URI is generated from "palisade.url". This
@@ -112,14 +106,9 @@ public final class Configuration {
     private static final String KEY_QUERY_STREAM_POLL_TIMEOUT = "query.stream.poll.timeout";
 
     /*
-     * The port provided in "service.url" property if provided
-     */
-    private static final String PARAM_PORT = "port";
-
-    /*
      * The user provided in the "service.url" property if provided
      */
-    private static final String PARAM_USER = "user";
+    private static final String PARAM_USER_ID = "userid";
 
     /*
      * The port to the Filtered Resource Service if provided as a query parameter (wsport)
@@ -153,12 +142,12 @@ public final class Configuration {
         Checks.checkNotNull(properties, "If no properties then use an empty map or use the create() method");
 
         // set up map with system defaults
-        // these can be overriden if needed.
+        // these can be overridden if needed.
 
         Map<String, Object> map = new HashMap<>();
         map.put(KEY_SERVICE_PS_PATH, "palisade/registerDataRequest");
-        map.put(KEY_SERVICE_FRS_PATH, "filteredResource/name/%t");
-        map.put(KEY_SERVICE_DATA_PATH, "data/read/chunked");
+        map.put(KEY_SERVICE_FRS_PATH, "resource/%t");
+        map.put(KEY_SERVICE_DATA_PATH, "read/chunked");
         map.putAll(properties); // add in user supplied properties which can overide system defaults
 
         try {
@@ -204,7 +193,7 @@ public final class Configuration {
      * @return the user
      */
     public String getUser() {
-        return findProperty(KEY_SERVICE_USER).orElseThrow(() -> new ConfigurationException("No user configured"));
+        return findProperty(KEY_SERVICE_USER_ID).orElseThrow(() -> new ConfigurationException("No user configured"));
     }
 
     /**
@@ -298,7 +287,6 @@ public final class Configuration {
 
             // convert any properties that should not be strings
 
-            properties.computeIfPresent(KEY_SERVICE_PORT, (k, v) -> Integer.valueOf(v.toString()));
             properties.computeIfPresent(KEY_SERVICE_PS_PORT, (k, v) -> Integer.valueOf(v.toString()));
             properties.computeIfPresent(KEY_SERVICE_FRS_PORT, (k, v) -> Integer.valueOf(v.toString()));
 
@@ -306,18 +294,13 @@ public final class Configuration {
 
             var port = baseUri.getPort();
             if (port > -1) {
-                properties.put(KEY_SERVICE_PORT, port);
                 properties.put(KEY_SERVICE_PS_PORT, port);
                 properties.put(KEY_SERVICE_FRS_PORT, port);
             }
 
             var queryParams = Util.extractQueryParams(baseUri);
 
-            // override each port if found as a query parameter
-
-            Util.findProperty(queryParams, PARAM_PORT, String.class)
-                .map(Integer::valueOf)
-                .ifPresent(v -> properties.put(KEY_SERVICE_PORT, v));
+            // override a property if a query parameter has been supplied
 
             Util.findProperty(queryParams, PARAM_PS_PORT, String.class)
                 .map(Integer::valueOf)
@@ -327,13 +310,12 @@ public final class Configuration {
                 .map(Integer::valueOf)
                 .ifPresent(v -> properties.put(KEY_SERVICE_FRS_PORT, v));
 
-            // get the user from the url and then see if a query parameter
-            // should override it
+            Util.findProperty(queryParams, PARAM_USER_ID, String.class)
+                .ifPresent(v -> properties.put(KEY_SERVICE_USER_ID, v));
 
-            extractUser(baseUri).ifPresent(u -> properties.put(KEY_SERVICE_USER, u));
-
-            Util.findProperty(queryParams, PARAM_USER, String.class)
-                .ifPresent(v -> properties.put(KEY_SERVICE_USER, v));
+            if (!properties.containsKey(KEY_SERVICE_USER_ID)) {
+                throw new ConfigurationException("User has not been set eith via property or url query string");
+            }
 
             properties.put(KEY_SERVICE_PS_URI, createPalisadeUrl(baseUri, properties));
             properties.put(KEY_SERVICE_FRS_URI, createFilteredResourceUrl(baseUri, properties));
@@ -351,9 +333,10 @@ public final class Configuration {
         var path = baseUri.getPath() + URI_SEP
             + trimSlashes(Util.getProperty(properties, KEY_SERVICE_PS_PATH, String.class));
         var host = baseUri.getHost();
+        var userInfo = baseUri.getUserInfo();
 
         try {
-            return new URI("http", null, host, port, path, null, null);
+            return new URI("http", userInfo, host, port, path, null, null);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Failed to create Palisade Service URI", e);
         }
@@ -366,25 +349,14 @@ public final class Configuration {
         var path = baseUri.getPath() + URI_SEP
             + trimSlashes(Util.getProperty(properties, KEY_SERVICE_FRS_PATH, String.class));
         var host = baseUri.getHost();
+        var userInfo = baseUri.getUserInfo();
 
         try {
-            return new URI("ws", null, host, port, path, null, null);
+            return new URI("ws", userInfo, host, port, path, null, null);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Failed to create Filtered Resource Service URI", e);
         }
 
     }
 
-    static Optional<String> extractUser(final URI baseUri) {
-
-        String user = null;
-
-        var authority = baseUri.getAuthority();
-        if (authority != null && authority.contains("@")) {
-            user = authority.split("@")[0];
-        }
-
-        return Optional.ofNullable(user);
-
-    }
 }

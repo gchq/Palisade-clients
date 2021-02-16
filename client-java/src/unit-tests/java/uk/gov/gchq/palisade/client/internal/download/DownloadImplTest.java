@@ -40,7 +40,7 @@ class DownloadImplTest {
 
     private DownloadImpl download;
 
-//    @SuppressWarnings("resource") // suppress potential resource leak warning
+    @SuppressWarnings("resource") // suppress potential resource leak warning
     @BeforeEach
     void setUp(
         @Mock final HttpResponse<InputStream> response,
@@ -56,13 +56,17 @@ class DownloadImplTest {
 
     @Test
     void testGetName() {
-        assertThat(download.getFilename()).contains(FILENAME);
+        assertThat(download.getFilename())
+            .as("Download filename is %s", FILENAME)
+            .contains(FILENAME);
     }
 
     @Test
     void testGetInputStream() throws Exception {
         try (var is = download.getInputStream()) {
-            assertThat(is).isEqualTo(BODY);
+            assertThat(is)
+                .as("Download byte array matches")
+                .isEqualTo(BODY);
         }
     }
 
