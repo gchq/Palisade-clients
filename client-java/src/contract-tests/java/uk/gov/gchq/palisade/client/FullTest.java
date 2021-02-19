@@ -21,6 +21,7 @@ import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableSubscriber;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
@@ -89,7 +90,7 @@ class FullTest {
      * https://hg.openjdk.java.net/jdk/jdk/rev/e4cc5231ce2d
      */
     @Test
-//    @Disabled
+    @Disabled
     @SuppressWarnings("java:S1607")
     void testWithDownloadInsideStream() throws Exception {
 

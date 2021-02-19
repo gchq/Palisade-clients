@@ -77,7 +77,7 @@ public class DefaultQueryResponse implements QueryResponse {
 
             /*
              * Must use a new client here for the websocket connection. If we use the one
-             * from the session, the websocket listener seems to fail and hang.
+             * from the session, the websocket listener hangs.
              */
 
             var httpClient = HttpClient.newHttpClient();
@@ -104,10 +104,10 @@ public class DefaultQueryResponse implements QueryResponse {
                         // we're done, so signal complete and set flag to get out
                         emitter.onComplete();
                         loop = false;
-                        LOGGER.trace("emitter.complete");
+                        LOGGER.debug("emitter.complete");
                     } else {
                         createMessage(wsm).ifPresent((final Message msg) -> {
-                            LOGGER.trace("emitter.onNext: {}", msg);
+                            LOGGER.debug("emitter.onNext: {}", msg);
                             emitter.onNext(msg);
                         });
                     }
@@ -115,7 +115,7 @@ public class DefaultQueryResponse implements QueryResponse {
                 if (emitter.isCancelled()) {
                     // we're cancelled, so set flag to get out
                     loop = false;
-                    LOGGER.trace("emitter.cancelled");
+                    LOGGER.debug("emitter.cancelled");
                 }
             } while (loop);
 

@@ -189,7 +189,7 @@ public final class Util {
     }
 
     /**
-     * Returns a string containing he JSON representation of the provided
+     * Returns a string containing the JSON representation of the provided
      * {@code object}. If a mapping error occurs, the exception is passed to the
      * provided function which wraps the exception and then the new exception is
      * thrown.

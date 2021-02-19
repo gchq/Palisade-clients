@@ -37,7 +37,7 @@ pal://localhost/cluster?userid=alive
 pal://localhost:1234/cluster?userid=alice&wsport=4321
 ```
 
-Note that any user passed as part of the authority portion of the URL (e.g. "eve" in the above example) will simply be copied to the create Palisade Service and Filtered ResourceService URIs. This use is not the `user_id` that is passed as part of the REST call to the palisade service. The user id is passed via a property (`service.userid`) or as a query parameter (userid).
+Note that any user passed as part of the authority portion of the URL (e.g. "eve" in the above example) will simply be copied to the create Palisade Service and Filtered Resource Service URIs. This use is not the `user_id` that is passed as part of the REST call to the Palisade Service. The user id is passed via a property (`service.userid`) or as a query parameter (userid).
 
 #### Interfaces
 

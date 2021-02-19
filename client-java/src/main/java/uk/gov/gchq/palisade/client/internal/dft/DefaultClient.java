@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.Client;
+import uk.gov.gchq.palisade.client.ClientException;
+import uk.gov.gchq.palisade.client.ClientManager;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
 import java.util.HashMap;
@@ -35,6 +37,13 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 public class DefaultClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
+    private static final DefaultClient INSTANCE = new DefaultClient();
+
+    private static boolean registered;
+
+    static {
+        load();
+    }
 
     /**
      * Returns a new instance of {@code DefaultClient}
@@ -47,7 +56,7 @@ public class DefaultClient implements Client {
         checkNotNull(url, "url is null");
         boolean accepts = url.startsWith("pal://") || url.startsWith("pal:dft://");
         if (!accepts) {
-            LOGGER.debug("Driver {} does not accept url {}", this.getClass().getName(), url);
+            LOGGER.debug("Client {} does not accept url {}", this.getClass().getName(), url);
         }
         return accepts;
     }
@@ -65,6 +74,18 @@ public class DefaultClient implements Client {
         var configuration = Configuration.create(props);
 
         return new DefaultSession(configuration);
+    }
+
+    private static synchronized Client load() {
+        try {
+            if (!registered) {
+                registered = true;
+                ClientManager.registerClient(INSTANCE);
+            }
+        } catch (ClientException e) {
+            LOGGER.error("Failed to register DefaultDriver", e);
+        }
+        return INSTANCE;
     }
 
 }

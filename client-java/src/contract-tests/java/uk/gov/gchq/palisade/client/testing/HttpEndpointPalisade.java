@@ -31,7 +31,7 @@ import uk.gov.gchq.palisade.client.internal.request.PalisadeResponse;
 /**
  * A controller containing our test endpoints
  */
-@Controller("/cluster/palisade")
+@Controller("/cluster/palisade/api")
 public class HttpEndpointPalisade {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointPalisade.class);
@@ -46,7 +46,7 @@ public class HttpEndpointPalisade {
     @Produces(MediaType.APPLICATION_JSON)
     public HttpResponse<PalisadeResponse> registerDataRequest(@Body final PalisadeRequest request) {
         try {
-            MDC.put("server", "PAL-SVC");
+            MDC.put("server", "PL-SVC");
             LOG.debug("RCVD: {}", request);
             var palisadeResponse = PalisadeResponse.createPalisadeResponse(b -> b.token("abcd-1"));
             LOG.debug("RETN: {}", request);

@@ -127,7 +127,7 @@ public class WsEndpointFilteredResource {
     @OnOpen
     public void onOpen(final String token, final WebSocketSession session) {
         try {
-            MDC.put("server", "FRS-SVC");
+            MDC.put("server", "FR-SVC");
             assert token != null : "Should have the token as part of the path variable";
             LOGGER.debug("OPEN: Opening websocket for token {}", token);
             session.put(TOKEN_KEY, token);
@@ -150,7 +150,7 @@ public class WsEndpointFilteredResource {
     @OnMessage
     public void onMessage(final Item inmsg, final WebSocketSession session) {
         try {
-            MDC.put("server", "FRS-SVC");
+            MDC.put("server", "FR-SVC");
             LOGGER.debug("RCVD: {}", inmsg);
             var type = inmsg.getType();
             if (type == WebSocketMessageType.CTS) {
@@ -175,7 +175,7 @@ public class WsEndpointFilteredResource {
     @OnClose
     public void onClose(final WebSocketSession session) {
         try {
-            MDC.put("server", "FRS-SVC");
+            MDC.put("server", "FR-SVC");
             LOGGER.debug("RCVD: Close Request: {}", session.getId());
         } finally {
             MDC.remove("server");
@@ -192,7 +192,7 @@ public class WsEndpointFilteredResource {
 
     private static void send(final WebSocketSession session, final Item message) {
         try {
-            MDC.put("server", "FRS-SVC");
+            MDC.put("server", "FR-SVC");
             session.sendSync(message);
             LOGGER.debug("SEND: {}", message);
         } finally {

@@ -43,7 +43,7 @@ public final class Configuration {
 
     /*
      * The service URL simply represents the original URL supplied to the
-     * ClientManager. e.g. - "pal://alice@localhost:8090/cluster?wsport=8091" -
+     * ClientManager. e.g. - "pal://eve@localhost:8090/cluster?wsport=8091" -
      * "pal://localhost/cluster?port=8090&wsport=8091&user=alice"
      */
     private static final String KEY_SERVICE_URL = "service.url";
@@ -51,15 +51,15 @@ public final class Configuration {
     /*
      * The user credentials supplied as part of the authority or within the query
      * string. Not that the property supplied in the query string takes precedence
-     * e.g. - "pal://alice@localhost/cluster" - "pal://localhost/cluster?user=alice"
+     * e.g. - "pal://eve@localhost/cluster" - "pal://localhost/cluster?user=alice"
      */
     private static final String KEY_SERVICE_USER_ID = "service.userid";
 
     /*
      * The generated Palisade URI. This URI is generated from "palisade.url". This
      * URI does not have the user portion of the authority or the query string, but
-     * will include the port if provided. e.g. e.g. -
-     * http://localhost/palisade/registerDataRequest
+     * will include the port if provided. e.g. -
+     * http://localhost/cluster/palisade/api/registerDataRequest
      */
     private static final String KEY_SERVICE_PS_URI = "service.palisade.uri";
 
@@ -78,7 +78,7 @@ public final class Configuration {
      * "palisade.url". This URI does not have the user portion of the authority or
      * the query string, but will include the port if provided. As the value is
      * stored as a URI the "%t" is encoded to "%25t" e.g. -
-     * ws://localhost/filteredResource/name/%25t
+     * ws://localhost/cluster/resource/%25t
      */
     private static final String KEY_SERVICE_FRS_URI = "service.filteredResource.uri";
 
@@ -89,13 +89,12 @@ public final class Configuration {
 
     /*
      * The path portion of the Filtered Resource Service URI which defaults to
-     * "filteredResource/name/%t"
+     * "Resource/%t"
      */
     private static final String KEY_SERVICE_FRS_PATH = "service.filteredResource.path";
 
     /**
-     * The path portion of the Data Service URI which defaults to
-     * "data/read/chunked"
+     * The path portion of the Data Service URI which defaults to "read/chunked"
      */
     private static final String KEY_SERVICE_DATA_PATH = "service.data.path";
 
@@ -136,7 +135,7 @@ public final class Configuration {
      * @throws ConfigurationException if the configuration could not be created
      *                                successfully
      */
-    @SuppressWarnings("java:S2221") // really want to catch exception
+    @SuppressWarnings("java:S2221")
     public static Configuration create(final Map<String, String> properties) {
 
         Checks.checkNotNull(properties, "If no properties then use an empty map or use the create() method");
@@ -145,14 +144,14 @@ public final class Configuration {
         // these can be overridden if needed.
 
         Map<String, Object> map = new HashMap<>();
-        map.put(KEY_SERVICE_PS_PATH, "palisade/registerDataRequest");
+        map.put(KEY_SERVICE_PS_PATH, "palisade/api/registerDataRequest");
         map.put(KEY_SERVICE_FRS_PATH, "resource/%t");
         map.put(KEY_SERVICE_DATA_PATH, "read/chunked");
-        map.putAll(properties); // add in user supplied properties which can overide system defaults
+        map.putAll(properties); // add in user supplied properties which can override system defaults
 
         try {
             map = substituteVariables(map); // replace any substitution variables
-            process(map); // generate the rest of the properties (e.g. palisade url)
+            process(map); // generate the rest of the properties (e.g. palisade URL)
         } catch (ConfigurationException e) {
             throw e;
         } catch (Exception e) {

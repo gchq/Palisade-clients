@@ -49,7 +49,7 @@ class ClientManagerTest {
         assertThat(configuration.getServiceUrl()).isEqualTo(serviceUrl);
         assertThat(configuration.getPalisadeUrl())
             .as("Palisade URI generated correctly")
-            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/registerDataRequest"));
+            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
         assertThat(configuration.getFilteredResourceUrl())
             .as("FilteredResource URI generated correctly")
             .isEqualTo(URI.create("ws://localhost:1234/cluster/resource/%25t"));
@@ -71,7 +71,7 @@ class ClientManagerTest {
         assertThat(configuration.getServiceUrl()).isEqualTo(serviceUrl);
         assertThat(configuration.getPalisadeUrl())
             .as("Palisade URI generated correctly")
-            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/registerDataRequest"));
+            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
         assertThat(configuration.getFilteredResourceUrl())
             .as("FilteredResource URI generated correctly")
             .isEqualTo(URI.create("ws://localhost:1234/cluster/resource/%25t"));

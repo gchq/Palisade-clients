@@ -43,7 +43,7 @@ class PalisadeServiceTest {
     void testSubmit() throws Exception {
 
         var port = embeddedServer.getPort();
-        var uri = new URI("http://localhost:" + port + "/cluster/palisade/registerDataRequest");
+        var uri = new URI("http://localhost:" + port + "/cluster/palisade/api/registerDataRequest");
         var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
             .resourceId("resource_id")
             .userId("user_id")

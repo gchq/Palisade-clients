@@ -17,9 +17,8 @@ package uk.gov.gchq.palisade.client;
 
 import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * The basic service for managing Palisade clients
@@ -34,12 +33,12 @@ import java.util.Map;
  */
 public final class ClientManager {
 
-    private static final List<Client> CLIENTS = new ArrayList<>();
+    private static final CopyOnWriteArrayList<Client> REGISTERED_CLIENTS = new CopyOnWriteArrayList<>();
 
     static {
         // adds the default client which responds to "pal:dft:" URLs
         // note that this client will also respond to "pal:" to keep things simple.
-        CLIENTS.add(new DefaultClient());
+        registerClient(new DefaultClient());
     }
 
     private ClientManager() { // prevent instantiation
@@ -53,7 +52,7 @@ public final class ClientManager {
      * @return a client for the provided URL
      */
     public static Client getClient(final String url) {
-        return CLIENTS.stream()
+        return REGISTERED_CLIENTS.stream()
             .filter(c -> c.acceptsURL(url))
             .findFirst()
             .orElseThrow(() -> new ClientException("No suitable client found accepting url: " + url));
@@ -88,6 +87,26 @@ public final class ClientManager {
         var client = getClient(url);
         var session = client.connect(url, info);
         return session;
+    }
+
+    /**
+     * Registers the given client with the {@code ClientManager}. A newly-loaded
+     * driver class should call the method {@code registerClient} to make itself
+     * known to the {@code ClientManager}. If the client is currently registered, no
+     * action is taken.
+     *
+     * @param client the new Palisade Client that is to be registered with the
+     *               {@code ClientManager}
+     * @exception NullPointerException if {@code client} is null
+     * @since 0.5.0
+     */
+    public static void registerClient(final Client client) {
+        /* Register the client if it has not already been added to our list */
+        if (client != null) {
+            REGISTERED_CLIENTS.addIfAbsent(client);
+        } else {
+            throw new IllegalArgumentException("Cannot register a null client");
+        }
     }
 
 }

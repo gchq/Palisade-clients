@@ -19,8 +19,8 @@ List of third-party dependencies grouped by their license type
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
 * JSONassert ([org.skyscreamer:jsonassert:1.5.0](https://github.com/skyscreamer/JSONassert))
 * Spring Cloud Starter OpenFeign ([org.springframework.cloud:spring-cloud-starter-openfeign:2.2.0.RELEASE](https://projects.spring.io/spring-cloud))
-* common ([uk.gov.gchq.palisade:common:0.5.0-20210127.140835-23](https://github.com/gchq/Palisade-common))
-* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-20210126.160626-27](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
+* common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
+* readers-common ([uk.gov.gchq.palisade:readers-common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-readers/tree/develop/readers-common))
 
 ### [Apache-2.0](./licenses/not recognised):
 * akka-http-jackson ([com.typesafe.akka:akka-http-jackson_2.13:10.2.1](https://akka.io))

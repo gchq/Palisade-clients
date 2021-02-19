@@ -25,28 +25,38 @@ import java.util.Optional;
 public interface Resource extends Message {
 
     /**
-     * Returns the leaf resource id which is to be downloaded
+     * Returns the leaf resource id. The leaf resource id represents a child
+     * resource at some point in the hierarchy of the requested parent.
+     * <p>
+     * For example if a request was made to an AWS S3 bucket, then a leaf resource
+     * id would represent a file within the bucket.
      *
-     * @return the leaf resource id which is to be downloaded
+     * @return the leaf resource id
      */
     String getLeafResourceId();
 
     /**
-     * Return the url of the download service
+     * Returns the URL location of the resource
      *
-     * @return the url of the download service
+     * @return the URL location of the resource
      */
     String getUrl();
 
     /**
-     * Returns the type
+     * Returns the type. The type describes the data. Whereas
+     * {@code #getSerialisedFormat()} describes the format of the data, e.g. json,
+     * the type describes the context of the data. This could be the structural
+     * format, for example "Employee".
      *
      * @return the type
      */
     Optional<String> getType();
 
     /**
-     * Returns the serialised format
+     * Returns the serialised format. The serialised format is the encoding of the
+     * byte stream which is provided via a {@code Download} once a resource is
+     * fetched. The format would determine what type of deserialiser to be used when
+     * processing the data. Examples of this might be avro, json, xml, yaml, etc.
      *
      * @return the serialised format
      */

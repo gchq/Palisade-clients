@@ -120,10 +120,7 @@ public final class PalisadeService {
      * @return the response from Palisade
      */
     public PalisadeResponse submit(final PalisadeRequest palisadeRequest) {
-        var future = submitAsync(palisadeRequest);
-        var palisadeResponse = future.join();
-        LOGGER.debug("RCVD: {}", palisadeResponse);
-        return palisadeResponse;
+        return submitAsync(palisadeRequest).join();
     }
 
     /**
@@ -138,22 +135,25 @@ public final class PalisadeService {
         checkNotNull(palisadeRequest);
 
         var uri = getUri();
-        var requestBody = toJson(palisadeRequest);
-        var body = BodyPublishers.ofString(requestBody);
+        var jsonBody = toJson(palisadeRequest);
+        var bodyPublisher = BodyPublishers.ofString(jsonBody);
 
         LOGGER.debug("SEND: To: [{}], Body: [{}]", uri, palisadeRequest);
 
         var httpRequest = HttpRequest.newBuilder(uri)
-            .setHeader("User-Agent", "Palisade Java Client")
             .setHeader("Content-Type", "application/json")
-            .POST(body)
+            .POST(bodyPublisher)
             .build();
 
         return getHttpClient()
             .sendAsync(httpRequest, BodyHandlers.ofString())
             .thenApply(PalisadeService::checkStatusOK)
             .thenApply(HttpResponse::body)
-            .thenApply(this::toResponse);
+            .thenApply(this::toResponse)
+            .thenApply((final PalisadeResponse pr) -> {
+                LOGGER.debug("RCVD: {}", pr);
+                return pr;
+            });
 
     }
 

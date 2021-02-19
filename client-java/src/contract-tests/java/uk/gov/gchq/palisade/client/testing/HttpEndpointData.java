@@ -58,7 +58,7 @@ public class HttpEndpointData {
         try {
 
             // set up MDC
-            MDC.put("server", "DTA-SVC");
+            MDC.put("server", "DT-SVC");
 
             LOG.debug("RCVD: body: {}", request);
 
