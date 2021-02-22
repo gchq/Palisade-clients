@@ -36,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_NAMES;
+
 /**
  * Test websocket endpoint
  *
@@ -53,10 +55,6 @@ public class WsEndpointFilteredResource {
      */
     public static class ResourceGenerator implements Iterable<Item> {
 
-        private static final List<String> FILENAMES = List.of(
-            "resources/pi0.txt", "resources/pi1.txt", "resources/pi2.txt", "resources/pi3.txt",
-            "resources/pi4.txt", "resources/pi5.txt", "resources/pi6.txt", "resources/pi7.txt",
-            "resources/pi8.txt", "resources/pi9.txt");
         private final List<Item> messages;
         private final String token;
 
@@ -70,7 +68,7 @@ public class WsEndpointFilteredResource {
         public ResourceGenerator(final String token, final int port) {
             var url = "http://localhost:" + port;
             this.token = token;
-            this.messages = FILENAMES.stream()
+            this.messages = FILE_NAMES.stream()
                 .map(filename -> WebSocketMessage.createResourceMessage(b -> b
                     .token(token)
                     .id(filename)

@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_PATH_0;
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_PATH_1;
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.TOKEN;
 
 /**
  * Note that this class must be public for the subscriptions on the event bus to
@@ -39,8 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @MicronautTest
 public class ResourceClientTest {
-
-    private static final String TOKEN = "abcd-1";
 
     @Inject
     EmbeddedServer embeddedServer;
@@ -87,12 +88,12 @@ public class ResourceClientTest {
         assertThat(event0)
             .as("event0 (resource) is correct")
             .extracting("id", "token", "url")
-            .containsExactly("resources/pi0.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
+            .containsExactly(FILE_PATH_0, TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event1)
             .as("event1 (resource) is correct")
             .extracting("id", "token", "url")
-            .containsExactly("resources/pi1.txt", TOKEN, "http://localhost:" + embeddedServer.getPort());
+            .containsExactly(FILE_PATH_1, TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event10)
             .as("event10 (error) is correct")

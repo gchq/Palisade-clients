@@ -48,7 +48,7 @@ public class HttpEndpointPalisade {
         try {
             MDC.put("server", "PL-SVC");
             LOG.debug("RCVD: {}", request);
-            var palisadeResponse = PalisadeResponse.createPalisadeResponse(b -> b.token("abcd-1"));
+            var palisadeResponse = PalisadeResponse.createPalisadeResponse(b -> b.token(ClientTestData.TOKEN));
             LOG.debug("RETN: {}", request);
             return HttpResponse
                 .ok(palisadeResponse)

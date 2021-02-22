@@ -95,7 +95,7 @@ class FullTest {
         assertThat(resources).hasSizeGreaterThan(0);
 
 (6)     var resource = resources.get(0);
-        assertThat(resource.getLeafResourceId()).isEqualTo("resources/pi0.txt");
+        assertThat(resource.getLeafResourceId()).isEqualTo("resources/test-data-0.txt");
 
 (7)     var download = session.fetch(resource);
         assertThat(download).isNotNull();
@@ -103,7 +103,7 @@ class FullTest {
         var actual = download.getInputStream();
         var expected = Thread.currentThread()
             .getContextClassLoader()
-            .getResourceAsStream("resources/pi0.txt");
+            .getResourceAsStream("resources/test-data-0.txt");
 
 (8)     assertThat(actual).hasSameContentAs(expected);
 

@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.TOKEN;
 
 @MicronautTest
 class PalisadeServiceTest {
@@ -60,7 +61,7 @@ class PalisadeServiceTest {
             .as("A valid response has been returned")
             .isNotNull();
 
-        var expectedToken = "abcd-1";
+        var expectedToken = TOKEN;
 
         assertThat(palisadeResponse.getToken())
             .as("Response has token %s", expectedToken)

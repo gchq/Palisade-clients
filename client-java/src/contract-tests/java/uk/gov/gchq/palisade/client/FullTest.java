@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_PATH_0;
 
 /**
  * @since 0.5.0
@@ -70,13 +71,13 @@ class FullTest {
         assertThat(resources).hasSizeGreaterThan(0);
 
         var resource = resources.get(0);
-        assertThat(resource.getLeafResourceId()).isEqualTo("resources/pi0.txt");
+        assertThat(resource.getLeafResourceId()).isEqualTo(FILE_PATH_0);
 
         var download = session.fetch(resource);
         assertThat(download).isNotNull();
 
         try (var actual = download.getInputStream();
-             var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/pi0.txt");
+            var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_PATH_0);
         ) {
             assertThat(actual).hasSameContentAs(expected);
         }
