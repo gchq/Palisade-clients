@@ -34,7 +34,7 @@ class DefaultSessionTest {
         var expectedClass = DefaultQuery.class;
 
         assertThat(query)
-            .as("Query should be instanceof %s", expectedClass)
+            .as("check actual type")
             .isInstanceOf(expectedClass);
 
     }

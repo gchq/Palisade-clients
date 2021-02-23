@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.internal.resource;
+package uk.gov.gchq.palisade.client.test.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -21,6 +21,12 @@ import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import uk.gov.gchq.palisade.client.internal.resource.CompleteMessage;
+import uk.gov.gchq.palisade.client.internal.resource.ErrorMessage;
+import uk.gov.gchq.palisade.client.internal.resource.ResourceMessage;
+import uk.gov.gchq.palisade.client.internal.resource.WebSocketClient;
+import uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage;
 
 import javax.inject.Inject;
 
@@ -86,22 +92,22 @@ public class ResourceClientTest {
         var event11 = getIfInstanceOf(messages.get(11), CompleteMessage.class);
 
         assertThat(event0)
-            .as("event0 (resource) is correct")
+            .as("check resource event0")
             .extracting("id", "token", "url")
             .containsExactly(FILE_PATH_0, TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event1)
-            .as("event1 (resource) is correct")
+            .as("check resource event1")
             .extracting("id", "token", "url")
             .containsExactly(FILE_PATH_1, TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event10)
-            .as("event10 (error) is correct")
+            .as("check event10 (error)")
             .extracting("text")
             .isEqualTo("test error");
 
         assertThat(event11)
-            .as("event101 (complete) is correct")
+            .as("check event101 (complete)")
             .extracting("token")
             .isEqualTo(TOKEN);
 
@@ -110,7 +116,7 @@ public class ResourceClientTest {
     @SuppressWarnings("unchecked")
     private <T> T getIfInstanceOf(final Object o, final Class<T> c) {
         assertThat(o)
-            .as("Provided instance (%s) is of type (%s)", o.getClass(), c)
+            .as("check instance type of (%s)", o.getClass())
             .isInstanceOf(c);
         return (T) o;
     }

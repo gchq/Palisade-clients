@@ -69,17 +69,17 @@ public class AbstractSerialisationTest {
         var actualInstance = objectMapper.readValue(actualJson, valueType);
 
         assertThat(actualInstance)
-            .as("Using toString(), the original %s is the same as the deserialised version",
+            .as("check equality using equals()",
                 expectedInstance.getClass().getSimpleName())
             .isEqualTo(expectedInstance);
 
         assertThat(actualInstance)
-            .as("Using recursive toString(), the original %s is the same as the deserialised version",
+            .as("check equality using recursive equals()",
                 expectedInstance.getClass().getSimpleName())
             .usingRecursiveComparison()
             .isEqualTo(expectedInstance);
 
-        assertEquals(expectedJson, actualJson, JSONCompareMode.STRICT);
+        assertEquals("check strict JSON equality", expectedJson, actualJson, JSONCompareMode.STRICT);
 
     }
 

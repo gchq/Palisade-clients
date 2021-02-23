@@ -28,8 +28,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class ConfigurationTest {
 
-    private static final String FILENAME = "palisade-client.yaml";
-
     private static Configuration configuration;
 
     @BeforeAll
@@ -41,35 +39,35 @@ class ConfigurationTest {
     @Test
     void testServiceUrl() {
         assertThat(configuration.getServiceUrl())
-            .as("Generated main service URL is correct")
+            .as("check service URL")
             .isEqualTo("pal://eve@localhost:8081/cluster?userid=alice&wsport=8082");
     }
 
     @Test
     void testGetPalisadeUri() {
         assertThat(configuration.getPalisadeUrl())
-            .as("Generated Palisade Service URL is configured correctly")
+            .as("check generated Palisade Service URI")
             .isEqualTo(URI.create("http://eve@localhost:8081/cluster/palisade/api/registerDataRequest"));
     }
 
     @Test
     void testFilteredResourceUri() {
         assertThat(configuration.getFilteredResourceUrl())
-            .as("Generated Filtered Resource Service is generated correctly")
+            .as("check generated Filtered Resource Service URI")
             .isEqualTo(URI.create("ws://eve@localhost:8082/cluster/resource/%25t"));
     }
 
     @Test
     void testDataPath() {
         assertThat(configuration.getDataPath())
-            .as("Check the Data Service URI path")
+            .as("check Data Service path")
             .isEqualTo("read/chunked");
     }
 
     @Test
     void testUserNone() {
         assertThatExceptionOfType(ConfigurationException.class)
-            .as("Check no user is configured")
+            .as("check no user is configured")
             .isThrownBy(() -> Configuration.create(Map.of("service.url", "pal://localhost:8081/cluster?wsport=8082")));
     }
 
@@ -97,7 +95,7 @@ class ConfigurationTest {
     @Test
     void testInvalidServiceUrl() {
         assertThatExceptionOfType(ClientException.class)
-            .as("Configuration has valid service URL")
+            .as("check Configuration validates service URL")
             .isThrownBy(() -> Configuration.create(Map.of("service.url", "\\")));
     }
 
@@ -118,7 +116,7 @@ class ConfigurationTest {
             "}";
 
         assertThat(configuration.toString())
-            .as("Configuration toString() is correct")
+            .as("check toString() is valid")
             .isEqualTo(expected);
 
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.internal.request;
+package uk.gov.gchq.palisade.client.test.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.runtime.server.EmbeddedServer;
@@ -21,6 +21,8 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.ClientException;
+import uk.gov.gchq.palisade.client.internal.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.internal.request.PalisadeService;
 
 import javax.inject.Inject;
 
@@ -58,13 +60,13 @@ class PalisadeServiceTest {
         var palisadeResponse = service.submit(palisadeRequest);
 
         assertThat(palisadeResponse)
-            .as("A valid response has been returned")
+            .as("check valid PalisadeResponse")
             .isNotNull();
 
         var expectedToken = TOKEN;
 
         assertThat(palisadeResponse.getToken())
-            .as("Response has token %s", expectedToken)
+            .as("check response token")
             .isEqualTo(expectedToken);
 
     }
@@ -78,7 +80,7 @@ class PalisadeServiceTest {
         when(expectedResponse.statusCode()).thenReturn(202);
 
         assertThat(PalisadeService.checkStatusOK(expectedResponse))
-            .as("A valid response has correct status of ")
+            .as("check response is valid")
             .isEqualTo(expectedResponse);
     }
 
@@ -92,16 +94,16 @@ class PalisadeServiceTest {
         when(response.statusCode()).thenReturn(404);
 
         assertThatExceptionOfType(expectedException)
-            .as("%s thrown when checking invalid response with no body", expectedException)
+            .as("check valid exception thrown for response with no body")
             .isThrownBy(() -> PalisadeService.checkStatusOK(response))
-            .withMessage("Request to palisade service failed (404) with no body");
+            .withMessage("Request to Palisade Service failed (404) with no body");
 
         when(response.body()).thenReturn("body");
 
         assertThatExceptionOfType(expectedException)
-            .as("%s thrown when checking invalid response with a body", expectedException)
+            .as("check valid exception thrown response with a body")
             .isThrownBy(() -> PalisadeService.checkStatusOK(response))
-            .withMessage("Request to palisade service failed (404) with body:\nbody");
+            .withMessage("Request to Palisade Service failed (404) with body:\nbody");
 
     }
 

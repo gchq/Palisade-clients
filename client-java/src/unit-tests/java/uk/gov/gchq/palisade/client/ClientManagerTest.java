@@ -46,12 +46,14 @@ class ClientManagerTest {
         var dftSession = (DefaultSession) openSession(serviceUrl);
         var configuration = dftSession.getConfiguration();
 
-        assertThat(configuration.getServiceUrl()).isEqualTo(serviceUrl);
+        assertThat(configuration.getServiceUrl())
+            .as("check configuration Service URL")
+            .isEqualTo(serviceUrl);
         assertThat(configuration.getPalisadeUrl())
-            .as("Palisade URI generated correctly")
+            .as("check generated Palisade URI")
             .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
         assertThat(configuration.getFilteredResourceUrl())
-            .as("FilteredResource URI generated correctly")
+            .as("check generated FilteredResource URI")
             .isEqualTo(URI.create("ws://localhost:1234/cluster/resource/%25t"));
 
     }
@@ -68,12 +70,14 @@ class ClientManagerTest {
         var dftSession = (DefaultSession) openSession(serviceUrl, properties);
         var configuration = dftSession.getConfiguration();
 
-        assertThat(configuration.getServiceUrl()).isEqualTo(serviceUrl);
+        assertThat(configuration.getServiceUrl())
+            .as("Configuration Service URL")
+            .isEqualTo(serviceUrl);
         assertThat(configuration.getPalisadeUrl())
-            .as("Palisade URI generated correctly")
+            .as("Generated Palisade URI")
             .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
         assertThat(configuration.getFilteredResourceUrl())
-            .as("FilteredResource URI generated correctly")
+            .as("Generated FilteredResource URI")
             .isEqualTo(URI.create("ws://localhost:1234/cluster/resource/%25t"));
 
     }

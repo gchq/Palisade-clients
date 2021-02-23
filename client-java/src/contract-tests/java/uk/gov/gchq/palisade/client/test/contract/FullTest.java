@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client;
+package uk.gov.gchq.palisade.client.test.contract;
 
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
@@ -26,6 +26,12 @@ import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import uk.gov.gchq.palisade.client.ClientManager;
+import uk.gov.gchq.palisade.client.Download;
+import uk.gov.gchq.palisade.client.MessageType;
+import uk.gov.gchq.palisade.client.QueryResponse;
+import uk.gov.gchq.palisade.client.Resource;
 
 import javax.inject.Inject;
 
@@ -68,18 +74,18 @@ class FullTest {
             .collect(Collectors.toList())
             .blockingGet();
 
-        assertThat(resources).hasSizeGreaterThan(0);
+        assertThat(resources).as("check resource count").hasSizeGreaterThan(0);
 
         var resource = resources.get(0);
-        assertThat(resource.getLeafResourceId()).isEqualTo(FILE_PATH_0);
+        assertThat(resource.getLeafResourceId()).as("check leaf resource id").isEqualTo(FILE_PATH_0);
 
         var download = session.fetch(resource);
-        assertThat(download).isNotNull();
+        assertThat(download).as("check download exists").isNotNull();
 
         try (var actual = download.getInputStream();
             var expected = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_PATH_0);
         ) {
-            assertThat(actual).hasSameContentAs(expected);
+            assertThat(actual).as("check stream download").hasSameContentAs(expected);
         }
 
     }

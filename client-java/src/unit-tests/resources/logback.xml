@@ -44,10 +44,10 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="uk.gov.gchq.palisade.client.internal" level="DEBUG" additivity="false">
+    <logger name="uk.gov.gchq.palisade.client.internal" level="INFO" additivity="false">
       <appender-ref ref="CLIENT" />
     </logger>
-    <logger name="uk.gov.gchq.palisade.client.util" level="DEBUG" additivity="false">
+    <logger name="uk.gov.gchq.palisade.client.util" level="INFO" additivity="false">
       <appender-ref ref="CLIENT" />
     </logger>
 
@@ -60,7 +60,7 @@
     <logger name="io.micronaut" level="INFO" />
 
     <!--
-      Using a different appender here as MDC issused to make logs easier to read 
+      Using a different appender here as MDC is used to make logs easier to read 
      --> 
     <logger name="uk.gov.gchq.palisade.client.testing" level="DEBUG" additivity="false">
       <appender-ref ref="SERVER" />

@@ -157,19 +157,26 @@ public final class PalisadeService {
 
     }
 
-    static <T> HttpResponse<T> checkStatusOK(final HttpResponse<T> resp) {
-        int status = resp.statusCode();
+    /**
+     * Check status of provided {@code HttpResponse} is OK.
+     *
+     * @param <T>      The type of response body
+     * @param response the HTTP response
+     * @return the provided response
+     */
+    public static <T> HttpResponse<T> checkStatusOK(final HttpResponse<T> response) {
+        int status = response.statusCode();
         if (!IS_HTTP_OK.test(status)) {
-            var body = resp.body();
-            String msg = null;
+            var body = response.body();
+            String msg;
             if (body != null) {
-                msg = String.format("Request to palisade service failed (%s) with body:%n%s", status, body);
+                msg = String.format("Request to Palisade Service failed (%s) with body:%n%s", status, body);
             } else {
-                msg = String.format("Request to palisade service failed (%s) with no body", status);
+                msg = String.format("Request to Palisade Service failed (%s) with no body", status);
             }
             throw new ClientException(msg);
         }
-        return resp;
+        return response;
     }
 
     // placed in a method to be use fluently as a method reference

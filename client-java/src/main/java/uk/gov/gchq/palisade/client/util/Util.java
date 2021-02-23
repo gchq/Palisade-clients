@@ -150,7 +150,7 @@ public final class Util {
      * @throws NoSuchElementException   if there is no mapping for the provided key
      */
     @SuppressWarnings("java:S3655")
-    public static <O extends Object, T extends O> T getProperty(
+    public static <O, T extends O> T getProperty(
             final Map<String, O> properties,
             final String key,
             final Class<T> clazz) {
@@ -172,7 +172,7 @@ public final class Util {
      * @throws IllegalArgumentException if properties, key or clazz is null
      */
     @SuppressWarnings("unchecked")
-    public static <O extends Object, T extends O> Optional<T> findProperty(
+    public static <O, T extends O> Optional<T> findProperty(
             final Map<String, O> properties,
             final String key,
             final Class<T> clazz) {

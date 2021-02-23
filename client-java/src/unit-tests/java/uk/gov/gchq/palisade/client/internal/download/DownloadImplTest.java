@@ -35,7 +35,6 @@ class DownloadImplTest {
 
     private static final String FILENAME = "cool.html";
     private static final String CONTENT_DISPOSITION = String.format("attachment; filename=\"%s\"", FILENAME);
-    private static final String CONTENT_LENGTH = "1200";
     private static final InputStream BODY = new ByteArrayInputStream(new byte[] {'a', 'b', 'c' });
 
     private DownloadImpl download;
@@ -57,7 +56,7 @@ class DownloadImplTest {
     @Test
     void testGetName() {
         assertThat(download.getFilename())
-            .as("Download filename is %s", FILENAME)
+            .as("check downlkoad filename contains")
             .contains(FILENAME);
     }
 
@@ -65,7 +64,7 @@ class DownloadImplTest {
     void testGetInputStream() throws Exception {
         try (var is = download.getInputStream()) {
             assertThat(is)
-                .as("Download byte array matches")
+                .as("check %s's input stream", download.getFilename().orElse("!NO_FILENAME!"))
                 .isEqualTo(BODY);
         }
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.internal.download;
+package uk.gov.gchq.palisade.client.test.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -24,6 +24,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.internal.dft.DefaultQueryResponse.EmittedResource;
+import uk.gov.gchq.palisade.client.internal.download.Downloader;
+import uk.gov.gchq.palisade.client.internal.download.DownloaderException;
 
 import javax.inject.Inject;
 
@@ -79,7 +81,7 @@ class DownloaderTest {
         var file = new File(Thread.currentThread().getContextClassLoader().getResource(FILE_PATH_0).toURI());
 
         assertThat(download.getFilename())
-            .as("Download filename is %s", FILE_NAME_0)
+            .as("check download filename")
             .isEqualTo(Optional.of(FILE_NAME_0));
 
         // now load both the original file from the classpath (in resources folder) and
@@ -89,7 +91,7 @@ class DownloaderTest {
              var expected = new FileInputStream(file);
         ) {
             assertThat(actual)
-                .as("Downloaded input stream same as file input stream")
+                .as("check downloaded input stream")
                 .hasSameContentAs(expected);
         }
 
@@ -109,7 +111,7 @@ class DownloaderTest {
         var expectedStatus = 404;
 
         assertThatExceptionOfType(expectedClass)
-            .as("%s is thrown with status %s when resource is not found", expectedClass, expectedStatus)
+            .as("check correct exception when resource is not found")
             .isThrownBy(() -> downloader.fetch(resource))
             .withMessage("Resource \"" + filename + "\" not found")
             .matches(ex -> ex.getStatusCode() == expectedStatus, "statuscode " + expectedStatus);

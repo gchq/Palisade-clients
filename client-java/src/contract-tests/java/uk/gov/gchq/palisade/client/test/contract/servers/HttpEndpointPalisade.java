@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.testing;
+package uk.gov.gchq.palisade.client.test.contract.servers;
 
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -27,6 +27,7 @@ import org.slf4j.MDC;
 
 import uk.gov.gchq.palisade.client.internal.request.PalisadeRequest;
 import uk.gov.gchq.palisade.client.internal.request.PalisadeResponse;
+import uk.gov.gchq.palisade.client.testing.ClientTestData;
 
 /**
  * A controller containing our test endpoints

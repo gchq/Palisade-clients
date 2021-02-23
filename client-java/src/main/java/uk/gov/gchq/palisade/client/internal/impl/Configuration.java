@@ -155,7 +155,7 @@ public final class Configuration {
         } catch (ConfigurationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ConfigurationException("An unknown error occurred creating the configuratioin", e);
+            throw new ConfigurationException("An unknown error occurred creating the configuration", e);
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -313,7 +313,7 @@ public final class Configuration {
                 .ifPresent(v -> properties.put(KEY_SERVICE_USER_ID, v));
 
             if (!properties.containsKey(KEY_SERVICE_USER_ID)) {
-                throw new ConfigurationException("User has not been set eith via property or url query string");
+                throw new ConfigurationException("User has not been set either via a property or url query string");
             }
 
             properties.put(KEY_SERVICE_PS_URI, createPalisadeUrl(baseUri, properties));

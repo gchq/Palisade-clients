@@ -56,19 +56,19 @@ class UtilTest {
     void testCreateUriFromBasePathAndEndpoint() {
 
         assertThat(Util.createUri("http://me", "endpoint").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint");
 
         assertThat(Util.createUri("http://me/", "endpoint").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint");
 
         assertThat(Util.createUri("http://me", "endpoint/").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint");
 
         assertThat(Util.createUri("http://me", "/endpoint/").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint");
     }
 
@@ -76,19 +76,19 @@ class UtilTest {
     void testCreateUriFromBasePathAndEndpoints() {
 
         assertThat(Util.createUri("http://me", "endpoint1", "endpoint2").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
 
         assertThat(Util.createUri("http://me/", "endpoint1", "/endpoint2").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
 
         assertThat(Util.createUri("http://me", "endpoint1/", "endpoint2/").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
 
         assertThat(Util.createUri("http://me", "/endpoint1/", "/endpoint2/").toString())
-            .as("URI created successfully")
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
 
     }
@@ -106,18 +106,17 @@ class UtilTest {
         final var stringType = String.class;
 
         assertThat(getProperty(map, userKey, stringType))
-            .as("Property value [%s] of type [%s] found", val, stringType)
+            .as("check property \"%s\" (%s)", userKey, stringType)
             .isEqualTo(val);
 
         var nsee = NoSuchElementException.class;
         assertThatExceptionOfType(nsee)
-            .as("getProperty() throws [%s] when key [%s] is not found", nsee, missingKey)
+            .as("check exception for missing key \"%s\"", missingKey)
             .isThrownBy(() -> getProperty(map, missingKey, stringType));
 
         var iae = IllegalArgumentException.class;
         assertThatExceptionOfType(iae)
-            .as("getProperty() throws [%s] when key [%s] is found but expected type is [%] not expected type [%s]", iae,
-                userKey, stringType, dateType)
+            .as("check exception for invalid type \"%\"", dateType)
             .isThrownBy(() -> getProperty(map, userKey, dateType));
 
     }
@@ -130,11 +129,11 @@ class UtilTest {
         var map = Util.extractQueryParams(uriWithQuery);
 
         assertThat(map)
-            .as("contains entries from query portion of uri %s", uriWithQuery)
+            .as("check query parameters from uri %s", uriWithQuery)
             .containsExactlyInAnyOrderEntriesOf(Map.of("a", "one", "b", "two", "c", "three"));
 
         assertThat(Util.extractQueryParams(uriWithoutQuery))
-            .as("contains nothing from uri %s", uriWithoutQuery)
+            .as("check no query parameters from uri %s", uriWithoutQuery)
             .isEmpty();
 
     }
@@ -152,7 +151,7 @@ class UtilTest {
 
         assertThatExceptionOfType(RuntimeException.class)
             .as("when the object mapper encounters an error")
-            .isThrownBy(() -> Util.toJson(mockedMapper, "alice", cause -> new RuntimeException(cause)))
+            .isThrownBy(() -> Util.toJson(mockedMapper, "alice", RuntimeException::new))
             .withCauseExactlyInstanceOf(IllegalArgumentException.class);
 
     }
@@ -163,7 +162,7 @@ class UtilTest {
 
         var mapper = new ObjectMapper();
         var object = Map.of("k", "v");
-        var instance = Util.toInstance(mapper, "{\"k\":\"v\"}", Map.class, cause -> new RuntimeException(cause));
+        var instance = Util.toInstance(mapper, "{\"k\":\"v\"}", Map.class, RuntimeException::new);
 
         assertThat(instance)
             .as("instance deserialised from JSON string is equal to original object")
@@ -171,7 +170,7 @@ class UtilTest {
 
         assertThatExceptionOfType(RuntimeException.class)
             .as("an exception is thrown due to invalid JSON")
-            .isThrownBy(() -> Util.toInstance(mapper, "\"k\":\"v\"}", Map.class, cause -> new RuntimeException(cause)))
+            .isThrownBy(() -> Util.toInstance(mapper, "\"k\":\"v\"}", Map.class, RuntimeException::new))
             .withCauseExactlyInstanceOf(MismatchedInputException.class);
     }
 }
