@@ -56,7 +56,7 @@ class DownloadImplTest {
     @Test
     void testGetName() {
         assertThat(download.getFilename())
-            .as("check downlkoad filename contains")
+            .as("check downloaded filename")
             .contains(FILENAME);
     }
 

@@ -81,7 +81,7 @@ class DownloaderTest {
         var file = new File(Thread.currentThread().getContextClassLoader().getResource(FILE_PATH_0).toURI());
 
         assertThat(download.getFilename())
-            .as("check download filename")
+            .as("check downloaded filename")
             .isEqualTo(Optional.of(FILE_NAME_0));
 
         // now load both the original file from the classpath (in resources folder) and

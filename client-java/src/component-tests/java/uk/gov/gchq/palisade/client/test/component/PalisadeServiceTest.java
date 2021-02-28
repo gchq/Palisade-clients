@@ -60,14 +60,10 @@ class PalisadeServiceTest {
         var palisadeResponse = service.submit(palisadeRequest);
 
         assertThat(palisadeResponse)
-            .as("check valid PalisadeResponse")
-            .isNotNull();
-
-        var expectedToken = TOKEN;
-
-        assertThat(palisadeResponse.getToken())
-            .as("check response token")
-            .isEqualTo(expectedToken);
+            .as("check valid response")
+            .isNotNull()
+            .extracting("token")
+            .isEqualTo(TOKEN);
 
     }
 
