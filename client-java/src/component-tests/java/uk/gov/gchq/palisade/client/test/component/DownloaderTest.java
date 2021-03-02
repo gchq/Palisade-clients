@@ -29,15 +29,11 @@ import uk.gov.gchq.palisade.client.internal.download.DownloaderException;
 
 import javax.inject.Inject;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.net.http.HttpClient;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_NAME_0;
-import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_PATH_0;
 import static uk.gov.gchq.palisade.client.testing.ClientTestData.TOKEN;
 
 @MicronautTest
@@ -73,22 +69,17 @@ class DownloaderTest {
     void testSuccessfulDownload() throws Exception {
 
         var resource = EmittedResource.createResource(b -> b
-            .leafResourceId(FILE_PATH_0)
+            .leafResourceId(FILE_NAME_0.asString())
             .token(TOKEN)
             .url(url));
 
         var download = downloader.fetch(resource);
-        var file = new File(Thread.currentThread().getContextClassLoader().getResource(FILE_PATH_0).toURI());
-
-        assertThat(download.getFilename())
-            .as("check downloaded filename")
-            .isEqualTo(Optional.of(FILE_NAME_0));
 
         // now load both the original file from the classpath (in resources folder) and
         // the on in /tmp. Both these files are compared byte by byte for equality.
 
         try (var actual = download.getInputStream();
-             var expected = new FileInputStream(file);
+            var expected = FILE_NAME_0.createStream();
         ) {
             assertThat(actual)
                 .as("check downloaded input stream")

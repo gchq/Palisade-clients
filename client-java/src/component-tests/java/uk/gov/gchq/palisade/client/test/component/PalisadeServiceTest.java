@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.test.component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.ClientException;
@@ -47,6 +48,35 @@ class PalisadeServiceTest {
 
         var port = embeddedServer.getPort();
         var uri = new URI("http://localhost:" + port + "/cluster/palisade/api/registerDataRequest");
+        var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
+            .resourceId("resource_id")
+            .userId("user_id")
+            .putContext("key", "value"));
+
+        var service = PalisadeService.createPalisadeService(b -> b
+            .httpClient(HttpClient.newHttpClient())
+            .objectMapper(objectMapper)
+            .uri(uri));
+
+        var palisadeResponse = service.submit(palisadeRequest);
+
+        assertThat(palisadeResponse)
+            .as("check valid response")
+            .isNotNull()
+            .extracting("token")
+            .isEqualTo(TOKEN);
+
+    }
+
+    @Test
+    @Disabled
+    void testSubmitMinikube() throws Exception {
+
+        // http://172.17.0.3:30764/palisade/api/registerDataRequest
+
+        var port = 31622;
+        // var port = embeddedServer.getPort();
+        var uri = new URI("http://172.17.0.3:" + port + "/palisade/api/registerDataRequest");
         var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
             .resourceId("resource_id")
             .userId("user_id")

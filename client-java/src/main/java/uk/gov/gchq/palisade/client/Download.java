@@ -16,7 +16,6 @@
 package uk.gov.gchq.palisade.client;
 
 import java.io.InputStream;
-import java.util.Optional;
 
 /**
  * Represents a download that has been fetched. No data is transferred until
@@ -33,14 +32,5 @@ public interface Download {
      * @return the input stream of bytes
      */
     InputStream getInputStream();
-
-    /**
-     * Returns the name of the resource
-     *
-     * @return the name of the resource
-     */
-    default Optional<String> getFilename() {
-        return Optional.empty();
-    }
 
 }

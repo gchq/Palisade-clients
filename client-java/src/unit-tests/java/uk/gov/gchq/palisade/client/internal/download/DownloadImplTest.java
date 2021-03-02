@@ -54,17 +54,10 @@ class DownloadImplTest {
     }
 
     @Test
-    void testGetName() {
-        assertThat(download.getFilename())
-            .as("check downloaded filename")
-            .contains(FILENAME);
-    }
-
-    @Test
     void testGetInputStream() throws Exception {
         try (var is = download.getInputStream()) {
             assertThat(is)
-                .as("check %s's input stream", download.getFilename().orElse("!NO_FILENAME!"))
+                .as("check input stream")
                 .isEqualTo(BODY);
         }
     }

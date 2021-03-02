@@ -28,12 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import uk.gov.gchq.palisade.client.internal.download.DataRequest;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
+import uk.gov.gchq.palisade.client.testing.ClientTestData.Name;
 
 /**
  * A controller containing our test endpoints
@@ -62,40 +57,31 @@ public class HttpEndpointData {
 
             LOG.debug("RCVD: body: {}", request);
 
-            MediaType octetStream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+            var octetStream = MediaType.APPLICATION_OCTET_STREAM_TYPE;
 
-            String filename = request.getLeafResourceId(); // using this as a file name to load a file for streaming
-
-            LOG.debug("LOAD: Loading: {}", filename);
-
-            FileInputStream is;
-
+            Name nameTuple;
             try {
-                var url = Thread.currentThread().getContextClassLoader().getResource(filename);
-                if (url == null) {
-                    return HttpResponse.notFound();
-                }
-                var uri = url.toURI();
-                var file = new File(uri);
-                is = new FileInputStream(file);
-            } catch (URISyntaxException | FileNotFoundException e1) {
+                var leafResourceId = request.getLeafResourceId();
+                nameTuple = Name.from(leafResourceId);
+            } catch (IllegalArgumentException e) {
                 return HttpResponse.notFound();
             }
 
-            LOG.debug("LOAD: Loaded OK: {}", filename);
+            var seed = nameTuple.getSeed();
+            var bytes = nameTuple.getBytes();
+            var name = nameTuple.getName();
 
-            StreamedFile sf = new StreamedFile(
-                is,
-                octetStream,
-                System.currentTimeMillis(),
-                -1)
-                    .attach(Path.of(filename).getFileName().toString());
+            LOG.debug("LOAD: Created stream of {} bytes for {} from seed value {}", bytes, name, seed);
+
+            var is = nameTuple.createStream();
+            var sf = new StreamedFile(is, octetStream, System.currentTimeMillis(), bytes);
 
             LOG.debug("RETN: Stream");
 
             return HttpResponse
                 .ok(sf)
                 .contentType(octetStream);
+
         } finally {
             MDC.remove("server");
         }

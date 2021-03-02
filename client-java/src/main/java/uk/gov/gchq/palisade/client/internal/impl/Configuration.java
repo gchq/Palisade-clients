@@ -50,7 +50,7 @@ public final class Configuration {
 
     /*
      * The user credentials supplied as part of the authority or within the query
-     * string. Not that the property supplied in the query string takes precedence
+     * string. Note that the property supplied in the query string takes precedence
      * e.g. - "pal://eve@localhost/cluster" - "pal://localhost/cluster?user=alice"
      */
     private static final String KEY_SERVICE_USER_ID = "service.userid";

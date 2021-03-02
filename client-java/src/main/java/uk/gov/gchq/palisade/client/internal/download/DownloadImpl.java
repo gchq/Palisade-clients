@@ -19,8 +19,6 @@ import uk.gov.gchq.palisade.client.Download;
 
 import java.io.InputStream;
 import java.net.http.HttpResponse;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 /**
  * A download is returned after a request is received from Data Service. This
@@ -30,9 +28,6 @@ import java.util.regex.Pattern;
  * @since 0.5.0
  */
 public class DownloadImpl implements Download {
-
-    private static final String HTTP_HEADER_CONTENT_DISPOSITION = "Content-Disposition";
-    private static final Pattern FILENAME_PATTERN = Pattern.compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
 
     private final HttpResponse<InputStream> response;
 
@@ -44,19 +39,6 @@ public class DownloadImpl implements Download {
      */
     public DownloadImpl(final HttpResponse<InputStream> response) {
         this.response = response;
-    }
-
-    @SuppressWarnings("java:S1774")
-    @Override
-    public Optional<String> getFilename() {
-        return response
-            .headers()
-            .firstValue(HTTP_HEADER_CONTENT_DISPOSITION)
-            .map((final String dis) -> {
-                var matcher = FILENAME_PATTERN.matcher(dis);
-                return matcher.find() ? matcher.group(1) : null;
-            })
-            .or(Download.super::getFilename);
     }
 
     @Override

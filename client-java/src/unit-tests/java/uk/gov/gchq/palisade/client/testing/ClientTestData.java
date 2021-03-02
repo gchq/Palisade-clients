@@ -15,49 +15,74 @@
  */
 package uk.gov.gchq.palisade.client.testing;
 
+import org.immutables.value.Value;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Random;
+
+import static uk.gov.gchq.palisade.client.util.Checks.checkArgument;
+import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
 @SuppressWarnings("javadoc")
 public abstract class ClientTestData {
 
-    public static final String FILE_PREFIX = "test-data-";
-    public static final String FILE_SUFFIX = ".txt";
-    public static final String BASE_PATH = "resources/";
+    @Value.Immutable
+    @Value.Style(allParameters = true, typeImmutable = "*Tuple", defaults = @Value.Immutable(builder = false))
+    public interface Name {
 
-    public static final String FILE_NAME_0 = FILE_PREFIX + "0" + FILE_SUFFIX;
-    public static final String FILE_NAME_1 = FILE_PREFIX + "1" + FILE_SUFFIX;
-    public static final String FILE_NAME_2 = FILE_PREFIX + "2" + FILE_SUFFIX;
-    public static final String FILE_NAME_3 = FILE_PREFIX + "3" + FILE_SUFFIX;
-    public static final String FILE_NAME_4 = FILE_PREFIX + "4" + FILE_SUFFIX;
-    public static final String FILE_NAME_5 = FILE_PREFIX + "5" + FILE_SUFFIX;
-    public static final String FILE_NAME_6 = FILE_PREFIX + "6" + FILE_SUFFIX;
-    public static final String FILE_NAME_7 = FILE_PREFIX + "7" + FILE_SUFFIX;
-    public static final String FILE_NAME_8 = FILE_PREFIX + "8" + FILE_SUFFIX;
-    public static final String FILE_NAME_9 = FILE_PREFIX + "9" + FILE_SUFFIX;
+        String getName();
 
-    public static final String FILE_PATH_0 = BASE_PATH + FILE_NAME_0;
-    public static final String FILE_PATH_1 = BASE_PATH + FILE_NAME_1;
-    public static final String FILE_PATH_2 = BASE_PATH + FILE_NAME_2;
-    public static final String FILE_PATH_3 = BASE_PATH + FILE_NAME_3;
-    public static final String FILE_PATH_4 = BASE_PATH + FILE_NAME_4;
-    public static final String FILE_PATH_5 = BASE_PATH + FILE_NAME_5;
-    public static final String FILE_PATH_6 = BASE_PATH + FILE_NAME_6;
-    public static final String FILE_PATH_7 = BASE_PATH + FILE_NAME_7;
-    public static final String FILE_PATH_8 = BASE_PATH + FILE_NAME_8;
-    public static final String FILE_PATH_9 = BASE_PATH + FILE_NAME_9;
+        long getSeed();
 
-    public static final List<String> FILE_NAMES = List.of(
-        FILE_PATH_0,
-        FILE_PATH_1,
-        FILE_PATH_2,
-        FILE_PATH_3,
-        FILE_PATH_4,
-        FILE_PATH_5,
-        FILE_PATH_6,
-        FILE_PATH_7,
-        FILE_PATH_8,
-        FILE_PATH_9);
+        int getBytes();
 
+        default String asString() {
+            return getName() + "_" + getSeed() + "_" + getBytes();
+        }
+
+        static Name from(final String nameString) {
+            checkNotNull(nameString, "name string cannot be null");
+            var split = nameString.split("_");
+            checkArgument(split.length == 3, "Should conform to <name>_<seed>_<bytes>. e.g. alice-eve_0_1024");
+            var name = split[0];
+            long seed = -1;
+            try {
+                seed = Long.valueOf(split[1]);
+            } catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("Expected seed to be a long value, but was: " + split[1]);
+            }
+            int bytes = -1;
+            try {
+                bytes = Integer.valueOf(split[2]);
+                checkArgument(seed >= 0, "#bytes must be >0");
+            } catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("Expected bytes to be an int value > 0, but was: " + split[2]);
+            }
+            return NameTuple.of(name, seed, bytes);
+        }
+
+        /**
+         * Returns an input stream containing bytes generated from a {@code Random}
+         * initialised with the provided seed.
+         *
+         * @param name The resource name
+         * @return an input stream containing {@code bytes} generated from a
+         *         {@code Random} initialised with the provided {@code seed}
+         */
+        default InputStream createStream() {
+            var bytea = new byte[getBytes()];
+            new Random(getSeed()).nextBytes(bytea);
+            return new ByteArrayInputStream(bytea);
+        }
+
+    }
+
+    public static final String FILE_PREFIX = "test-data_";
+    public static final Name FILE_NAME_0 = NameTuple.of("test-data", 0, 1024);
+    public static final Name FILE_NAME_1 = NameTuple.of("test-data", 1, 1024);
+    public static final List<String> FILE_NAMES = List.of(FILE_NAME_0.asString(), FILE_NAME_1.asString());
     public static final String TOKEN = "abcd-1";
 
     private ClientTestData() {

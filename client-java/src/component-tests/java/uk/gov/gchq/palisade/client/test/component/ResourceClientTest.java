@@ -27,6 +27,7 @@ import uk.gov.gchq.palisade.client.internal.resource.ErrorMessage;
 import uk.gov.gchq.palisade.client.internal.resource.ResourceMessage;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketClient;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage;
+import uk.gov.gchq.palisade.client.testing.ClientTestData;
 
 import javax.inject.Inject;
 
@@ -36,8 +37,8 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_PATH_0;
-import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_PATH_1;
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_NAME_0;
+import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_NAME_1;
 import static uk.gov.gchq.palisade.client.testing.ClientTestData.TOKEN;
 
 /**
@@ -84,30 +85,30 @@ public class ResourceClientTest {
             messages.add(message);
         } while (!(message instanceof CompleteMessage));
 
-        assertThat(messages).hasSize(12);
+        assertThat(messages).hasSize(ClientTestData.FILE_NAMES.size() + 2); // (n*resources) + (1*error) + (1*complete)
 
         var event0 = getIfInstanceOf(messages.get(0), ResourceMessage.class);
         var event1 = getIfInstanceOf(messages.get(1), ResourceMessage.class);
-        var event10 = getIfInstanceOf(messages.get(10), ErrorMessage.class);
-        var event11 = getIfInstanceOf(messages.get(11), CompleteMessage.class);
+        var event2 = getIfInstanceOf(messages.get(2), ErrorMessage.class);
+        var event3 = getIfInstanceOf(messages.get(3), CompleteMessage.class);
 
         assertThat(event0)
             .as("check resource event0")
             .extracting("id", "token", "url")
-            .containsExactly(FILE_PATH_0, TOKEN, "http://localhost:" + embeddedServer.getPort());
+            .containsExactly(FILE_NAME_0.asString(), TOKEN, "http://localhost:" + embeddedServer.getPort());
 
         assertThat(event1)
             .as("check resource event1")
             .extracting("id", "token", "url")
-            .containsExactly(FILE_PATH_1, TOKEN, "http://localhost:" + embeddedServer.getPort());
+            .containsExactly(FILE_NAME_1.asString(), TOKEN, "http://localhost:" + embeddedServer.getPort());
 
-        assertThat(event10)
-            .as("check event10 (error)")
+        assertThat(event2)
+            .as("check event2 (error)")
             .extracting("text")
             .isEqualTo("test error");
 
-        assertThat(event11)
-            .as("check event101 (complete)")
+        assertThat(event3)
+            .as("check event3 (complete)")
             .extracting("token")
             .isEqualTo(TOKEN);
 

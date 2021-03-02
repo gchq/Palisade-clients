@@ -83,7 +83,7 @@ public class DefaultClient implements Client {
                 ClientManager.registerClient(INSTANCE);
             }
         } catch (ClientException e) {
-            LOGGER.error("Failed to register DefaultDriver", e);
+            LOGGER.error("Failed to register " + DefaultClient.class.getName(), e);
         }
         return INSTANCE;
     }
