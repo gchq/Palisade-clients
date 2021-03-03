@@ -28,7 +28,6 @@ import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
 import java.net.http.HttpClient;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
@@ -60,7 +59,7 @@ public class DefaultSession implements Session {
      */
     public DefaultSession(final Configuration configuration) {
         this.configuration = configuration;
-        this.httpClient = HttpClient.newBuilder().executor(Executors.newFixedThreadPool(4)).build(); // new client with
+        this.httpClient = HttpClient.newBuilder().build(); // new client with
                                                                                                      // all the defaults
         this.objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())

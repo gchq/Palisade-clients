@@ -120,36 +120,7 @@ public final class PalisadeService {
      * @return the response from Palisade
      */
     public PalisadeResponse submit(final PalisadeRequest palisadeRequest) {
-
-        checkNotNull(palisadeRequest);
-
-        var uri = getUri();
-        var jsonBody = toJson(palisadeRequest);
-
-        LOGGER.debug("SEND: To: [{}], Body: [{}]", uri, palisadeRequest);
-
-        var httpRequest = HttpRequest.newBuilder(uri)
-            .setHeader("Content-Type", "application/json")
-            .setHeader("Accept-Encoding", "gzip, deflate, br")
-            .POST(BodyPublishers.ofString(jsonBody))
-//            .timeout(Duration.of(5, ChronoUnit.SECONDS))
-            .build();
-
-        try {
-
-            var httpClient = getHttpClient();
-            var response = httpClient.send(httpRequest, BodyHandlers.ofString());
-            checkStatusOK(response);
-            var body = response.body();
-            var palisadeResponse = toResponse(body);
-
-            LOGGER.debug("RCVD: {}", palisadeResponse);
-            return palisadeResponse;
-
-        } catch (Exception e) {
-            throw new ClientException("Failed to call Palisade Service", e);
-        }
-
+        return submitAsync(palisadeRequest).join();
     }
 
     /**

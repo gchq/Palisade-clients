@@ -28,6 +28,15 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 @SuppressWarnings("javadoc")
 public abstract class ClientTestData {
 
+    /**
+     * This class represents a "name" of a resource. Of course it's not really a
+     * name, but a scheme on how to generate a resource for testing. The name of the
+     * resource follows this format:
+     * <pre>{@code <resource_name>_<seed>_<numberOfBytes>}</pre>. To create a name
+     * from a string, simply use {@code #from(String)}. Once the object is created
+     * an InputStream can then be retrieved which will provide the correct random
+     * content
+     */
     @Value.Immutable
     @Value.Style(allParameters = true, typeImmutable = "*Tuple", defaults = @Value.Immutable(builder = false))
     public interface Name {
@@ -67,7 +76,6 @@ public abstract class ClientTestData {
          * Returns an input stream containing bytes generated from a {@code Random}
          * initialised with the provided seed.
          *
-         * @param name The resource name
          * @return an input stream containing {@code bytes} generated from a
          *         {@code Random} initialised with the provided {@code seed}
          */
