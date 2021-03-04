@@ -102,15 +102,15 @@ class ConfigurationTest {
     @Test
     void testToString() {
 
-        var expected =
-            "configuration: {" + "\n" +
+        var expected = "configuration: {" + "\n" +
             "  service.data.path=read/chunked" + "\n" +
             "  service.filteredResource.path=resource/%t" + "\n" +
             "  service.filteredResource.port=8082" + "\n" +
             "  service.filteredResource.uri=ws://eve@localhost:8082/cluster/resource/%25t" + "\n" +
-                "  service.palisade.path=palisade/api/registerDataRequest" + "\n" +
+            "  service.http2.enabled=false" + "\n" +
+            "  service.palisade.path=palisade/api/registerDataRequest" + "\n" +
             "  service.palisade.port=8081" + "\n" +
-                "  service.palisade.uri=http://eve@localhost:8081/cluster/palisade/api/registerDataRequest" + "\n" +
+            "  service.palisade.uri=http://eve@localhost:8081/cluster/palisade/api/registerDataRequest" + "\n" +
             "  service.url=pal://eve@localhost:8081/cluster?userid=alice&wsport=8082" + "\n" +
             "  service.userid=alice" + "\n" +
             "}";

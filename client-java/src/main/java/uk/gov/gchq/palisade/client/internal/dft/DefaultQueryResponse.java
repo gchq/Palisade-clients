@@ -36,6 +36,7 @@ import uk.gov.gchq.palisade.client.internal.resource.WebSocketClient;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage;
 
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.util.Optional;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +81,11 @@ public class DefaultQueryResponse implements QueryResponse {
              * from the session, the websocket listener hangs.
              */
 
-            var httpClient = HttpClient.newHttpClient();
+            var httpClientBuilder = HttpClient.newBuilder();
+            if (!session.getConfiguration().isHttp2Enabled()) {
+                httpClientBuilder.version(Version.HTTP_1_1);
+            }
+            var httpClient = httpClientBuilder.build();
 
             var configuration = session.getConfiguration();
 

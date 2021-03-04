@@ -15,10 +15,17 @@
  */
 package uk.gov.gchq.palisade.client;
 
-import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
+import uk.gov.gchq.palisade.client.util.Checks;
+
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
 
 /**
  * The basic service for managing Palisade clients
@@ -31,14 +38,31 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @since 0.5.0
  */
+@SuppressWarnings("java:S1774")
 public final class ClientManager {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientManager.class);
+
+    /**
+     * The registered clients. A CopyOnWriteArrayList is used here as it implements
+     * the semantics that we are after. We need to guarantee writes, but do
+     * not need to lock on reads. As the clients are usually registered at startup
+     * and read many times this fits the use case and avoids having to synchronise
+     * on reads.
+     */
     private static final CopyOnWriteArrayList<Client> REGISTERED_CLIENTS = new CopyOnWriteArrayList<>();
+    private static final String PALISADE_CLIENTS_PROPERTY = "palisade.clients";
+    private static final Object LOCK_FOR_INIT_CLIENTS = new Object();
+    private static volatile boolean clientsInitialized;
 
     static {
-        // adds the default client which responds to "pal:dft:" URLs
-        // note that this client will also respond to "pal:" to keep things simple.
-        registerClient(new DefaultClient());
+        // add the default client to the palisade.clients system property, appending it
+        // if it is already set
+        Optional
+            .ofNullable(System.getProperty(PALISADE_CLIENTS_PROPERTY, ""))
+            .map(prop -> prop.isEmpty() ? "" : (prop + ":"))
+            .map(prop -> prop + DefaultClient.class.getName())
+            .ifPresent(prop -> System.setProperty(PALISADE_CLIENTS_PROPERTY, prop));
     }
 
     private ClientManager() { // prevent instantiation
@@ -52,6 +76,8 @@ public final class ClientManager {
      * @return a client for the provided URL
      */
     public static Client getClient(final String url) {
+        LOGGER.debug("ClientManager.getClient(\"{}\"", url);
+        ensureClientsInitialized();
         return REGISTERED_CLIENTS.stream()
             .filter(c -> c.acceptsURL(url))
             .findFirst()
@@ -84,14 +110,22 @@ public final class ClientManager {
      */
     @SuppressWarnings("java:S1488")
     public static Session openSession(final String url, final Map<String, String> info) {
+
+        Checks.checkNotNull(url, "The url cannot be null");
+
+        LOGGER.debug("ClientManager.openSession(\"{}\"", url);
+
+        ensureClientsInitialized();
+
         var client = getClient(url);
         var session = client.connect(url, info);
         return session;
+
     }
 
     /**
      * Registers the given client with the {@code ClientManager}. A newly-loaded
-     * driver class should call the method {@code registerClient} to make itself
+     * client class should call the method {@code registerClient} to make itself
      * known to the {@code ClientManager}. If the client is currently registered, no
      * action is taken.
      *
@@ -101,12 +135,57 @@ public final class ClientManager {
      * @since 0.5.0
      */
     public static void registerClient(final Client client) {
-        /* Register the client if it has not already been added to our list */
+        // Register the client if it has not already been added to our list */
         if (client != null) {
             REGISTERED_CLIENTS.addIfAbsent(client);
+            LOGGER.debug("ClientManager.registerClient: client registered: {}", client.getClass().getName());
         } else {
             throw new IllegalArgumentException("Cannot register a null client");
         }
     }
 
+    /**
+     * Returns a Stream with all of the currently loaded Palisade clients
+     *
+     * @return the stream of Palisade clients
+     */
+    public static Stream<Client> getClients() {
+        ensureClientsInitialized();
+        return REGISTERED_CLIENTS.stream();
+    }
+
+    /*
+     * Load the initial Palisade clients by checking the System property
+     * palisade.clients
+     */
+    @SuppressWarnings({"java:S2221", "java:S2658" })
+    private static void ensureClientsInitialized() {
+        if (clientsInitialized) {
+            return;
+        }
+        synchronized (LOCK_FOR_INIT_CLIENTS) {
+            if (!clientsInitialized) { // again, in case something squeezed in.
+                Optional
+                    .ofNullable(System.getProperty(PALISADE_CLIENTS_PROPERTY))
+                    .filter(clients -> !"".equals(clients))
+                    .ifPresent(clients -> Arrays
+                        .stream(clients.split(":"))
+                        .filter(client -> !"".equals(client))
+                        .forEach(ClientManager::loadClient));
+                clientsInitialized = true;
+                LOGGER.debug("Palisade ClientManager initialized");
+            }
+        }
+
+    }
+
+    @SuppressWarnings({"java:S2221", "java:S2658" })
+    private static void loadClient(final String client) {
+        try {
+            LOGGER.debug("ClientManager.initialize: loading {}", client);
+            Class.forName(client, true, ClassLoader.getSystemClassLoader());
+        } catch (Exception ex) {
+            LOGGER.debug("ClientManager.initialize: load failed", ex);
+        }
+    }
 }

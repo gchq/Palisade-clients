@@ -27,6 +27,7 @@ import uk.gov.gchq.palisade.client.internal.download.Downloader;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.util.Map;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
@@ -58,9 +59,15 @@ public class DefaultSession implements Session {
      * @param configuration The client configuration
      */
     public DefaultSession(final Configuration configuration) {
+
         this.configuration = configuration;
-        this.httpClient = HttpClient.newBuilder().build(); // new client with
-                                                                                                     // all the defaults
+
+        var httpClientBuilder = HttpClient.newBuilder();
+        if (!configuration.isHttp2Enabled()) {
+            httpClientBuilder.version(Version.HTTP_1_1);
+        }
+        this.httpClient = httpClientBuilder.build();
+
         this.objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
             // comment out the 3 include directives below to tell jackson to output all

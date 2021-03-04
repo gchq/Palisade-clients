@@ -35,7 +35,7 @@ public abstract class ClientTestData {
      * <pre>{@code <resource_name>_<seed>_<numberOfBytes>}</pre>. To create a name
      * from a string, simply use {@code #from(String)}. Once the object is created
      * an InputStream can then be retrieved which will provide the correct random
-     * content
+     * content.
      */
     @Value.Immutable
     @Value.Style(allParameters = true, typeImmutable = "*Tuple", defaults = @Value.Immutable(builder = false))

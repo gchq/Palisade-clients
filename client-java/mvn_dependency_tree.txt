@@ -7,28 +7,28 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 +- io.reactivex.rxjava3:rxjava:jar:3.0.8:compile
 |  \- org.reactivestreams:reactive-streams:jar:1.0.3:compile
 +- org.immutables:value:jar:2.8.2:provided
-+- io.micronaut.test:micronaut-test-junit5:jar:2.1.1:test
-|  \- io.micronaut.test:micronaut-test-core:jar:2.1.1:test
-+- io.micronaut:micronaut-runtime:jar:2.1.1:test
-|  +- io.micronaut:micronaut-http:jar:2.1.1:test
-|  +- io.micronaut:micronaut-aop:jar:2.1.1:provided
++- io.micronaut.test:micronaut-test-junit5:jar:2.3.2:test
+|  \- io.micronaut.test:micronaut-test-core:jar:2.3.2:test
++- io.micronaut:micronaut-runtime:jar:2.3.4:test
+|  +- io.micronaut:micronaut-http:jar:2.3.4:test
+|  +- io.micronaut:micronaut-aop:jar:2.3.4:provided
 |  +- javax.validation:validation-api:jar:2.0.1.Final:test
 |  +- io.reactivex.rxjava2:rxjava:jar:2.2.13:test
 |  \- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.10.0:test
-+- io.micronaut:micronaut-inject:jar:2.1.1:provided
++- io.micronaut:micronaut-inject:jar:2.3.4:provided
 |  +- javax.annotation:javax.annotation-api:jar:1.3.2:provided
 |  +- javax.inject:javax.inject:jar:1:provided
-|  +- io.micronaut:micronaut-core:jar:2.1.1:provided
+|  +- io.micronaut:micronaut-core:jar:2.3.4:provided
 |  |  \- com.github.spotbugs:spotbugs-annotations:jar:4.0.3:provided
 |  |     \- com.google.code.findbugs:jsr305:jar:3.0.2:provided
 |  \- org.yaml:snakeyaml:jar:1.25:provided
-+- io.micronaut:micronaut-inject-java:jar:2.1.1:provided
-+- io.micronaut:micronaut-http-server-netty:jar:2.1.1:test
-|  +- io.micronaut:micronaut-http-server:jar:2.1.1:test
-|  |  +- io.micronaut:micronaut-websocket:jar:2.1.1:test
-|  |  \- io.micronaut:micronaut-router:jar:2.1.1:test
-|  +- io.micronaut:micronaut-http-netty:jar:2.1.1:test
-|  |  +- io.micronaut:micronaut-buffer-netty:jar:2.1.1:test
++- io.micronaut:micronaut-inject-java:jar:2.3.4:provided
++- io.micronaut:micronaut-http-server-netty:jar:2.3.4:test
+|  +- io.micronaut:micronaut-http-server:jar:2.3.4:test
+|  |  +- io.micronaut:micronaut-websocket:jar:2.3.4:test
+|  |  \- io.micronaut:micronaut-router:jar:2.3.4:test
+|  +- io.micronaut:micronaut-http-netty:jar:2.3.4:test
+|  |  +- io.micronaut:micronaut-buffer-netty:jar:2.3.4:test
 |  |  +- io.netty:netty-handler:jar:4.1.42.Final:test
 |  |  \- io.netty:netty-codec-http2:jar:4.1.42.Final:test
 |  \- io.netty:netty-codec-http:jar:4.1.42.Final:test

@@ -124,36 +124,23 @@ class FullTest {
 
 ### Client properties
 
-__Note:__ These  properties will override any query parameters or other values within the URL (e.g. port/user).
+Properties can be provided via 2 routes, the url and properties. The DefaultClient specifies that the attributes on the url (query) take precedence over those in the provided property map.
 
-| Property | Description |
-| --- | --- |
-| service.userid | The userId. Overrides the authority section of the url |
-| service.palisade.port | The Palisade Service port. If not set will equal any port provided within the service.url. Overrides the port in the url |
-| service.filteredResource.port | The port for the Filtered Resource (websocket) Service, if different from the Palisade Service. |
-| service.url | The main cluster URL .e.g. pal://user@localhost:12345/cluster?query.... |
+| Name | Property | Query Parameter | Required | Description |
+| --- | --- | --- | --- | --- |
+| User ID | service.userid | userid | YES | The user ID is is used as part of a query to the server |
+| Palisade Service Port | service.palisade.port | psport | NO | If provided will override any port provided on the Palisade URL provided to the session. |
+| Filtered Resource Service Port | service.filteredResource.port | wsport | NO | If provided will override any port provided on the Palisade URL provided to the session. |
 
-### URL Query Parameters
+Some properties can be overriden, but for testing.
 
-These parameters can be added to the URL in the normal way.
+__Note__: These properties are not available as a querystring parameter.
 
-__Note:__ These  parameters will be overridden by properties, if provided
-
-| Parameter | Description |
-| --- | --- |
-| psport | The port for the Palisade Service. |
-| wsport | The port for the Filtered Resource Service. Specify this if it is different from the Palisade Service. If not supplied it will be set to the value of `psport`, if available |
-
-Once the job is submitted, control is returned to the application without blocking. At this point the result only contains access to a CompletableFuture, which once complete returns the final state of the job.
-
-### Query Parameters
-
-Any number of properties can be passed when constructing the query. Below are those properties currently known to Palisade:
-
-| Property | Required | Description |
-| --- | --- | --- |
-| purpose | No | This property is provide by the user to describe the purpose of the request |
-
+| Name | Property | Default | Description |
+| --- | --- | --- | --- |
+| Palisade Service Path | service.palisade.path | palisade/api/registerDataRequest | the path which is appended to the Palisade service URL |
+| Filtered Resource Service Path | service.filteredResource.path | resource/%t | the path which is appended to the Filtered Resource Service URL |
+| Data Service Path | service.data.path | read/chunked | the path which is appended to the Data Service URL |
 
 ## Technologies Used
 
@@ -161,12 +148,14 @@ Any number of properties can be passed when constructing the query. Below are th
 
 * [Immutables](https://immutables.github.io/) - Java annotation processors to generate simple, safe and consistent value objects.
 * [Jackson]() - JSON for Java. Handles all the (de)serialisation of objects to/from the Palisade servers.
-* [JSON Flattener](https://github.com/wnameless/json-flattener) - A Java utility is used to FLATTEN nested JSON objects and even more to UNFLATTEN it back.
 
 ### Test Only
 
 * [Junit5](https://junit.org/junit5/) - Needs no introduction :)
 * [AssertJ](https://assertj.github.io/doc/) - Excellent testing library
 * [Logback](http://logback.qos.ch/) - Great logging library. Used for testing.
-* [Awaitility](https://github.com/awaitility/awaitility) - Good for asynchronous testing
 * [Micronaut HTTP Server](https://micronaut.io/) - Used for testing
+
+## Issues
+
+There is currently a problem with Palisade regarding HTTP/2. For this reason, the client is currently limited to HTTP/1.1 and will not request a protocol upgrade.

@@ -48,7 +48,8 @@
 
         <!-- Test dependency versions -->
 
-        <micronaut.version>2.1.1</micronaut.version>
+        <micronaut.version>2.3.4</micronaut.version>
+        <micronaut-test.version>2.3.2</micronaut-test.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.platform.version>1.7.0</junit.platform.version>
         <assertj.version>3.19.0</assertj.version>
@@ -145,7 +146,7 @@
         <dependency>
             <groupId>io.micronaut.test</groupId>
             <artifactId>micronaut-test-junit5</artifactId>
-            <version>${micronaut.version}</version>
+            <version>${micronaut-test.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

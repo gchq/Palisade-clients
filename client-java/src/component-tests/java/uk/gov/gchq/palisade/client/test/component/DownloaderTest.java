@@ -76,7 +76,7 @@ class DownloaderTest {
         var download = downloader.fetch(resource);
 
         // now load both the original file from the classpath (in resources folder) and
-        // the on in /tmp. Both these files are compared byte by byte for equality.
+        // the one in /tmp. Both these files are compared byte by byte for equality.
 
         try (var actual = download.getInputStream();
             var expected = FILE_NAME_0.createStream();

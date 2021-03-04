@@ -140,12 +140,14 @@ public final class PalisadeService {
 
         LOGGER.debug("SEND: To: [{}], Body: [{}]", uri, palisadeRequest);
 
+        var httpClient = getHttpClient();
+
         var httpRequest = HttpRequest.newBuilder(uri)
             .setHeader("Content-Type", "application/json")
             .POST(bodyPublisher)
             .build();
 
-        return getHttpClient()
+        return httpClient
             .sendAsync(httpRequest, BodyHandlers.ofString())
             .thenApply(PalisadeService::checkStatusOK)
             .thenApply(HttpResponse::body)

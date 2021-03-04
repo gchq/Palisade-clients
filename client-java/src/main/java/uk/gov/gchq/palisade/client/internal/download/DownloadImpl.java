@@ -35,7 +35,7 @@ public class DownloadImpl implements Download {
      * Create and returns a new {@code DownloadImpl} with the provided
      * {@code HttpResponse} returned from the data service.
      *
-     * @param response from the data service
+     * @param response from the Data Service
      */
     public DownloadImpl(final HttpResponse<InputStream> response) {
         this.response = response;

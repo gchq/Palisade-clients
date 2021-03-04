@@ -33,7 +33,21 @@ import static uk.gov.gchq.palisade.client.util.Util.substituteVariables;
 import static uk.gov.gchq.palisade.client.util.Util.trimSlashes;
 
 /**
- * A configuration object holds the job configuration
+ * This is the main configuration object for a session. Create a new
+ * configuration by call {@code Configuration#create(Map)}, passing in the
+ * required parameters.
+ * <p>
+ * The only required parameter is "service.url". This is the URL to the palisade
+ * cluster. Other values are set by parsing the URL, for example to create the
+ * Palisade and Filtered Resource URIs. The service.url is stored as just a
+ * string as it's never used to connect to a remote server.
+ * <p>
+ * Any port supplied as part of the service URL will be used for the palisade
+ * and Filtered Service URI's, but these can be overridden by specifying
+ * "service.palisade.port" and "service.filteredResource.port" respectively.
+ * Alternatively the ports can be specified on the query part of the URL by
+ * specifying the "psport" and "wsport" attributes. These attributes will
+ * override those passed in the property map. Query parameters take precedence.
  *
  * @since 0.5.0
  */
@@ -41,21 +55,24 @@ public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
-    /*
+    /**
      * The service URL simply represents the original URL supplied to the
-     * ClientManager. e.g. - "pal://eve@localhost:8090/cluster?wsport=8091" -
-     * "pal://localhost/cluster?port=8090&wsport=8091&user=alice"
+     * ClientManager. e.g.
+     * <ul>
+     * <li><pre>pal://eve@localhost:8090/cluster?wsport=8091</pre></li>
+     * <li><pre>{@code pal://localhost/cluster?port=8090&wsport=8091&user=alice}</pre></li>
+     * </ul>
      */
     private static final String KEY_SERVICE_URL = "service.url";
 
-    /*
+    /**
      * The user credentials supplied as part of the authority or within the query
      * string. Note that the property supplied in the query string takes precedence
      * e.g. - "pal://eve@localhost/cluster" - "pal://localhost/cluster?user=alice"
      */
     private static final String KEY_SERVICE_USER_ID = "service.userid";
 
-    /*
+    /**
      * The generated Palisade URI. This URI is generated from "palisade.url". This
      * URI does not have the user portion of the authority or the query string, but
      * will include the port if provided. e.g. -
@@ -63,7 +80,7 @@ public final class Configuration {
      */
     private static final String KEY_SERVICE_PS_URI = "service.palisade.uri";
 
-    /*
+    /**
      * The Palisade service port if provided
      */
     private static final String KEY_SERVICE_PS_PORT = "service.palisade.port";
@@ -73,7 +90,7 @@ public final class Configuration {
      */
     private static final String KEY_SERVICE_PS_PATH = "service.palisade.path";
 
-    /*
+    /**
      * The generated Filtered Resource Service URI. This URI is generated from
      * "palisade.url". This URI does not have the user portion of the authority or
      * the query string, but will include the port if provided. As the value is
@@ -82,12 +99,12 @@ public final class Configuration {
      */
     private static final String KEY_SERVICE_FRS_URI = "service.filteredResource.uri";
 
-    /*
+    /**
      * The Filtered Resource Service port if provided
      */
     private static final String KEY_SERVICE_FRS_PORT = "service.filteredResource.port";
 
-    /*
+    /**
      * The path portion of the Filtered Resource Service URI which defaults to
      * "Resource/%t"
      */
@@ -98,24 +115,31 @@ public final class Configuration {
      */
     private static final String KEY_SERVICE_DATA_PATH = "service.data.path";
 
-    /*
+    /**
      * The timeout in seconds to wait for a new message to become available before being
      * emitted into the resource stream before looping and trying again
      */
     private static final String KEY_QUERY_STREAM_POLL_TIMEOUT = "query.stream.poll.timeout";
 
-    /*
+    /**
+     * If this property is set then the client will connect without forcing any
+     * protocol. The decision is left up to the HttpClient and the server. But if
+     * set to true, then the client will not ask to upgrade connections to HTTP/2.
+     */
+    private static final String KEY_SERVICE_HTTP2_ENABLED = "service.http2.enabled";
+
+    /**
      * The user provided in the "service.url" property if provided
      */
     private static final String PARAM_USER_ID = "userid";
 
-    /*
+    /**
      * The port to the Filtered Resource Service if provided as a query parameter (wsport)
      * of the port of the main cluster if provided
      */
     private static final String PARAM_WS_PORT = "wsport";
 
-    /*
+    /**
      * The port to the Palisade Service if provided as a query parameter (psport)
      * of the port of the main cluster if provided
      */
@@ -124,7 +148,16 @@ public final class Configuration {
     private final Map<String, Object> properties;
 
     private Configuration(final Map<String, Object> properties) {
+
         this.properties = properties;
+
+        // see what version of HTTP is allowed and log accordingly
+        if (isHttp2Enabled()) {
+            LOGGER.debug("HTTP/2 support is eanbled");
+        } else {
+            LOGGER.debug("HTTP/2 support is disabled. Only using HTTP/1.1");
+        }
+
     }
 
     /**
@@ -147,6 +180,7 @@ public final class Configuration {
         map.put(KEY_SERVICE_PS_PATH, "palisade/api/registerDataRequest");
         map.put(KEY_SERVICE_FRS_PATH, "resource/%t");
         map.put(KEY_SERVICE_DATA_PATH, "read/chunked");
+        map.put(KEY_SERVICE_HTTP2_ENABLED, false);
         map.putAll(properties); // add in user supplied properties which can override system defaults
 
         try {
@@ -159,6 +193,7 @@ public final class Configuration {
         }
 
         if (LOGGER.isDebugEnabled()) {
+
             var sb = new StringBuilder("Default configuration: {\n");
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 sb.append("  ");
@@ -167,6 +202,7 @@ public final class Configuration {
             }
             sb.append("}");
             LOGGER.debug(sb.toString());
+
         }
 
         return new Configuration(map);
@@ -184,6 +220,10 @@ public final class Configuration {
         }
         sb.append("}");
         return sb.toString();
+    }
+
+    public boolean isHttp2Enabled() {
+        return getProperty(KEY_SERVICE_HTTP2_ENABLED, Boolean.class);
     }
 
     /**
@@ -274,52 +314,48 @@ public final class Configuration {
         String url = Util.findProperty(properties, KEY_SERVICE_URL, String.class)
             .orElseThrow(() -> new ConfigurationException("No url provided"));
 
-        // if the URL is not set, then we cannot process it
-        if (url != null) {
-
-            URI baseUri;
-            try {
-                baseUri = new URI(url);
-            } catch (URISyntaxException e) {
-                throw new ConfigurationException("Invalid palisade url: " + url, e);
-            }
-
-            // convert any properties that should not be strings
-
-            properties.computeIfPresent(KEY_SERVICE_PS_PORT, (k, v) -> Integer.valueOf(v.toString()));
-            properties.computeIfPresent(KEY_SERVICE_FRS_PORT, (k, v) -> Integer.valueOf(v.toString()));
-
-            // get the port from the url. if it's present then ports for all services.
-
-            var port = baseUri.getPort();
-            if (port > -1) {
-                properties.put(KEY_SERVICE_PS_PORT, port);
-                properties.put(KEY_SERVICE_FRS_PORT, port);
-            }
-
-            var queryParams = Util.extractQueryParams(baseUri);
-
-            // override a property if a query parameter has been supplied
-
-            Util.findProperty(queryParams, PARAM_PS_PORT, String.class)
-                .map(Integer::valueOf)
-                .ifPresent(v -> properties.put(KEY_SERVICE_PS_PORT, v));
-
-            Util.findProperty(queryParams, PARAM_WS_PORT, String.class)
-                .map(Integer::valueOf)
-                .ifPresent(v -> properties.put(KEY_SERVICE_FRS_PORT, v));
-
-            Util.findProperty(queryParams, PARAM_USER_ID, String.class)
-                .ifPresent(v -> properties.put(KEY_SERVICE_USER_ID, v));
-
-            if (!properties.containsKey(KEY_SERVICE_USER_ID)) {
-                throw new ConfigurationException("User has not been set either via a property or url query string");
-            }
-
-            properties.put(KEY_SERVICE_PS_URI, createPalisadeUrl(baseUri, properties));
-            properties.put(KEY_SERVICE_FRS_URI, createFilteredResourceUrl(baseUri, properties));
-
+        URI baseUri;
+        try {
+            baseUri = new URI(url);
+        } catch (URISyntaxException e) {
+            throw new ConfigurationException("Invalid palisade url: " + url, e);
         }
+
+        // convert any properties that should not be strings
+
+        properties.computeIfPresent(KEY_SERVICE_PS_PORT, (k, v) -> Integer.valueOf(v.toString()));
+        properties.computeIfPresent(KEY_SERVICE_FRS_PORT, (k, v) -> Integer.valueOf(v.toString()));
+        properties.computeIfPresent(KEY_SERVICE_HTTP2_ENABLED, (k, v) -> Boolean.valueOf(v.toString()));
+
+        // get the port from the url. if it's present then ports for all services.
+
+        var port = baseUri.getPort();
+        if (port > -1) {
+            properties.put(KEY_SERVICE_PS_PORT, port);
+            properties.put(KEY_SERVICE_FRS_PORT, port);
+        }
+
+        var queryParams = Util.extractQueryParams(baseUri);
+
+        // override a property if a query parameter has been supplied
+
+        Util.findProperty(queryParams, PARAM_PS_PORT, String.class)
+            .map(Integer::valueOf)
+            .ifPresent(v -> properties.put(KEY_SERVICE_PS_PORT, v));
+
+        Util.findProperty(queryParams, PARAM_WS_PORT, String.class)
+            .map(Integer::valueOf)
+            .ifPresent(v -> properties.put(KEY_SERVICE_FRS_PORT, v));
+
+        Util.findProperty(queryParams, PARAM_USER_ID, String.class)
+            .ifPresent(v -> properties.put(KEY_SERVICE_USER_ID, v));
+
+        if (!properties.containsKey(KEY_SERVICE_USER_ID)) {
+            throw new ConfigurationException("User has not been set either via a property or url query string");
+        }
+
+        properties.put(KEY_SERVICE_PS_URI, createPalisadeUrl(baseUri, properties));
+        properties.put(KEY_SERVICE_FRS_URI, createFilteredResourceUrl(baseUri, properties));
 
         return properties;
 
