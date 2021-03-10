@@ -50,92 +50,6 @@ git clone https://github.com/gchq/Palisade-clients.git
 cd Palisade-clients
 ```
 
-<details><summary>You will need to configure your ~/.m2/settings.xml:</summary>
-<p>
-
-```bash
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-                  http://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <!-- the path to the local repository - defaults to ~/.m2/repository
-  -->
-  <!-- <localRepository>/path/to/local/repo</localRepository>
-  -->
-    <mirrors>
-​
-    <mirror> <!--Send all requests to the public group -->
-      <id>nexus</id>
-      <url>*nexusurl*/maven-group/</url>
-      <mirrorOf>central</mirrorOf>
-    </mirror>
-​    </mirrors>
-  <activeProfiles>
-    <!--make the profile active all the time -->
-    <activeProfile>nexus</activeProfile>
-  </activeProfiles>
-  <profiles>
-    <profile> 
-      <id>default</id> 
-      <activation> 
-        <activeByDefault>true</activeByDefault> 
-      </activation> 
-      <properties> 
-        <release.url*nexusurl*/maven-releases/</release.url>
-        <snapshot.url>*nexusurl*/maven-snapshots/</snapshot.url> 
-      </properties> 
-    </profile> 
-    <profile>
-      <id>nexus</id>
-      <!--Override the repository (and pluginRepository) "central" from the Maven Super POM
-          to activate snapshots for both! -->
-      <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2/</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-​
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2/</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
-​
-  <pluginGroups>
-    <pluginGroup>org.sonatype.plugins</pluginGroup>
-  </pluginGroups>
-​
-  <servers>
-​
-    <server>
-      <id>nexus</id>
-      <username>*username*</username>
-      <password>*password*</password>
-    </server>
-  </servers>
-</settings>
-```
-</p>
-</details>
-
-
-
 You are then ready to build with Maven:
 ```bash
 mvn install
@@ -162,7 +76,4 @@ The job of the client code is to send the request for data into Palisade and to 
 The responsibility for implementations of the client code is to provide users with a way to request data from Palisade in a way that the user has to make minimal changes to how they would normally use that processing technology.
 Implementations of this component will usually require deep understanding of the data processing technology in order to best hook into that technology, without needing to fork the code for that technology.
 
-
-This directory contains the various client implementations for Palisade that have currently been written. Some are intended to be used as standalone implementations such
-as the [cat client](cat-client/README.md), whilst others are the necessary client library implementations to allow Palisade to be
-used with other frameworks such as the [MapReduce client](mapreduce-client/README.md).
+To find out more information on the Java Client, visit the modules [README.](client-java/README.md)
