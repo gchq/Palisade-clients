@@ -32,7 +32,7 @@ public interface Checks {
      * @return the argument
      * @throws IllegalArgumentException if {@code argument} is null
      */
-    static <T> T checkArgument(final T argument) {
+    static <T> T checkNotNull(final T argument) {
         if (argument == null) {
             throw new IllegalArgumentException("Null argument");
         }
@@ -50,7 +50,7 @@ public interface Checks {
      * @return the argument
      * @throws IllegalArgumentException if {@code argument} is null
      */
-    static <T> T checkArgument(final T argument, final Object errorMessage) {
+    static <T> T checkNotNull(final T argument, final Object errorMessage) {
         if (argument == null) {
             throw new IllegalArgumentException(String.valueOf(errorMessage));
         }
@@ -73,7 +73,7 @@ public interface Checks {
      * @return the argument
      * @throws IllegalArgumentException if {@code argument} is null
      */
-    static <T> T checkArgument(final T argument, final String template, final Object... args) {
+    static <T> T checkNotNull(final T argument, final String template, final Object... args) {
         if (argument == null) {
             throw new IllegalArgumentException(format(template, args));
         }

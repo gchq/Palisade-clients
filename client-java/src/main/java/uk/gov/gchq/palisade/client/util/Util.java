@@ -15,14 +15,17 @@
  */
 package uk.gov.gchq.palisade.client.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.net.URI;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.function.Function;
+
+import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
 /**
  * Utility functions
@@ -31,41 +34,12 @@ import java.util.function.Supplier;
  */
 public final class Util {
 
-    private static final DateTimeFormatter DATE_STAMP_FORMATTER = DateTimeFormatter
-        .ofPattern("yyyyMMdd-HHmmss")
-        .withZone(ZoneId.systemDefault());
-
-    private Util() {
-        // cannot instantiate
-    }
-
     /**
-     * Replaces tokens in the provide template by using the functions provided. This
-     * is useful when replacing path tokens in a template. For example
-     * <pre>{@code /tmp/%t/%s/%r}</pre>
-     *
-     * @param template     The source template
-     * @param replacements The replacement functions
-     * @return the template with tokens replaced
+     * URI separator
      */
-    public static String replaceTokens(final String template, final Map<String, Supplier<String>> replacements) {
-        String result = template;
-        for (Map.Entry<String, Supplier<String>> entry : replacements.entrySet()) {
-            result = result.replace(entry.getKey(), entry.getValue().get());
-        }
-        return result;
-    }
+    public static final String URI_SEP = "/";
 
-    /**
-     * Formats the provided date, time, offset etc as a string to be used in a file
-     * path
-     *
-     * @param accessor The accessor
-     * @return the provided date, time, offset etc as a string to be used in a file
-     *         path
-     */
-    public static String timeStampFormat(final TemporalAccessor accessor) {
-        return DATE_STAMP_FORMATTER.format(accessor);
+    private Util() { // should not be instantiated
     }
 
     /**
@@ -99,9 +73,9 @@ public final class Util {
             var expr = entry.getValue().toString().trim();
             if (expr.startsWith("${") && expr.endsWith("}")) {
                 var key = expr.substring(2, expr.length() - 1);
-                var repl = input.get(key);
-                if (repl != null) {
-                    result.put(entry.getKey(), repl);
+                var newValue = input.get(key);
+                if (newValue != null) {
+                    result.put(entry.getKey(), newValue);
                 }
             }
         }
@@ -117,6 +91,18 @@ public final class Util {
      * @return a uri from the provide base path and endpoint(s)
      */
     public static URI createUri(final String baseUri, final String endpoint, final String... endpoints) {
+        return URI.create(createUrl(baseUri, endpoint, endpoints));
+    }
+
+    /**
+     * Returns a uri from the provide base path and endpoint(s)
+     *
+     * @param baseUri   the base uri
+     * @param endpoint  the endpoint
+     * @param endpoints further endpoints
+     * @return a uri from the provide base path and endpoint(s)
+     */
+    public static String createUrl(final String baseUri, final String endpoint, final String... endpoints) {
 
         var uri = new StringBuilder(trimSlashes(baseUri))
             .append("/")
@@ -126,7 +112,137 @@ public final class Util {
             uri.append("/").append(trimSlashes(string));
         }
 
-        return URI.create(uri.toString());
+        return uri.toString();
+    }
+
+    /**
+     * Returns a map of the query parameters in the provided url. Note that all
+     * escape sequences contained in the properties are decoded.
+     *
+     * @param uri to extract query parameters from
+     * @return a map of the query parameters in the provided url
+     */
+    public static Map<String, Object> extractQueryParams(final URI uri) {
+        var query = Checks.checkNotNull(uri).getQuery();
+        var queryParams = new HashMap<String, Object>();
+        if (query != null) {
+            for (String string : uri.getQuery().split("&")) {
+                var a = string.split("=");
+                queryParams.put(a[0], a[1]);
+            }
+        }
+        return queryParams;
+    }
+
+    /**
+     * Returns the string value in the provided properties associated with the
+     * provided key. If the value associated with the key is not a String or the key
+     * is not found then an {@code IllegalArgumentException} is thrown.
+     *
+     * @param <T>        The type of the property to return which is of type
+     *                   {@code <O>} or a subclass.
+     * @param <O>        The base type of the map
+     * @param properties The properties to search
+     * @param key        The key to find
+     * @param clazz      The type of value
+     * @return the value in the provided properties associated with the provided key
+     * @throws IllegalArgumentException if properties, key or clazz is null
+     * @throws NoSuchElementException   if there is no mapping for the provided key
+     */
+    @SuppressWarnings("java:S3655")
+    public static <O, T extends O> T getProperty(
+            final Map<String, O> properties,
+            final String key,
+            final Class<T> clazz) {
+        return findProperty(properties, key, clazz).get();
+    }
+
+    /**
+     * Returns a value in the provided properties associated with the provided key
+     * or empty if not found.
+     *
+     * @param <T>        The type of the property to return which is of type
+     *                   {@code <O>} or a subclass.
+     * @param <O>        The base type of the map
+     * @param properties The properties to search
+     * @param key        The key to find
+     * @param clazz      The type of value
+     * @return the value in the provided properties associated with the provided key
+     *         or empty of not found
+     * @throws IllegalArgumentException if properties, key or clazz is null
+     */
+    @SuppressWarnings("unchecked")
+    public static <O, T extends O> Optional<T> findProperty(
+            final Map<String, O> properties,
+            final String key,
+            final Class<T> clazz) {
+        checkNotNull(properties);
+        checkNotNull(key);
+        checkNotNull(clazz);
+        var t = properties.get(key);
+        if (t != null && !clazz.isAssignableFrom(t.getClass())) {
+            throw new IllegalArgumentException(
+                "Key " + key + " found but was of type " + t.getClass().getName() + " not the expected type "
+                    + clazz.getName());
+        }
+        return (Optional<T>) Optional.ofNullable(properties.get(key));
+    }
+
+    /**
+     * Returns a string containing the JSON representation of the provided
+     * {@code object}. If a mapping error occurs, the exception is passed to the
+     * provided function which wraps the exception and then the new exception is
+     * thrown.
+     *
+     * @param mapper           The object mapper
+     * @param object           The object being serialised
+     * @param exceptionWrapper The function which wraps the thrown exception
+     * @return a string containing he JSON representation of the provided
+     *         {@code object}
+     */
+    @SuppressWarnings("java:S2221") // we want to catch Exception here
+    public static String toJson(
+            final ObjectMapper mapper,
+            final Object object,
+            final Function<Exception, RuntimeException> exceptionWrapper) {
+        checkNotNull(mapper);
+        checkNotNull(object);
+        checkNotNull(exceptionWrapper);
+        try {
+            return mapper.writeValueAsString(object);
+        } catch (Exception e) {
+            throw exceptionWrapper.apply(e);
+        }
+    }
+
+    /**
+     * Returns a new object deserialised from the provided {@code json}. If a
+     * mapping error occurs, the exception is passed to the provided function which
+     * wraps the exception and then the new exception is thrown.
+     *
+     * @param <T>              The type of the object to return
+     * @param mapper           The object mapper
+     * @param jsonString       The JSON string to be deserialised
+     * @param clazz            The type of the object being returned
+     * @param exceptionWrapper The function which wraps the thrown exception
+     * @return a string containing he JSON representation of the provided
+     *         {@code object}
+     */
+    @SuppressWarnings("java:S2221") // really want to catch Exception
+    public static <T> T toInstance(
+            final ObjectMapper mapper,
+            final String jsonString,
+            final Class<T> clazz,
+            final Function<Exception, RuntimeException> exceptionWrapper) {
+        checkNotNull(mapper);
+        checkNotNull(jsonString);
+        checkNotNull(clazz);
+        checkNotNull(exceptionWrapper);
+        try {
+            return mapper.readValue(jsonString, clazz);
+        } catch (Exception e) {
+            throw exceptionWrapper.apply(e);
+        }
     }
 
 }
