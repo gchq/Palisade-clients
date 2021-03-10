@@ -19,6 +19,7 @@ import org.immutables.value.Value;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -77,12 +78,12 @@ public abstract class ClientTestData {
          * initialised with the provided seed.
          *
          * @return an input stream containing {@code bytes} generated from a
-         *         {@code Random} initialised with the provided {@code seed}
+         * {@code Random} initialised with the provided {@code seed}
          */
         default InputStream createStream() {
             var bytea = new byte[getBytes()];
             new Random(getSeed()).nextBytes(bytea);
-            return new ByteArrayInputStream(bytea);
+            return new ByteArrayInputStream(Base64.getEncoder().encode(bytea));
         }
 
     }

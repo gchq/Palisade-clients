@@ -16,7 +16,7 @@
 package uk.gov.gchq.palisade.client.internal.resource;
 
 import uk.gov.gchq.palisade.client.ClientException;
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
+import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
 
 /**
  * An instance of this class is thrown if the body of a resource message is not
@@ -28,16 +28,16 @@ public class MissingBodyException extends ClientException {
 
     private static final long serialVersionUID = 6617992103641504671L;
 
-    private final Item resourceMessage;
+    private final WebSocketMessage wsMsg;
 
     /**
-     * Creates a new {@code MissingResourceException} with the provided {@link Item}
+     * Creates a new {@code MissingBodyException} with the provided {@link WebSocketMessage}
      *
-     * @param item The offending item
+     * @param wsMsg The offending item
      */
-    public MissingBodyException(final Item item) {
-        super("Received an item with a missing body. Message was: " + item);
-        this.resourceMessage = item;
+    public MissingBodyException(final WebSocketMessage wsMsg) {
+        super("Received an item with a missing body. Message was: " + wsMsg);
+        this.wsMsg = wsMsg;
     }
 
     /**
@@ -45,8 +45,8 @@ public class MissingBodyException extends ClientException {
      *
      * @return the message that caused this error
      */
-    public Item getItem() {
-        return this.resourceMessage;
+    public WebSocketMessage getWebSocketMessage() {
+        return this.wsMsg;
     }
 
 }

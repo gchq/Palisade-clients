@@ -18,29 +18,21 @@ package uk.gov.gchq.palisade.client.internal.dft;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
-import org.immutables.value.Value;
 import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.Error;
-import uk.gov.gchq.palisade.client.Message;
-import uk.gov.gchq.palisade.client.MessageType;
+import uk.gov.gchq.palisade.client.QueryItem;
 import uk.gov.gchq.palisade.client.QueryResponse;
-import uk.gov.gchq.palisade.client.Resource;
-import uk.gov.gchq.palisade.client.internal.request.PalisadeResponse;
-import uk.gov.gchq.palisade.client.internal.resource.CompleteMessage;
-import uk.gov.gchq.palisade.client.internal.resource.ErrorMessage;
-import uk.gov.gchq.palisade.client.internal.resource.ResourceMessage;
+import uk.gov.gchq.palisade.client.internal.impl.Configuration;
+import uk.gov.gchq.palisade.client.internal.model.MessageType;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeResponse;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketClient;
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
-import java.util.Optional;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.TimeUnit;
-import java.util.function.UnaryOperator;
 
 /**
  * Default implementation for the "dft" subname
@@ -66,13 +58,13 @@ public class DefaultQueryResponse implements QueryResponse {
         this.palisadeResponse = palisadeResponse;
     }
 
-    @SuppressWarnings("java:S3776")
     @Override
-    public Publisher<Message> stream() {
+    @SuppressWarnings("java:S5411") // must use Boolean instead of primitive bool in if (...) statement
+    public Publisher<QueryItem> stream() {
 
         // our flowable must wrap the websocket client
 
-        var flowable = Flowable.create((final FlowableEmitter<Message> emitter) -> {
+        var flowable = Flowable.create((final FlowableEmitter<DefaultQueryItem> emitter) -> {
 
             LOGGER.debug("Creating stream...");
 
@@ -82,7 +74,7 @@ public class DefaultQueryResponse implements QueryResponse {
              */
 
             var httpClientBuilder = HttpClient.newBuilder();
-            if (!session.getConfiguration().isHttp2Enabled()) {
+            if (!session.getConfiguration().<Boolean>get(Configuration.HTTP2_ENABLED)) {
                 httpClientBuilder.version(Version.HTTP_1_1);
             }
             var httpClient = httpClientBuilder.build();
@@ -93,28 +85,25 @@ public class DefaultQueryResponse implements QueryResponse {
                 .httpClient(httpClient)
                 .objectMapper(session.getObjectMapper())
                 .token(palisadeResponse.getToken())
-                .uri(configuration.getFilteredResourceUrl()));
+                .uri(configuration.get(Configuration.FILTERED_RESOURCE_URI)));
 
             webSocketClient.connect();
 
             LOGGER.debug("Connected to websocket");
 
-            var timeout = session.getConfiguration().getQueryStreamPollTimeout();
+            var timeout = session.getConfiguration().<Long>get(Configuration.POLL_SECONDS);
             var loop = true;
 
             do {
                 var wsm = webSocketClient.poll(timeout, TimeUnit.SECONDS);
                 if (wsm != null) {
-                    if (wsm instanceof CompleteMessage) {
+                    if (wsm.getType().equals(MessageType.COMPLETE)) {
                         // we're done, so signal complete and set flag to get out
                         emitter.onComplete();
                         loop = false;
                         LOGGER.debug("emitter.complete");
                     } else {
-                        createMessage(wsm).ifPresent((final Message msg) -> {
-                            LOGGER.debug("emitter.onNext: {}", msg);
-                            emitter.onNext(msg);
-                        });
+                        emitter.onNext(new DefaultQueryItem(wsm));
                     }
                 }
                 if (emitter.isCancelled()) {
@@ -127,112 +116,6 @@ public class DefaultQueryResponse implements QueryResponse {
         }, BackpressureStrategy.BUFFER);
 
         return FlowAdapters.toFlowPublisher(flowable); // return a Java Flow Publisher.
-
     }
-
-    private static Optional<Message> createMessage(final WebSocketMessage wsm) {
-
-        Message msg = null;
-
-        if (wsm instanceof ResourceMessage) {
-
-            var rm = (ResourceMessage) wsm;
-            msg = EmittedResource.createResource(b -> b
-                .token(rm.getToken())
-                .url(rm.getUrl())
-                .leafResourceId(rm.getId())
-                .type(rm.getType())
-                .serialisedFormat(rm.getSerialisedFormat()));
-
-        } else if (wsm instanceof ErrorMessage) {
-
-            var em = (ErrorMessage) wsm;
-            msg = EmittedError.createError(b -> b
-                .token(em.getToken())
-                .text(em.getText()));
-
-        } else {
-            LOGGER.warn("Unknown message emitted from stream: {}", wsm.getClass().getName());
-        }
-
-        return Optional.ofNullable(msg);
-
-    }
-
-    /**
-     * An emitted resource represents an resource emitted from the message stream
-     *
-     * @since 0.5.0
-     */
-    @SuppressWarnings("java:S3242") // stop erroneous "use general type" message
-    @Value.Immutable
-    public interface EmittedResource extends Resource {
-
-        /**
-         * Helper method to create a {@code EmittedResource} using a builder function
-         *
-         * @param func The builder function
-         * @return a newly created data request instance
-         */
-        static EmittedResource createResource(final UnaryOperator<EmittedResource.Builder> func) {
-            return func.apply(new EmittedResource.Builder()).build();
-        }
-
-        /**
-         * Exposes the generated builder outside this package
-         * <p>
-         * While the generated implementation (and consequently its builder) is not
-         * visible outside of this package. This builder inherits and exposes all public
-         * methods defined on the generated implementation's Builder class.
-         */
-        class Builder extends ImmutableEmittedResource.Builder { // empty
-        }
-
-        @Override
-        @Value.Derived
-        default MessageType getMessageType() {
-            return MessageType.RESOURCE;
-        }
-
-    }
-
-    /**
-     * An emitted error represents an error emitted from the message stream
-     *
-     * @since 0.5.0
-     */
-    @Value.Immutable
-    @SuppressWarnings("java:S3242") // stop erroneous "use general type" message
-    public interface EmittedError extends Error {
-
-        /**
-         * Helper method to create a {@code EmittedError} using a builder function
-         *
-         * @param func The builder function
-         * @return a newly created data request instance
-         */
-
-        static EmittedError createError(final UnaryOperator<EmittedError.Builder> func) {
-            return func.apply(new EmittedError.Builder()).build();
-        }
-
-        /**
-         * Exposes the generated builder outside this package
-         * <p>
-         * While the generated implementation (and consequently its builder) is not
-         * visible outside of this package. This builder inherits and exposes all public
-         * methods defined on the generated implementation's Builder class.
-         */
-        class Builder extends ImmutableEmittedError.Builder { // empty
-        }
-
-        @Override
-        @Value.Derived
-        default MessageType getMessageType() {
-            return MessageType.ERROR;
-        }
-
-    }
-
 
 }

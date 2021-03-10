@@ -268,7 +268,7 @@ class ChecksTest {
         assertThatExceptionOfType(CLASS)
             .isThrownBy(
                 () -> Checks.checkArgument(false, "oops %s %s %s %s", new BigDecimal("12"), new BigDecimal("24"),
-                new BigDecimal("36"), new BigDecimal("48")))
+                    new BigDecimal("36"), new BigDecimal("48")))
             .withMessage("oops 12 24 36 48");
         assertThatNoException()
             .isThrownBy(

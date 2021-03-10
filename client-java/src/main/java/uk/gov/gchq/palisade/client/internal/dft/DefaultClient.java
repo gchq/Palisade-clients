@@ -22,9 +22,6 @@ import uk.gov.gchq.palisade.client.Client;
 import uk.gov.gchq.palisade.client.ClientManager;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
 
 /**
@@ -62,7 +59,7 @@ public class DefaultClient implements Client {
     @Override
     public boolean acceptsURL(final String url) {
         checkNotNull(url, "url is null");
-        boolean accepts = url.startsWith("pal://") || url.startsWith("pal:dft://");
+        boolean accepts = url.startsWith("pal://");
         if (!accepts) {
             LOGGER.debug("Client {} does not accept url {}", this.getClass().getName(), url);
         }
@@ -70,16 +67,13 @@ public class DefaultClient implements Client {
     }
 
     @Override
-    public DefaultSession connect(final String url, final Map<String, String> info) {
+    public DefaultSession connect(final String url) {
         if (!acceptsURL(url)) {
             return null;
         }
-        // copy incoming info
-        var props = new HashMap<>(info);
-        props.put("service.url", url);
 
         // load the default configuration and merge in overrides
-        var configuration = Configuration.create(props);
+        var configuration = Configuration.create(url);
 
         return new DefaultSession(configuration);
     }

@@ -19,14 +19,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import uk.gov.gchq.palisade.client.internal.model.PalisadeRequest;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeResponse;
 import uk.gov.gchq.palisade.client.testing.AbstractSerialisationTest;
 
 import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.gchq.palisade.client.internal.request.PalisadeRequest.createPalisadeRequest;
-import static uk.gov.gchq.palisade.client.internal.request.PalisadeResponse.createPalisadeResponse;
 
 class RequestSerialisationTest extends AbstractSerialisationTest {
 
@@ -36,19 +36,18 @@ class RequestSerialisationTest extends AbstractSerialisationTest {
      * serialised form.
      *
      * @return a stream of arguments, each having two elements (test object and JSON
-     *         string)
+     * string)
      */
     static Stream<Arguments> instances() {
         return Stream.of(
             arguments(
-                createPalisadeResponse(b -> b
-                    .token("blah")),
+                new PalisadeResponse("blah"),
                 "{\"token\":\"blah\"}"),
             arguments(
-                createPalisadeRequest(b -> b
-                    .resourceId("resourceId")
-                    .userId("userId")
-                    .context(Map.of("key", "value"))),
+                PalisadeRequest.Builder.create()
+                    .withUserId("userId")
+                    .withResourceId("resourceId")
+                    .withContext(Map.of("key", "value")),
                 "{\"resourceId\":\"resourceId\",\"userId\":\"userId\",\"context\":{\"key\":\"value\"}}"));
     }
 

@@ -16,6 +16,7 @@
 package uk.gov.gchq.palisade.client.test.contract.servers;
 
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Consumes;
@@ -27,16 +28,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import uk.gov.gchq.palisade.client.internal.download.DataRequest;
+import uk.gov.gchq.palisade.client.internal.model.DataRequest;
 import uk.gov.gchq.palisade.client.testing.ClientTestData.Name;
 
 /**
  * A controller containing our test endpoints
  */
-@Controller()
-public class HttpEndpointData {
+@Controller("/cluster/data")
+public class DataHttpEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointData.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataHttpEndpoint.class);
 
     /**
      * Returns an http response containing an inputstream
@@ -64,7 +65,7 @@ public class HttpEndpointData {
                 var leafResourceId = request.getLeafResourceId();
                 nameTuple = Name.from(leafResourceId);
             } catch (IllegalArgumentException e) {
-                return HttpResponse.notFound();
+                return HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
             var seed = nameTuple.getSeed();
@@ -74,7 +75,7 @@ public class HttpEndpointData {
             LOG.debug("LOAD: Created stream of {} bytes for {} from seed value {}", bytes, name, seed);
 
             var is = nameTuple.createStream();
-            var sf = new StreamedFile(is, octetStream, System.currentTimeMillis(), bytes);
+            var sf = new StreamedFile(is, octetStream);
 
             LOG.debug("RETN: Stream");
 

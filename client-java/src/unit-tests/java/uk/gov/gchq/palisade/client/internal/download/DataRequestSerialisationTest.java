@@ -19,12 +19,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import uk.gov.gchq.palisade.client.internal.model.DataRequest;
 import uk.gov.gchq.palisade.client.testing.AbstractSerialisationTest;
 
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.gchq.palisade.client.internal.download.DataRequest.createDataRequest;
 
 class DataRequestSerialisationTest extends AbstractSerialisationTest {
 
@@ -34,15 +34,13 @@ class DataRequestSerialisationTest extends AbstractSerialisationTest {
      * serialised form.
      *
      * @return a stream of arguments, each having two elements (test object and JSON
-     *         string)
+     * string)
      */
     static Stream<Arguments> instances() {
-        return Stream.of(
-            arguments(
-                createDataRequest(b -> b
-                    .token("test-request-token")
-                    .leafResourceId("leaf-resource-id")),
-                "{\"token\":\"test-request-token\",\"leafResourceId\":\"leaf-resource-id\"}"));
+        return Stream.of(arguments(DataRequest.Builder.create()
+                .withToken("test-request-token")
+                .withLeafResourceId("leaf-resource-id"),
+            "{\"token\":\"test-request-token\",\"leafResourceId\":\"leaf-resource-id\"}"));
     }
 
     /**

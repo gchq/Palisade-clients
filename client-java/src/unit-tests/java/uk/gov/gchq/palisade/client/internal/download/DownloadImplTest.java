@@ -35,7 +35,7 @@ class DownloadImplTest {
 
     private static final String FILENAME = "cool.html";
     private static final String CONTENT_DISPOSITION = String.format("attachment; filename=\"%s\"", FILENAME);
-    private static final InputStream BODY = new ByteArrayInputStream(new byte[] {'a', 'b', 'c' });
+    private static final InputStream BODY = new ByteArrayInputStream(new byte[]{'a', 'b', 'c'});
 
     private DownloadImpl download;
 

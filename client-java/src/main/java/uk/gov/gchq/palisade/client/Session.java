@@ -46,10 +46,9 @@ public interface Session {
     /**
      * Returns a new download of the provided resource
      *
-     * @param resource The resource to download
+     * @param queryItem A {@link QueryItem} with type {@link uk.gov.gchq.palisade.client.QueryItem.ItemType#RESOURCE}, representing a resource to download
      * @return a new download of the provided resource
      */
-    Download fetch(Resource resource);
-
+    Download fetch(QueryItem queryItem);
 
 }

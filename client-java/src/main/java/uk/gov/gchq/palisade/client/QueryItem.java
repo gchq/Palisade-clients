@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.gov.gchq.palisade.client;
 
-/**
- * The type of message returned
- *
- * @since 0.5.0
- */
-public enum MessageType {
+import uk.gov.gchq.palisade.resource.LeafResource;
 
-    /**
-     * The return message is an error
-     */
-    ERROR,
+public interface QueryItem {
+    enum ItemType {
+        RESOURCE,
+        ERROR
+    }
 
-    /**
-     * The return message is a resource
-     */
-    RESOURCE
+    ItemType getType();
 
+    String getToken();
+
+    String asError();
+
+    LeafResource asResource();
 }

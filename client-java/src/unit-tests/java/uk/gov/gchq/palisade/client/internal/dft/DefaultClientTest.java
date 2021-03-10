@@ -17,8 +17,6 @@ package uk.gov.gchq.palisade.client.internal.dft;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultClientTest {
@@ -42,7 +40,7 @@ class DefaultClientTest {
     @Test
     void testConnect() {
         var client = new DefaultClient();
-        var session = client.connect("pal://localhost?userid=alice", Map.of());
+        var session = client.connect("pal://localhost?userid=alice");
         var expectedClass = DefaultSession.class;
         assertThat(session)
             .as("check session type")

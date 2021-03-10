@@ -20,10 +20,11 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.Resource;
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
+import uk.gov.gchq.palisade.client.internal.impl.ConfigurationException;
+import uk.gov.gchq.palisade.client.internal.model.DataRequest;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 import uk.gov.gchq.palisade.client.util.Util;
+import uk.gov.gchq.palisade.resource.LeafResource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
@@ -79,11 +81,13 @@ public final class Downloader {
          */
         ObjectMapper getObjectMapper();
 
+        Map<String, URI> getServiceNameMap();
+
         /**
          * Returns the path portion of the URL
          *
          * @return the path portion of the URL that should be use when making calls to
-         *         the Data Service
+         * the Data Service
          */
         String getPath();
 
@@ -106,7 +110,7 @@ public final class Downloader {
     }
 
     /**
-     * Helper method to create a {@link Item} using a builder function
+     * Helper method to create a {@link Downloader} builder
      *
      * @param func The builder function
      * @return a newly created {@code RequestId}
@@ -118,40 +122,41 @@ public final class Downloader {
     /**
      * Start the download process
      *
+     * @param token    The token from the {@link uk.gov.gchq.palisade.client.QueryResponse}
      * @param resource The resource to fetch
      * @return a download result after successful completion
      * @throws DownloaderException if any error occurs
      */
     @SuppressWarnings("java:S2221")
-    public DownloadImpl fetch(final Resource resource) {
+    public DownloadImpl fetch(final String token, final LeafResource resource) {
 
         LOGGER.debug("Downloader Started");
 
+        // using the create method here as the url is assumed correct as it is provided
+        // by palisade
+
+        // create the url which is made up of the base url which is provided as part of
+        // the resource returned from the Filtered Resource Service and the endpoint
+        var serviceName = resource.getConnectionDetail().createConnection();
+        var baseUri = setup.getServiceNameMap().getOrDefault(serviceName, URI.create(serviceName));
+        var uri = Util.createUri(baseUri.toString(), getPath());
+
         try {
-
-            // using the create method here as the url is assumed correct as it is provided
-            // by palisade
-
-            // create the url which is made up of the base url which is provided as part of
-            // the resource returned from the Filtered Resource Service and the endpoint
-
-            var uri = Util.createUri(resource.getUrl(), getPath());
-
             var requestBody = getObjectMapper()
-                .writeValueAsString(DataRequest.createDataRequest(b -> b
-                    .token(resource.getToken())
-                    .leafResourceId(resource.getLeafResourceId())));
+                .writeValueAsString(DataRequest.Builder.create()
+                    .withToken(token)
+                    .withLeafResourceId(resource.getId()));
 
-            var httpResponse = sendRequest(requestBody, uri);
-
+            HttpResponse<InputStream> httpResponse;
+            httpResponse = sendRequest(requestBody, uri);
             var statusCode = httpResponse.statusCode();
 
             if (statusCode != HTTP_STATUS_OK) {
                 String msg;
                 if (statusCode == HTTP_STATUS_NOT_FOUND) {
-                    msg = String.format("Resource \"%s\" not found", resource.getLeafResourceId());
+                    msg = String.format("DataService '%s' not found", uri);
                 } else {
-                    msg = "Request to DataService failed";
+                    msg = String.format("Request to DataService '%s' failed", uri);
                 }
                 throw new DownloaderException(msg, statusCode);
             }
@@ -160,6 +165,8 @@ public final class Downloader {
 
         } catch (DownloaderException e) {
             throw e;
+        } catch (IllegalArgumentException e) {
+            throw new ConfigurationException(String.format("DataService connectionDetail '%s' was invalid, it may not be resolved in config", baseUri), e);
         } catch (Exception e) {
             throw new DownloaderException("Caught unknown exception: " + e.getMessage(), e);
         } finally {

@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client;
+
+package uk.gov.gchq.palisade.client.internal.model;
 
 /**
- * An error representing some processing problem while processing the query.
- * This could range from simple no access error or a more serious problem
- * processing a resource.
- *
- * @since 0.5.0
+ * Simply stores the expected header key for Tokens
+ * Since the content of tokens are strings, there is no need for further implementation
+ * If desired, this could extend eg. UUID if more meaningful Token processing was desired
  */
-public interface Error extends Message {
+public final class Token {
+    public static final String HEADER = "x-request-token";
 
-    /**
-     * Returns the text describing the error
-     *
-     * @return the text describing the error
-     */
-    String getText();
-
+    private Token() {
+        // Tokens are just strings, no need to actually have a class for them
+    }
 }

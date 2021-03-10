@@ -15,13 +15,12 @@
  */
 package uk.gov.gchq.palisade.client.internal.dft;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import uk.gov.gchq.palisade.client.Download;
-import uk.gov.gchq.palisade.client.Resource;
+import uk.gov.gchq.palisade.client.QueryItem;
 import uk.gov.gchq.palisade.client.Session;
 import uk.gov.gchq.palisade.client.internal.download.Downloader;
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
@@ -58,24 +57,19 @@ public class DefaultSession implements Session {
      *
      * @param configuration The client configuration
      */
+    @SuppressWarnings("java:S5411") // must use Boolean instead of primitive bool in if (...) statement
     public DefaultSession(final Configuration configuration) {
 
         this.configuration = configuration;
 
         var httpClientBuilder = HttpClient.newBuilder();
-        if (!configuration.isHttp2Enabled()) {
+        if (!configuration.<Boolean>get(Configuration.HTTP2_ENABLED)) {
             httpClientBuilder.version(Version.HTTP_1_1);
         }
         this.httpClient = httpClientBuilder.build();
 
         this.objectMapper = new ObjectMapper()
             .registerModule(new Jdk8Module())
-            // comment out the 3 include directives below to tell jackson to output all
-            // attributes, even if null, absent or empty (e.g. empty optional and
-            // collection)
-            .setSerializationInclusion(Include.NON_NULL)
-            .setSerializationInclusion(Include.NON_ABSENT)
-            .setSerializationInclusion(Include.NON_EMPTY)
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
@@ -87,13 +81,15 @@ public class DefaultSession implements Session {
     }
 
     @Override
-    public Download fetch(final Resource resource) {
-        checkNotNull(resource, "Missing resource");
+    public Download fetch(final QueryItem queryItem) {
+        var token = checkNotNull(queryItem.getToken(), "Missing token");
+        var resource = checkNotNull(queryItem.asResource(), "Missing resource");
         var downloader = Downloader.createDownloader(b -> b
             .httpClient(getHttpClient())
             .objectMapper(getObjectMapper())
-            .path(configuration.getDataPath()));
-        return downloader.fetch(resource);
+            .path(configuration.get(Configuration.DATA_PATH))
+            .serviceNameMap(configuration.get(Configuration.DATA_SERVICE_MAP)));
+        return downloader.fetch(token, resource);
     }
 
     /**

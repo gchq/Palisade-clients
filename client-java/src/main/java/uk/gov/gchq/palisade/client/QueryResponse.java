@@ -30,8 +30,8 @@ public interface QueryResponse {
      * {@code MessageType#RESOURCE} or {@code MessageType#ERROR}.
      *
      * @return a publisher that, once subscribed to, will emit messages from
-     *         palisade
+     * palisade
      */
-    Publisher<Message> stream();
+    Publisher<QueryItem> stream();
 
 }

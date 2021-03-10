@@ -15,8 +15,8 @@
   ~ limitations under the License.
   -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -56,7 +56,7 @@
         <logback.version>1.2.3</logback.version>
         <rxjava.version>3.0.8</rxjava.version>
         <slf4j.version>1.7.26</slf4j.version>
-        
+
         <mockito.version>3.7.7</mockito.version>
         <jsonassert.version>1.5.0</jsonassert.version>
 
@@ -111,7 +111,11 @@
     <dependencies>
 
         <!-- RUNTIME -->
-
+        <dependency>
+            <groupId>uk.gov.gchq.palisade</groupId>
+            <artifactId>common</artifactId>
+            <version>0.5.0-${common.revision}</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -342,18 +346,18 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>        
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
-        <configuration>
-          <excludes>
-            <exclude>**/test/component/**</exclude>
-            <exclude>**/test/contract/**</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/test/component/**</exclude>
+                        <exclude>**/test/contract/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

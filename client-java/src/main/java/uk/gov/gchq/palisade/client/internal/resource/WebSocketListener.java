@@ -17,24 +17,22 @@ package uk.gov.gchq.palisade.client.internal.resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.internal.model.MessageType;
+import uk.gov.gchq.palisade.client.internal.model.Token;
+import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
 import uk.gov.gchq.palisade.client.util.Checks;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.http.WebSocket;
 import java.net.http.WebSocket.Listener;
-import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -83,97 +81,12 @@ public class WebSocketListener implements Listener {
          * listener
          *
          * @return the consumer that will handle web socket events emitted from this
-         *         listener
+         * listener
          */
         Consumer<WebSocketMessage> getEventsHandler();
 
     }
 
-    /**
-     * The type of {@link Item}
-     *
-     * @since 0.5.0
-     */
-    public enum WebSocketMessageType {
-
-        /**
-         * Indicates that the client is ready to receive. This type of message is send
-         * only.
-         */
-        CTS,
-
-        /**
-         * An error has occurred on the server. This type of message is receive only.
-         */
-        ERROR,
-
-        /**
-         * A resource from the server. This type of message is receive only.
-         */
-        RESOURCE,
-
-        /**
-         * No more resources available for token. This type of message is receive only.
-         */
-        COMPLETE
-
-    }
-
-    /**
-     * An item is in object received from the websocket
-     *
-     * @since 0.5.0
-     */
-    @Value.Immutable
-    @ImmutableStyle
-    @JsonDeserialize(as = ImmutableItem.class)
-    @JsonSerialize(as = ImmutableItem.class)
-    public interface Item extends Serializable {
-
-        /**
-         * Exposes the generated builder outside this package
-         * <p>
-         * While the generated implementation (and consequently its builder) is not
-         * visible outside of this package. This builder inherits and exposes all public
-         * methods defined on the generated implementation's Builder class.
-         */
-        class Builder extends ImmutableItem.Builder { // empty
-        }
-
-        /**
-         * Helper method to create a {@link Item} using a builder function
-         *
-         * @param func The builder function
-         * @return a newly created {@code RequestId}
-         */
-        @SuppressWarnings("java:S4276")
-        static Item createItem(final Function<Item.Builder, Item.Builder> func) {
-            return func.apply(new Item.Builder()).build();
-        }
-
-        /**
-         * Returns the type of this message
-         *
-         * @return the {@link WebSocketMessageType}
-         */
-        WebSocketMessageType getType();
-
-        /**
-         * Returns the headers for this message an empty map if there are none
-         *
-         * @return the headers for this message an empty map if there are none
-         */
-        Map<String, String> getHeaders();
-
-        /**
-         * Returns the body of this message or empty if there is none. At this point
-         * there should only be a body for {@link WebSocketMessageType} of RESOURCE.
-         *
-         * @return the body of this message or empty if there is none
-         */
-        Optional<Object> getBody();
-
-    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketListener.class);
 
@@ -195,7 +108,7 @@ public class WebSocketListener implements Listener {
     }
 
     /**
-     * Helper method to create a {@link Item} using a builder function
+     * Helper method to create a {@link WebSocketListener} using a builder function
      *
      * @param func The builder function
      * @return a newly created {@code RequestId}
@@ -215,7 +128,7 @@ public class WebSocketListener implements Listener {
     public void onOpen(final WebSocket ws) {
         Listener.super.onOpen(ws);
         LOGGER.debug("OPEN: WebSocket Listener has been opened for requests.");
-        send(ws, b -> b.type(WebSocketMessageType.CTS));
+        send(ws, WebSocketMessage.Builder.create().withType(MessageType.CTS));
     }
 
     @Override
@@ -223,55 +136,43 @@ public class WebSocketListener implements Listener {
 
         var text = data.toString();
 
-        ws.request(1); // omit this and no methods are called listener
+        ws.request(1);
 
-        Item item;
+        WebSocketMessage wsMsg;
         try {
-            item = objectMapper.readValue(text, Item.class);
+            wsMsg = objectMapper.readValue(text, WebSocketMessage.class);
         } catch (JsonProcessingException e) {
             onError(ws, e);
             return null;
         }
 
-        LOGGER.debug("RCVD: {}", item);
+        LOGGER.debug("RCVD: {}", wsMsg);
 
-        var type = item.getType();
-        WebSocketMessage webSocketMessage = null;
-
-        switch (type) {
+        switch (wsMsg.getType()) {
             case RESOURCE:
-                var resourceBody = item.getBody().orElseThrow(() -> new MissingBodyException(item));
-                webSocketMessage = objectMapper.convertValue(resourceBody, ResourceMessage.class);
-                break;
             case ERROR:
-                var errorBody = item.getBody().orElseThrow(() -> new MissingBodyException(item));
-                webSocketMessage = objectMapper.convertValue(errorBody, ErrorMessage.class);
+                LOGGER.debug("EMIT: {}", wsMsg);
+                handler.accept(wsMsg);
+                send(ws, WebSocketMessage.Builder.create().withType(MessageType.CTS));
                 break;
             case COMPLETE:
-                webSocketMessage = WebSocketMessage.createCompleteMessage(b -> b.token(token));
+                LOGGER.debug("COMPLETE: {}", wsMsg);
+                handler.accept(wsMsg);
                 break;
             default:
-                LOGGER.warn("Ignoring unsupported {} message type", type);
+                LOGGER.warn("Ignoring unsupported '{}' message type", wsMsg.getType());
                 break;
         }
 
-        if (webSocketMessage != null) {
-            LOGGER.debug("EMIT: {}", webSocketMessage);
-            handler.accept(webSocketMessage);
-        }
-
-        if (type != WebSocketMessageType.COMPLETE) {
-            send(ws, b -> b.type(WebSocketMessageType.CTS));
-        }
-
-        return null;
+        return CompletableFuture.completedFuture(null);
 
     }
 
     @SuppressWarnings("java:S4276")
-    private void send(final WebSocket ws, final UnaryOperator<Item.Builder> func) {
-        var f1 = func.andThen(b -> b.putHeader("token", token));
-        var message = Item.createItem(f1);
+    private void send(final WebSocket ws, final WebSocketMessage.Builder.IHeaders messageBuilder) {
+        var message = messageBuilder
+            .withHeader(Token.HEADER, token).noHeaders()
+            .noBody();
         try {
             var text = objectMapper.writeValueAsString(message);
             ws.sendText(text, true);

@@ -15,8 +15,6 @@
  */
 package uk.gov.gchq.palisade.client;
 
-import java.util.Map;
-
 /**
  * The interface that a client class must implement
  *
@@ -31,9 +29,9 @@ public interface Client {
      *
      * @param url the URL of the server cluster
      * @return <code>true</code> if this client understands the given URL;
-     *         <code>false</code> otherwise
-     * @exception ClientException if a client error occurs or the url is
-     *                            {@code null}
+     * <code>false</code> otherwise
+     * @throws ClientException if a client error occurs or the url is
+     *                         {@code null}
      */
     boolean acceptsURL(String url);
 
@@ -55,13 +53,11 @@ public interface Client {
      * as to which value will take precedence. For maximum portability, an
      * application should only specify a property once.
      *
-     * @param url  the URL of the palisade cluster to which to connect
-     * @param info a list of arbitrary string tag/value pairs as session arguments.
-     *             Normally at least a "user" property should be included.
+     * @param url the URL of the palisade cluster to which to connect
      * @return a <code>Session</code> object that represents a connection to the URL
-     * @exception ClientException if a cluster error occurs or the url is
-     *                            {@code null}
+     * @throws ClientException if a cluster error occurs or the url is
+     *                         {@code null}
      */
-    Session connect(String url, Map<String, String> info);
+    Session connect(String url);
 
 }
