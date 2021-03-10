@@ -51,21 +51,9 @@
             <version>${akka.version}</version>
         </dependency>
         <dependency>
-            <!-- Core Akka streaming -->
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-stream-typed_${scala.version}</artifactId>
-            <version>${akka.version}</version>
-        </dependency>
-        <dependency>
             <!-- Akka HTTP/Websocket server -->
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http_${scala.version}</artifactId>
-            <version>${akka.http.version}</version>
-        </dependency>
-        <dependency>
-            <!-- Akka HTTP JSON serialisation -->
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-http-jackson_${scala.version}</artifactId>
             <version>${akka.http.version}</version>
         </dependency>
         <dependency>
