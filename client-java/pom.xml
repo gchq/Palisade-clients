@@ -27,10 +27,12 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <!--  *********** Artifact ID ***********    -->
     <artifactId>client-java</artifactId>
     <name>client-java</name>
     <description>Java standalone client</description>
     <url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
+    <!--  *********** Artifact ID ***********    -->
 
     <properties>
 
@@ -71,12 +73,6 @@
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>${junit.jupiter.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
                 <version>${junit.jupiter.version}</version>
                 <scope>test</scope>
@@ -112,6 +108,7 @@
 
         <!-- RUNTIME -->
         <dependency>
+            <!-- Common types (User, Resource, Context) -->
             <groupId>uk.gov.gchq.palisade</groupId>
             <artifactId>common</artifactId>
             <version>0.5.0-${common.revision}</version>
@@ -147,6 +144,7 @@
 
         <!-- TEST -->
 
+        <!-- Micronaut Testing Dependencies -->
         <dependency>
             <groupId>io.micronaut.test</groupId>
             <artifactId>micronaut-test-junit5</artifactId>
@@ -183,15 +181,11 @@
             <version>${micronaut.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- JUnit Testing Dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
@@ -212,11 +206,6 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.skyscreamer</groupId>
-            <artifactId>jsonassert</artifactId>
-            <version>${jsonassert.version}</version>
         </dependency>
     </dependencies>
 
