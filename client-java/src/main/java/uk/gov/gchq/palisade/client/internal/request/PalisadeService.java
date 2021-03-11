@@ -15,15 +15,16 @@
  */
 package uk.gov.gchq.palisade.client.internal.request;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.ClientException;
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeRequest;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeResponse;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
-import uk.gov.gchq.palisade.client.util.Util;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -104,7 +105,7 @@ public final class PalisadeService {
     }
 
     /**
-     * Helper method to create a {@link Item} using a builder function
+     * Helper method to create a {@link PalisadeService} using a builder function
      *
      * @param func The builder function
      * @return a newly created {@code RequestId}
@@ -183,14 +184,20 @@ public final class PalisadeService {
 
     // placed in a method to be use fluently as a method reference
     private String toJson(final Object object) {
-        return Util.toJson(objectMapper(), object,
-            cause -> new ClientException("Failed to serialise request: " + object.toString(), cause));
+        try {
+            return objectMapper().writeValueAsString(object);
+        } catch (JsonProcessingException cause) {
+            throw new ClientException("Failed to serialise request: " + object.toString(), cause);
+        }
     }
 
     // placed in a method to be use fluently as a method reference
     private PalisadeResponse toResponse(final String string) {
-        return Util.toInstance(objectMapper(), string, PalisadeResponse.class,
-            cause -> new ClientException("Failed to deserialise request: " + string, cause));
+        try {
+            return objectMapper().readValue(string, PalisadeResponse.class);
+        } catch (JsonProcessingException cause) {
+            throw new ClientException("Failed to deserialise request: " + string, cause);
+        }
     }
 
     private PalisadeServiceSetup getSetup() {

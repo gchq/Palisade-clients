@@ -30,7 +30,7 @@ public interface Query {
      * which will provide access to returned resources
      *
      * @return a {@code CompletableFuture} containing the result of the query
-     *         execution
+     * execution
      */
     CompletableFuture<QueryResponse> execute();
 

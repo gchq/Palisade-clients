@@ -19,8 +19,6 @@ import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultSessionTest {
@@ -28,7 +26,7 @@ class DefaultSessionTest {
     @Test
     void testCreateQuery() {
 
-        var conf = Configuration.create(Map.of("service.url", "pal://localhost/cluster?userid=alice"));
+        var conf = Configuration.create("pal://localhost/cluster?userid=alice");
         var session = new DefaultSession(conf);
         var query = session.createQuery("resource_id");
         var expectedClass = DefaultQuery.class;
@@ -36,7 +34,6 @@ class DefaultSessionTest {
         assertThat(query)
             .as("check actual type")
             .isInstanceOf(expectedClass);
-
     }
 
 }

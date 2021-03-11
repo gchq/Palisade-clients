@@ -19,9 +19,9 @@ import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
 import uk.gov.gchq.palisade.client.internal.dft.DefaultSession;
+import uk.gov.gchq.palisade.client.internal.impl.Configuration;
 
 import java.net.URI;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.gchq.palisade.client.ClientManager.getClient;
@@ -34,52 +34,36 @@ class ClientManagerTest {
         assertThat(getClient("pal://alice@localhost:1234/cluster"))
             .as("Client is of correct type")
             .isInstanceOf(DefaultClient.class);
-        assertThat(getClient("pal:dft://alice@localhost:1234/cluster"))
-            .as("Client is of correct type")
-            .isInstanceOf(DefaultClient.class);
     }
 
     @Test
     void testOpenSessionUrlNoProperties() {
-
         var serviceUrl = "pal://localhost:1234/cluster?userid=alice";
         var dftSession = (DefaultSession) openSession(serviceUrl);
         var configuration = dftSession.getConfiguration();
 
-        assertThat(configuration.getServiceUrl())
-            .as("check configuration Service URL")
-            .isEqualTo(serviceUrl);
-        assertThat(configuration.getPalisadeUrl())
+        assertThat(configuration.<URI>get(Configuration.PALISADE_URI))
             .as("check generated Palisade URI")
             .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
-        assertThat(configuration.getFilteredResourceUrl())
+        assertThat(configuration.<URI>get(Configuration.FILTERED_RESOURCE_URI))
             .as("check generated FilteredResource URI")
-            .isEqualTo(URI.create("ws://localhost:1234/cluster/resource/%25t"));
+            .isEqualTo(URI.create("ws://localhost:1234/cluster/filteredResource/resource/%25t"));
 
     }
 
     @Test
     void testOpenSessionWithUrlAndProperties() {
+        var serviceSpec = "pal://localhost/cluster?userid=alice";
 
-        var port = 1234;
-        var serviceUrl = "pal://localhost/cluster?userid=alice";
-        var properties = Map.of(
-            "service.palisade.port", "" + port,
-            "service.filteredResource.port", "" + port);
-
-        var dftSession = (DefaultSession) openSession(serviceUrl, properties);
+        var dftSession = (DefaultSession) openSession(serviceSpec);
         var configuration = dftSession.getConfiguration();
 
-        assertThat(configuration.getServiceUrl())
-            .as("Configuration Service URL")
-            .isEqualTo(serviceUrl);
-        assertThat(configuration.getPalisadeUrl())
+        assertThat(configuration.<URI>get(Configuration.PALISADE_URI))
             .as("Generated Palisade URI")
-            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
-        assertThat(configuration.getFilteredResourceUrl())
+            .isEqualTo(URI.create("http://localhost/cluster/palisade/api/registerDataRequest"));
+        assertThat(configuration.<URI>get(Configuration.FILTERED_RESOURCE_URI))
             .as("Generated FilteredResource URI")
-            .isEqualTo(URI.create("ws://localhost:1234/cluster/resource/%25t"));
+            .isEqualTo(URI.create("ws://localhost/cluster/filteredResource/resource/%25t"));
 
     }
-
 }

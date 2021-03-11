@@ -22,7 +22,6 @@ import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
 import uk.gov.gchq.palisade.client.util.Checks;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
@@ -87,40 +86,20 @@ public final class ClientManager {
     /**
      * Attempts to establish a session to the given Palisade cluster {@code url}.
      *
-     * @param url a palisade URL of the form pal:subprotocol:subname
+     * @param uri a palisade URL of the form pal://clusteraddr?additional=params
      * @return a session for the provided {@code url}
      * @throws ClientException if a Palisade access error occurs or the URL is
      *                         invalid
      */
-    public static Session openSession(final String url) {
-        return openSession(url, Map.of());
-    }
+    public static Session openSession(final String uri) {
+        Checks.checkNotNull(uri, "The url cannot be null");
 
-    /**
-     * Attempts to establish a session to the given Palisade cluster {@code url}.
-     * The ClientManager attempts to select an appropriate client from the set of
-     * registered Palisade clients.
-     *
-     * @param url  a palisade URL of the form pal:subprotocol:subname
-     * @param info a list of arbitrary string tag/value pairs as connection
-     *             arguments; normally at least a "user" property should be included
-     * @return a session for the provided {@code url}
-     * @throws ClientException if a Palisade access error occurs or the URL is
-     *                         invalid
-     */
-    @SuppressWarnings("java:S1488")
-    public static Session openSession(final String url, final Map<String, String> info) {
-
-        Checks.checkNotNull(url, "The url cannot be null");
-
-        LOGGER.debug("ClientManager.openSession(\"{}\"", url);
+        LOGGER.debug("ClientManager.openSession(\"{}\"", uri);
 
         ensureClientsInitialized();
 
-        var client = getClient(url);
-        var session = client.connect(url, info);
-        return session;
-
+        var client = getClient(uri);
+        return client.connect(uri);
     }
 
     /**
@@ -131,7 +110,7 @@ public final class ClientManager {
      *
      * @param client the new Palisade Client that is to be registered with the
      *               {@code ClientManager}
-     * @exception NullPointerException if {@code client} is null
+     * @throws NullPointerException if {@code client} is null
      * @since 0.5.0
      */
     public static void registerClient(final Client client) {
@@ -158,7 +137,7 @@ public final class ClientManager {
      * Load the initial Palisade clients by checking the System property
      * palisade.clients
      */
-    @SuppressWarnings({"java:S2221", "java:S2658" })
+    @SuppressWarnings({"java:S2221", "java:S2658"})
     private static void ensureClientsInitialized() {
         if (clientsInitialized) {
             return;
@@ -167,10 +146,10 @@ public final class ClientManager {
             if (!clientsInitialized) { // again, in case something squeezed in.
                 Optional
                     .ofNullable(System.getProperty(PALISADE_CLIENTS_PROPERTY))
-                    .filter(clients -> !"".equals(clients))
+                    .filter(clients -> !clients.isEmpty())
                     .ifPresent(clients -> Arrays
                         .stream(clients.split(":"))
-                        .filter(client -> !"".equals(client))
+                        .filter(client -> !client.isEmpty())
                         .forEach(ClientManager::loadClient));
                 clientsInitialized = true;
                 LOGGER.debug("Palisade ClientManager initialized");
@@ -179,7 +158,7 @@ public final class ClientManager {
 
     }
 
-    @SuppressWarnings({"java:S2221", "java:S2658" })
+    @SuppressWarnings({"java:S2221", "java:S2658"})
     private static void loadClient(final String client) {
         try {
             LOGGER.debug("ClientManager.initialize: loading {}", client);

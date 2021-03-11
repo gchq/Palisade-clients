@@ -26,15 +26,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.WebSocketMessageType;
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketMessage;
+import uk.gov.gchq.palisade.client.internal.model.MessageType;
+import uk.gov.gchq.palisade.client.internal.model.Token;
+import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
+import uk.gov.gchq.palisade.resource.impl.FileResource;
+import uk.gov.gchq.palisade.resource.impl.SystemResource;
+import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_NAMES;
 
@@ -43,8 +48,8 @@ import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_NAMES;
  *
  * @since 0.5.0
  */
-@ServerWebSocket("/cluster/resource/{token}")
-public class WsEndpointFilteredResource {
+@ServerWebSocket("/cluster/filteredResource/resource/{token}")
+public class FilteredResourceWsEndpoint {
 
     private static final String TOKEN_KEY = "token";
 
@@ -53,9 +58,9 @@ public class WsEndpointFilteredResource {
      *
      * @since 0.5.0
      */
-    public static class ResourceGenerator implements Iterable<Item> {
+    public static class ResourceGenerator implements Iterable<WebSocketMessage> {
 
-        private final List<Item> messages;
+        private final List<WebSocketMessage> messages;
         private final String token;
 
         /**
@@ -66,34 +71,27 @@ public class WsEndpointFilteredResource {
          * @param port  the port
          */
         public ResourceGenerator(final String token, final int port) {
-            var url = "http://localhost:" + port;
             this.token = token;
-            this.messages = FILE_NAMES.stream()
-                .map(filename -> WebSocketMessage.createResourceMessage(b -> b
-                    .token(token)
-                    .id(filename)
-                    .serialisedFormat("format")
-                    .type("type")
-                    .url(url)))
-                .map(rsc -> message(rsc, WebSocketMessageType.RESOURCE))
+            this.messages = Stream.of(FILE_NAMES.stream()
+                    .map(filename -> WebSocketMessage.Builder.create().withType(MessageType.RESOURCE)
+                        .withHeader(Token.HEADER, token).noHeaders()
+                        .withBody(new FileResource()
+                            .id(filename)
+                            .serialisedFormat("format")
+                            .type("type")
+                            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"))
+                            .parent(new SystemResource().id("parent")))),
+                Stream.of(WebSocketMessage.Builder.create()
+                    .withType(MessageType.ERROR)
+                    .withHeader(Token.HEADER, token).noHeaders()
+                    .withBody("test error")))
+                .flatMap(Function.identity())
                 .collect(Collectors.toList());
-            this.messages
-                .add(message(WebSocketMessage.createErrorMessage(b -> b
-                    .token(token)
-                    .text("test error")),
-                WebSocketMessageType.ERROR));
 
-        }
-
-        private Item message(final Object body, final WebSocketMessageType type) {
-            return Item.createItem(builder -> builder
-                .putHeader(TOKEN_KEY, token)
-                .type(type)
-                .body(body));
         }
 
         @Override
-        public Iterator<Item> iterator() {
+        public Iterator<WebSocketMessage> iterator() {
             return messages.iterator();
         }
 
@@ -102,16 +100,16 @@ public class WsEndpointFilteredResource {
     @Inject
     EmbeddedServer embeddedServer;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WsEndpointFilteredResource.class);
-    private Iterator<Item> messages;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilteredResourceWsEndpoint.class);
+    private Iterator<WebSocketMessage> messages;
 
     /**
-     * Create a new {@code WsEndpointFilteredResource} with the provided
+     * Create a new {@code FilteredResourceWsEndpoint} with the provided
      * {@code broadcaster}
      *
      * @param broadcaster the web socket broadcaster
      */
-    public WsEndpointFilteredResource(final WebSocketBroadcaster broadcaster) {
+    public FilteredResourceWsEndpoint(final WebSocketBroadcaster broadcaster) {
         // noop
     }
 
@@ -130,9 +128,6 @@ public class WsEndpointFilteredResource {
             LOGGER.debug("OPEN: Opening websocket for token {}", token);
             session.put(TOKEN_KEY, token);
             this.messages = new ResourceGenerator(token, embeddedServer.getPort()).iterator();
-            if (!messages.hasNext()) {
-                sendComplete(session);
-            }
             LOGGER.debug("OPEN: WebSocket opened");
         } finally {
             MDC.remove("server");
@@ -146,12 +141,12 @@ public class WsEndpointFilteredResource {
      * @param session The web socket session
      */
     @OnMessage
-    public void onMessage(final Item inmsg, final WebSocketSession session) {
+    public void onMessage(final WebSocketMessage inmsg, final WebSocketSession session) {
         try {
             MDC.put("server", "FR-SVC");
             LOGGER.debug("RCVD: {}", inmsg);
             var type = inmsg.getType();
-            if (type == WebSocketMessageType.CTS) {
+            if (type.equals(MessageType.CTS)) {
                 if (messages.hasNext()) {
                     send(session, messages.next());
                 } else {
@@ -180,15 +175,14 @@ public class WsEndpointFilteredResource {
         }
     }
 
-    private static final void sendComplete(final WebSocketSession session) {
-        send(session, Item.createItem(b -> b
-            .putHeader("token",
-                session.get(TOKEN_KEY, String.class)
-                    .orElseThrow(() -> new IllegalStateException("Missing token key: " + TOKEN_KEY)))
-            .type(WebSocketMessageType.COMPLETE)));
+    private static void sendComplete(final WebSocketSession session) {
+        send(session, WebSocketMessage.Builder.create()
+            .withType(MessageType.COMPLETE)
+            .noHeaders()
+            .noBody());
     }
 
-    private static void send(final WebSocketSession session, final Item message) {
+    private static void send(final WebSocketSession session, final WebSocketMessage message) {
         try {
             MDC.put("server", "FR-SVC");
             session.sendSync(message);

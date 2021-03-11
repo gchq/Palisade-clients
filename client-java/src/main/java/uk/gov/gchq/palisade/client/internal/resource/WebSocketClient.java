@@ -20,7 +20,8 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.Item;
+import uk.gov.gchq.palisade.client.internal.model.MessageType;
+import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
 import uk.gov.gchq.palisade.client.util.Checks;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 
@@ -111,7 +112,7 @@ public class WebSocketClient {
     }
 
     /**
-     * Helper method to create a {@link Item} using a builder function
+     * Helper method to create a {@link WebSocketClient} using a builder function
      *
      * @param func The builder function
      * @return a newly created {@code RequestId}
@@ -128,7 +129,7 @@ public class WebSocketClient {
      * @param unit    a {@code TimeUnit} determining how to interpret the
      *                {@code timeout} parameter
      * @return the the next message, or {@code null} if the specified waiting time
-     *         elapses before a message is available
+     * elapses before a message is available
      */
     public WebSocketMessage poll(final long timeout, final TimeUnit unit) {
         try {
@@ -173,7 +174,7 @@ public class WebSocketClient {
         LOGGER.trace("Emitted : {}", msg);
         try {
             next.put(msg); // block if the last message has not been taken
-            if (msg instanceof CompleteMessage) {
+            if (msg.getType().equals(MessageType.COMPLETE)) {
                 close();
             }
         } catch (InterruptedException e) {

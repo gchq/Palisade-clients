@@ -13,27 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.gov.gchq.palisade.client;
 
-/**
- * The base type of all returned messages
- *
- * @since 0.5.0
- */
-public interface Message {
+import uk.gov.gchq.palisade.resource.LeafResource;
 
-    /**
-     * Returns the type of message
-     *
-     * @return the type of message
-     */
-    MessageType getMessageType();
+public interface QueryItem {
+    enum ItemType {
+        RESOURCE,
+        ERROR
+    }
 
-    /**
-     * Returns the token. All messages will have a token associated with them.
-     *
-     * @return the token.
-     */
+    ItemType getType();
+
     String getToken();
 
+    String asError();
+
+    LeafResource asResource();
 }

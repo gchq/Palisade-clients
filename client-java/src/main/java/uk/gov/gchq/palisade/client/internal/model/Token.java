@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client;
+
+package uk.gov.gchq.palisade.client.internal.model;
 
 /**
- * The type of message returned
- *
- * @since 0.5.0
+ * Simply stores the expected header key for Tokens
+ * Since the content of tokens are strings, there is no need for further implementation
+ * If desired, this could extend eg. UUID if more meaningful Token processing was desired
  */
-public enum MessageType {
+public final class Token {
+    public static final String HEADER = "x-request-token";
 
-    /**
-     * The return message is an error
-     */
-    ERROR,
-
-    /**
-     * The return message is a resource
-     */
-    RESOURCE
-
+    private Token() {
+        // Tokens are just strings, no need to actually have a class for them
+    }
 }

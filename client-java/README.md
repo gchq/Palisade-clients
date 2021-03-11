@@ -1,4 +1,3 @@
-
 <!---
 Copyright 2018-2021 Crown Copyright
 
@@ -27,7 +26,7 @@ Of course there are differences. One of the big differences is that Palisade cli
 
 #### URL
 
-The URL follows the JDBC specification of not exposing the underlying communication protocol. To this end the scheme is set as `pal:[subname]`. 
+The URL follows the JDBC specification of not exposing the underlying communication protocol. To this end the scheme is set as `pal:[subname]`.
 
 If you are familiar with the JDBC url, then the Palisade URL should be familiar. See the examples below:
 
@@ -37,7 +36,8 @@ pal://localhost/cluster?userid=alive
 pal://localhost:1234/cluster?userid=alice&wsport=4321
 ```
 
-Note that any user passed as part of the authority portion of the URL (e.g. "eve" in the above example) will simply be copied to the create Palisade Service and Filtered Resource Service URIs. This use is not the `user_id` that is passed as part of the REST call to the Palisade Service. The user id is passed via a property (`service.userid`) or as a query parameter (userid).
+Note that any user passed as part of the authority portion of the URL (e.g. "eve" in the above example) will simply be copied to the create Palisade Service and Filtered Resource Service URIs. This use is not the `user_id` that is passed as part of the
+REST call to the Palisade Service. The user id is passed via a property (`service.userid`) or as a query parameter (userid).
 
 #### Interfaces
 
@@ -49,9 +49,8 @@ The API is split into many different interfaces, which again, are loosely based 
 | Session | This is roughly the same as JDBCs Connection class. A `Session` provides access to create queries and fetch downloads. At this point there is no security for a session as Palisade does not require it. If this changes in the future, the client API will be unaffected. |
 | Query | This is the instance that sends the request to the Palisade Service. This is where the client deviates from JDBC as the design for this is (very) loosely based upon Hibernate's Query. |
 | QueryResponse | Once the query is executes and the `Query` has returned this via a `Future`, a stream of `Message`'s can be retrieved. This class abstracts the underlying mechanisms of how the Filtered Resource Service is accessed. This has no analogue to JDBC or Hibernate as those libraries do not support streams yet. |
-| Message | Two types of messages can be returned from the Filtered Resource Service and these are abstracted into two subclasses of `Message`. The design choice was to either have two sub types, or have a single type (resource) that can contain an Error. Either way is not wrong. This could change quite easily if needed.  Currently two subclasses exist for Message. These are `Error` and `Resource`. |
+| Message | Two types of messages can be returned from the Filtered Resource Service and these are abstracted into two subclasses of `Message`. The design choice was to either have two sub types, or have a single type (resource) that can contain an Error. Either way is not wrong. This could change quite easily if needed. Currently two subclasses exist for Message. These are `Error` and `Resource`. |
 | Download |  A `Download` is retrieved by passing a `Resource` object to the `Session`. The Download abstracts the call to the data service and provides access to an `InputStream` to consume its contents. |
-
 
 ### Example Usage
 
@@ -64,6 +63,7 @@ A unit test to assert that resources are returned may look like the following. N
 Micronaut will find these services and create and then inject an EmbeddedServer to expose them. The embedded server can be used to get the port which it is listening on. The port will be dynamically created enabling parallel tests.
 
 ```java
+
 @MicronautTest
 class FullTest {
 
@@ -73,20 +73,20 @@ class FullTest {
     @Test
     void testWithDownloadOutsideStream() throws Exception {
 
-        var port = ""+embeddedServer.getPort();
-(1)     var properties = Map.<String, String>of(
+        var port = "" + embeddedServer.getPort();
+        (1) var properties = Map.<String, String>of(
             "service.userid", "alice",
             "service.palisade.port", port,
             "service.filteredResource.port", port);
 
-(2)     var session = ClientManager.openSession("pal://eve@localhost/cluster", properties);
-(3)     var query = session.createQuery("good_morning", Map.of("purpose","Alice's purpose"));
-(4)     var publisher = query
+        (2) var session = ClientManager.openSession("pal://eve@localhost/cluster", properties);
+        (3) var query = session.createQuery("good_morning", Map.of("purpose", "Alice's purpose"));
+        (4) var publisher = query
             .execute()
             .thenApply(QueryResponse::stream)
             .get();
 
-(5)     var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
+        (5) var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
             .filter(m -> m.getType() == MessageType.RESOURCE)
             .map(Resource.class::cast)
             .collect(Collectors.toList())
@@ -94,10 +94,10 @@ class FullTest {
 
         assertThat(resources).hasSizeGreaterThan(0);
 
-(6)     var resource = resources.get(0);
+        (6) var resource = resources.get(0);
         assertThat(resource.getLeafResourceId()).isEqualTo("resources/test-data-0.txt");
 
-(7)     var download = session.fetch(resource);
+        (7) var download = session.fetch(resource);
         assertThat(download).isNotNull();
 
         var actual = download.getInputStream();
@@ -105,7 +105,7 @@ class FullTest {
             .getContextClassLoader()
             .getResourceAsStream("resources/test-data-0.txt");
 
-(8)     assertThat(actual).hasSameContentAs(expected);
+        (8) assertThat(actual).hasSameContentAs(expected);
 
 
     }
@@ -119,7 +119,8 @@ class FullTest {
 4. The query is executed. The request is submitted to Palisade at this point and a `CompleteableFuture` is returned asynchronously. Once Palisade has processed the request, the future will emit a `Publisher` of `Messages` instances.
 5. Convert the `java.util.current.Flow.Publisher` to an RxJava `Flowable` in order to apply filtering and retrieval into a collection of `Resource` instances.
 6. Use the first resource as a test and make sure it's not null
-7. Using the session we fetch the resource. A `Download` instance is returned. At this point the request has been sent and received from the Data Service. The download object provides access to an `InputStream`. The data is not returned from the server until the input stream is first accessed.
+7. Using the session we fetch the resource. A `Download` instance is returned. At this point the request has been sent and received from the Data Service. The download object provides access to an `InputStream`. The data is not returned from the server
+   until the input stream is first accessed.
 8. Using AssertJ the two input streams are checked for equality.
 
 ### Client properties

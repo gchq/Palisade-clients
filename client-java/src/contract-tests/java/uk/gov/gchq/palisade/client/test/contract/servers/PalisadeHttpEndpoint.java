@@ -25,17 +25,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import uk.gov.gchq.palisade.client.internal.request.PalisadeRequest;
-import uk.gov.gchq.palisade.client.internal.request.PalisadeResponse;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeRequest;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeResponse;
 import uk.gov.gchq.palisade.client.testing.ClientTestData;
 
 /**
  * A controller containing our test endpoints
  */
 @Controller("/cluster/palisade/api")
-public class HttpEndpointPalisade {
+public class PalisadeHttpEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HttpEndpointPalisade.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PalisadeHttpEndpoint.class);
 
     /**
      * Returns a test response from the provide test request
@@ -49,7 +49,7 @@ public class HttpEndpointPalisade {
         try {
             MDC.put("server", "PL-SVC");
             LOG.debug("RCVD: {}", request);
-            var palisadeResponse = PalisadeResponse.createPalisadeResponse(b -> b.token(ClientTestData.TOKEN));
+            var palisadeResponse = new PalisadeResponse(ClientTestData.TOKEN);
             LOG.debug("RETN: {}", request);
             return HttpResponse
                 .ok(palisadeResponse)

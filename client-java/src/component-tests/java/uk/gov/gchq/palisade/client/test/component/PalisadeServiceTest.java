@@ -21,7 +21,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.gchq.palisade.client.ClientException;
-import uk.gov.gchq.palisade.client.internal.request.PalisadeRequest;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeRequest;
 import uk.gov.gchq.palisade.client.internal.request.PalisadeService;
 
 import javax.inject.Inject;
@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -39,18 +40,20 @@ import static uk.gov.gchq.palisade.client.testing.ClientTestData.TOKEN;
 @MicronautTest
 class PalisadeServiceTest {
 
-    @Inject ObjectMapper objectMapper;
-    @Inject EmbeddedServer embeddedServer;
+    @Inject
+    ObjectMapper objectMapper;
+    @Inject
+    EmbeddedServer embeddedServer;
 
     @Test
     void testSubmit() throws Exception {
 
         var port = embeddedServer.getPort();
         var uri = new URI("http://localhost:" + port + "/cluster/palisade/api/registerDataRequest");
-        var palisadeRequest = PalisadeRequest.createPalisadeRequest(b -> b
-            .resourceId("resource_id")
-            .userId("user_id")
-            .putContext("key", "value"));
+        var palisadeRequest = PalisadeRequest.Builder.create()
+            .withUserId("user_id")
+            .withResourceId("resource_id")
+            .withContext(Map.of("key", "value"));
 
         var service = PalisadeService.createPalisadeService(b -> b
             .httpClient(HttpClient.newHttpClient())

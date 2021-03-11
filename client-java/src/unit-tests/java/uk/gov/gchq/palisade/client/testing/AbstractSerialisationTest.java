@@ -19,10 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 /**
  * Abstract class providing a serialisation test for a class
@@ -61,7 +59,6 @@ public class AbstractSerialisationTest {
      * @throws Exception if an error occurs
      */
     protected void testInstance(final Object expectedInstance, final String expectedJson) throws Exception {
-
         var objectMapper = getObjectMapper();
 
         var valueType = expectedInstance.getClass();
@@ -69,18 +66,10 @@ public class AbstractSerialisationTest {
         var actualInstance = objectMapper.readValue(actualJson, valueType);
 
         assertThat(actualInstance)
-            .as("check equality using equals()",
-                expectedInstance.getClass().getSimpleName())
-            .isEqualTo(expectedInstance);
-
-        assertThat(actualInstance)
             .as("check equality using recursive equals()",
                 expectedInstance.getClass().getSimpleName())
             .usingRecursiveComparison()
             .isEqualTo(expectedInstance);
-
-        assertEquals("check strict JSON equality", expectedJson, actualJson, JSONCompareMode.STRICT);
-
     }
 
     /**
