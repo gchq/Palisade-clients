@@ -45,7 +45,6 @@ import static uk.gov.gchq.palisade.client.util.Checks.checkNotNull;
  *
  * @since 0.5.0
  */
-@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 public final class Downloader {
 
     /**
@@ -115,6 +114,7 @@ public final class Downloader {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
+    @SuppressWarnings("java:S3242") // Unary Operator vs Function
     public static Downloader createDownloader(final UnaryOperator<DownloaderSetup.Builder> func) {
         return new Downloader(func.apply(new DownloaderSetup.Builder()).build());
     }

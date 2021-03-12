@@ -116,6 +116,7 @@ public class WebSocketClient {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
+    @SuppressWarnings("java:S3242") // Unary Operator vs Function
     public static WebSocketClient createResourceClient(final UnaryOperator<ResourceClientSetup.Builder> func) {
         return new WebSocketClient(func.apply(new ResourceClientSetup.Builder()).build());
     }
