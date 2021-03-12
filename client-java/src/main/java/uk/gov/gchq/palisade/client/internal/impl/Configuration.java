@@ -216,7 +216,7 @@ public class Configuration {
 
     /**
      * Parse a URI QueryParam string into a Map.
-     * e.g. ?key=value&otherKey=otherValue -> (key: value, otherKey: otherValue)
+     * e.g. {@code ?key=value&otherKey=otherValue -> (key: value, otherKey: otherValue)}
      *
      * @param queryParamString a {@link URI#getQuery()} string
      * @return a map built from the query string
