@@ -15,8 +15,8 @@
   ~ limitations under the License.
   -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,20 +41,24 @@
 
         <jackson.version>2.10.0</jackson.version>
         <json-flattener.version>0.11.1</json-flattener.version>
-        
+
         <!-- Provided dependency versions -->
 
         <immutables.version>2.8.2</immutables.version>
-        
+
         <!-- Test dependency versions -->
 
-        <micronaut.version>2.1.1</micronaut.version>
+        <micronaut.version>2.3.4</micronaut.version>
+        <micronaut-test.version>2.3.2</micronaut-test.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.platform.version>1.7.0</junit.platform.version>
-        <awaitility.version>4.0.3</awaitility.version>
-        <assertj.version>3.17.2</assertj.version>
+        <assertj.version>3.19.0</assertj.version>
         <logback.version>1.2.3</logback.version>
-        <equalsverifier.version>3.4.2</equalsverifier.version>
+        <rxjava.version>3.0.8</rxjava.version>
+        <slf4j.version>1.7.26</slf4j.version>
+
+        <mockito.version>3.7.7</mockito.version>
+        <jsonassert.version>1.5.0</jsonassert.version>
 
     </properties>
 
@@ -63,7 +67,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.26</version>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -105,17 +109,16 @@
     </dependencyManagement>
 
     <dependencies>
-    
-        <!--  RUNTIME -->
-        
+
+        <!-- RUNTIME -->
+        <dependency>
+            <groupId>uk.gov.gchq.palisade</groupId>
+            <artifactId>common</artifactId>
+            <version>0.5.0-${common.revision}</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.greenrobot</groupId>
-            <artifactId>eventbus</artifactId>
-            <version>3.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -128,28 +131,13 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-properties</artifactId>
-            <version>${jackson.version}</version>
+            <groupId>io.reactivex.rxjava3</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>${rxjava.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.wnameless.json</groupId>
-            <artifactId>json-flattener</artifactId>
-            <version>${json-flattener.version}</version>
-        </dependency>
-        
+
         <!-- PROVIDED -->
-        
+
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>
@@ -162,7 +150,7 @@
         <dependency>
             <groupId>io.micronaut.test</groupId>
             <artifactId>micronaut-test-junit5</artifactId>
-            <version>${micronaut.version}</version>
+            <version>${micronaut-test.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -202,9 +190,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>${awaitility.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -219,7 +207,23 @@
             <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>${jsonassert.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -231,6 +235,17 @@
                 </includes>
             </resource>
         </resources>
+        <testResources>
+            <testResource>
+                <directory>src/unit-tests/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/component-tests/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/contract-tests/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -274,7 +289,9 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>src/unit-tests/java</source>
+                                <source>${basedir}/src/unit-tests/java</source>
+                                <source>${basedir}/src/component-tests/java</source>
+                                <source>${basedir}/src/contract-tests/java</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -288,12 +305,58 @@
                             <resources>
                                 <resource>
                                     <filtering>true</filtering>
-                                    <directory>src/unit-tests/resources</directory>
+                                    <directory>${basedir}/src/unit-tests/resources</directory>
+                                    <directory>${basedir}/src/component-tests/resources</directory>
+                                    <directory>${basedir}/src/contract-tests/resources</directory>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.22.1</version>
+                <executions>
+                    <execution>
+                        <id>component-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${component-test.skip}</skipITs>
+                            <includes>
+                                <include>**/test/component/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>contract-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${contract-test.skip}</skipITs>
+                            <includes>
+                                <include>**/test/contract/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/test/component/**</exclude>
+                        <exclude>**/test/contract/**</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -24,11 +24,32 @@
         </layout>
     </appender>
 
+    <appender name="CLIENT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{HH:mm:ss.SSS} %-5level CLIENT %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <appender name="SERVER" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{HH:mm:ss.SSS} %-5level %X{server} %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="uk.gov.gchq.palisade.client" level="DEBUG"/>
+    <logger name="uk.gov.gchq.palisade" level="DEBUG" additivity="false">
+        <appender-ref ref="CLIENT"/>
+    </logger>
+    <logger name="uk.gov.gchq.palisade.client.util" level="INFO" additivity="false">
+        <appender-ref ref="CLIENT"/>
+    </logger>
 
     <!--
         <logger name="io.micronaut.discovery" level="TRACE"/>
@@ -36,6 +57,14 @@
         <logger name="io.micronaut.context.condition" level="TRACE"/>
      -->
 
-    <logger name="io.micronaut.http.client" level="INFO"/>
+    <logger name="io.micronaut" level="INFO"/>
+
+    <!--
+      Using a different appender here as MDC is used to make logs easier to read 
+     -->
+    <logger name="uk.gov.gchq.palisade.client.test" level="DEBUG" additivity="false">
+        <appender-ref ref="SERVER"/>
+    </logger>
+
 
 </configuration>

@@ -17,63 +17,49 @@ package uk.gov.gchq.palisade.client.util;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.function.Supplier;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UtilTest {
 
     @Test
-    void testReplaceTokens() {
-
-        var token = "abcd-1";
-        var now = Util.timeStampFormat(Instant.now());
-
-        var replacementMap = Map.<String, Supplier<String>>of(
-            "%t", () -> token,
-            "%s", () -> now);
-
-        var path = Util.replaceTokens("/my/path/t-%t/s-%s.json", replacementMap);
-
-        assertThat(path).isEqualTo(("/my/path/t-" + token + "/s-" + now + ".json"));
-    }
-
-    @Test
-    void testSubstituteWholeVariables() {
-
-        var original = Map.<String, Object>of(
-            "key1", "theValue",
-            "key2", "${key1}",
-            "key3", "${key1}");
-
-        var substituted = Util.substituteVariables(original);
-
-        assertThat(substituted).containsAllEntriesOf(Map.of(
-            "key1", "theValue",
-            "key2", "theValue",
-            "key3", "theValue"));
-
-    }
-
-    @Test
     void testCreateUriFromBasePathAndEndpoint() {
-        assertThat(Util.createUri("http://me", "endpoint").toString()).isEqualTo("http://me/endpoint");
-        assertThat(Util.createUri("http://me/", "endpoint").toString()).isEqualTo("http://me/endpoint");
-        assertThat(Util.createUri("http://me", "endpoint/").toString()).isEqualTo("http://me/endpoint");
-        assertThat(Util.createUri("http://me", "/endpoint/").toString()).isEqualTo("http://me/endpoint");
+
+        assertThat(Util.createUri("http://me", "endpoint").toString())
+            .as("check URI created successfully")
+            .isEqualTo("http://me/endpoint");
+
+        assertThat(Util.createUri("http://me/", "endpoint").toString())
+            .as("check URI created successfully")
+            .isEqualTo("http://me/endpoint");
+
+        assertThat(Util.createUri("http://me", "endpoint/").toString())
+            .as("check URI created successfully")
+            .isEqualTo("http://me/endpoint");
+
+        assertThat(Util.createUri("http://me", "/endpoint/").toString())
+            .as("check URI created successfully")
+            .isEqualTo("http://me/endpoint");
     }
 
     @Test
     void testCreateUriFromBasePathAndEndpoints() {
+
         assertThat(Util.createUri("http://me", "endpoint1", "endpoint2").toString())
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
+
         assertThat(Util.createUri("http://me/", "endpoint1", "/endpoint2").toString())
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
+
         assertThat(Util.createUri("http://me", "endpoint1/", "endpoint2/").toString())
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
+
         assertThat(Util.createUri("http://me", "/endpoint1/", "/endpoint2/").toString())
+            .as("check URI created successfully")
             .isEqualTo("http://me/endpoint1/endpoint2");
+
     }
+
 }
