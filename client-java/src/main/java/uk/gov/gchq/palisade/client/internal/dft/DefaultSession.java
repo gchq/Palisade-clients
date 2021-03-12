@@ -57,13 +57,12 @@ public class DefaultSession implements Session {
      *
      * @param configuration The client configuration
      */
-    @SuppressWarnings("java:S5411") // must use Boolean instead of primitive bool in if (...) statement
     public DefaultSession(final Configuration configuration) {
 
         this.configuration = configuration;
 
         var httpClientBuilder = HttpClient.newBuilder();
-        if (!configuration.<Boolean>get(Configuration.HTTP2_ENABLED)) {
+        if (Boolean.FALSE.equals(configuration.<Boolean>get(Configuration.HTTP2_ENABLED))) {
             httpClientBuilder.version(Version.HTTP_1_1);
         }
         this.httpClient = httpClientBuilder.build();

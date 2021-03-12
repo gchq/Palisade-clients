@@ -41,7 +41,6 @@ import static uk.gov.gchq.palisade.client.internal.resource.WebSocketListener.cr
  *
  * @since 0.5.0
  */
-@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 public class WebSocketClient {
 
     /**
@@ -174,7 +173,7 @@ public class WebSocketClient {
         LOGGER.trace("Emitted : {}", msg);
         try {
             next.put(msg); // block if the last message has not been taken
-            if (msg.getType().equals(MessageType.COMPLETE)) {
+            if (msg.getType() == MessageType.COMPLETE) {
                 close();
             }
         } catch (InterruptedException e) {

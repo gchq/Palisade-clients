@@ -59,7 +59,6 @@ public class DefaultQueryResponse implements QueryResponse {
     }
 
     @Override
-    @SuppressWarnings("java:S5411") // must use Boolean instead of primitive bool in if (...) statement
     public Publisher<QueryItem> stream() {
 
         // our flowable must wrap the websocket client
@@ -74,7 +73,7 @@ public class DefaultQueryResponse implements QueryResponse {
              */
 
             var httpClientBuilder = HttpClient.newBuilder();
-            if (!session.getConfiguration().<Boolean>get(Configuration.HTTP2_ENABLED)) {
+            if (Boolean.FALSE.equals(session.getConfiguration().<Boolean>get(Configuration.HTTP2_ENABLED))) {
                 httpClientBuilder.version(Version.HTTP_1_1);
             }
             var httpClient = httpClientBuilder.build();
@@ -97,7 +96,7 @@ public class DefaultQueryResponse implements QueryResponse {
             do {
                 var wsm = webSocketClient.poll(timeout, TimeUnit.SECONDS);
                 if (wsm != null) {
-                    if (wsm.getType().equals(MessageType.COMPLETE)) {
+                    if (wsm.getType() == MessageType.COMPLETE) {
                         // we're done, so signal complete and set flag to get out
                         emitter.onComplete();
                         loop = false;
