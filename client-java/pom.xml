@@ -144,7 +144,7 @@
 
         <!-- TEST -->
 
-        <!-- Micronaut Testing Dependencies -->
+        <!-- Micronaut Dependencies -->
         <dependency>
             <groupId>io.micronaut.test</groupId>
             <artifactId>micronaut-test-junit5</artifactId>
@@ -182,7 +182,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JUnit Testing Dependencies -->
+        <!-- JUnit Dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
