@@ -24,12 +24,26 @@ import uk.gov.gchq.palisade.resource.LeafResource;
 
 import java.util.Optional;
 
+/**
+ * Use a {@link WebSocketMessage} as a {@link uk.gov.gchq.palisade.client.QueryItem}
+ * (as long as it has the appropriate type).
+ * This matches up {@link MessageType#RESOURCE} with {@link QueryItem.ItemType#RESOURCE}
+ * and {@link MessageType#ERROR} with {@link QueryItem.ItemType#ERROR}.
+ */
 public class DefaultQueryItem implements QueryItem {
 
     private final WebSocketMessage message;
 
+    /**
+     * Use a {@link WebSocketMessage} as a {@link uk.gov.gchq.palisade.client.QueryItem} (as long as it has the appropriate type)
+     *
+     * @param message a WebSocketMessage of type {@link MessageType#RESOURCE} or {@link MessageType#ERROR}
+     * @throws IllegalArgumentException if the WebSocketMessage is of the wrong {@link MessageType}
+     */
     public DefaultQueryItem(final WebSocketMessage message) {
-        assert message.getType() == MessageType.RESOURCE || message.getType() == MessageType.ERROR;
+        if (message.getType() != MessageType.RESOURCE && message.getType() != MessageType.ERROR) {
+            throw new IllegalArgumentException("Message must have type " + MessageType.RESOURCE + " or " + MessageType.ERROR + ", not " + message.getType());
+        }
         this.message = message;
     }
 
@@ -41,7 +55,7 @@ public class DefaultQueryItem implements QueryItem {
             case ERROR:
                 return ItemType.ERROR;
             default:
-                return null;
+                throw new IllegalArgumentException("Message must have type " + MessageType.RESOURCE + " or " + MessageType.ERROR + ", not " + message.getType());
         }
     }
 

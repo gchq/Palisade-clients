@@ -40,7 +40,6 @@ import java.util.function.UnaryOperator;
  *
  * @since 0.5.0
  */
-@SuppressWarnings("java:S3242") // stop erroneous "use general type" message
 public class WebSocketListener implements Listener {
 
     /**
@@ -113,8 +112,8 @@ public class WebSocketListener implements Listener {
      * @param func The builder function
      * @return a newly created {@code RequestId}
      */
-    public static WebSocketListener createResourceClientListener(
-        final UnaryOperator<ResourceClientListenerSetup.Builder> func) {
+    @SuppressWarnings("java:S3242") // Unary Operator vs Function
+    public static WebSocketListener createResourceClientListener(final UnaryOperator<ResourceClientListenerSetup.Builder> func) {
         return new WebSocketListener(func.apply(new ResourceClientListenerSetup.Builder()).build());
     }
 

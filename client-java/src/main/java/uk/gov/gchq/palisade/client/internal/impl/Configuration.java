@@ -141,16 +141,42 @@ public class Configuration {
         this.properties.putAll(properties);
     }
 
+    /**
+     * Get a single value from the config map using the given key.
+     * Available keys are declared as public static Strings by the {@link Configuration} class.
+     *
+     * @param key the key for a configmap object
+     * @param <T> the expected type of the object
+     * @return the value from the configmap
+     */
     @SuppressWarnings("unchecked")
     public <T> T get(final String key) {
         return (T) Optional.ofNullable(this.properties.get(key))
             .orElseThrow(() -> new ConfigurationException(String.format("Missing value for key '%s'", key)));
     }
 
+    /**
+     * Create a config map from a String spec. This must be a URI-compliant string.
+     * It is parsed as {@code pal://cluster.addr:port?additionalKey=value&otherKey=otherValue},
+     * where cluster.addr:port points to the Palisade cluster's Traefik ingress and any other
+     * configuration key/value pairs are passed in as query parameters.
+     *
+     * @param spec a URI-compliant string of the configuration spec
+     * @return a populated config map
+     */
     public static Configuration create(final String spec) {
         return create(URI.create(spec));
     }
 
+    /**
+     * Create a config map from a URI spec.
+     * It is parsed as {@code pal://cluster.addr:port?additionalKey=value&otherKey=otherValue},
+     * where cluster.addr:port points to the Palisade cluster's Traefik ingress and any other
+     * configuration key/value pairs are passed in as query parameters.
+     *
+     * @param spec a URI of the configuration spec
+     * @return a populated config map
+     */
     public static Configuration create(final URI spec) {
         // Parse spec
         var clusterUri = spec.getAuthority() + spec.getPath();
@@ -173,18 +199,28 @@ public class Configuration {
         // Build service URLs
         var palisadeUri = Util.createUri(palisadeScheme + "://" + clusterUri, config.get(PALISADE_PATH));
         var filteredResourceUri = Util.createUri(filteredResourceScheme + "://" + clusterUri, config.get(FILTERED_RESOURCE_PATH));
-        URI dataUri = Util.createUri(dataScheme + "://" + clusterUri, "/data");
+        URI defaultDataUri = Util.createUri(dataScheme + "://" + clusterUri, "/data");
         // Update config
         config.properties.putAll(Map.of(
             PALISADE_URI, palisadeUri,
             FILTERED_RESOURCE_URI, filteredResourceUri,
-            DATA_SERVICE_MAP, Map.of("data-service", dataUri)
+            DATA_SERVICE_MAP, Map.of("data-service", defaultDataUri)
         ));
+
+        LOGGER.debug("Using spec {} built config:", spec);
+        config.properties.forEach((key, value) -> LOGGER.debug("{} = {}", key, value));
 
         // Return config
         return config;
     }
 
+    /**
+     * Parse a URI QueryParam string into a Map.
+     * e.g. {@code ?key=value&otherKey=otherValue -> (key: value, otherKey: otherValue)}
+     *
+     * @param queryParamString a {@link URI#getQuery()} string
+     * @return a map built from the query string
+     */
     private static Map<String, Object> parseQueryParams(final String queryParamString) {
         // Split ?queryParam string over separator - i.e. uri?propA&propB -> [propA, propB]
         return Arrays.stream(queryParamString.split(QUERY_STRING_SEP))
@@ -196,9 +232,9 @@ public class Configuration {
             // Assert the key is in the whitelist and the value can be converted
             .map(kvEntry -> Optional.ofNullable(WHITELIST_PROPERTIES.get(kvEntry.getKey()))
                 // Can the value be converted?
-                .map(valueClass -> {
+                .map((StringProperty<?> valueClass) -> {
                     try {
-                        return valueClass.valueOf(kvEntry.getValue());
+                        return (Object) valueClass.valueOf(kvEntry.getValue());
                     } catch (RuntimeException ex) {
                         throw new ConfigurationException(
                             String.format("Failed to convert value '%s' using converter '%s' from key '%s'", kvEntry.getValue(), valueClass, kvEntry.getKey()),

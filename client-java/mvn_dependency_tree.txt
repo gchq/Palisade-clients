@@ -49,15 +49,19 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 |     \- io.netty:netty-codec:jar:4.1.42.Final:test
 +- org.junit.jupiter:junit-jupiter:jar:5.7.0:test
 |  +- org.junit.jupiter:junit-jupiter-api:jar:5.7.0:test
-|  |  +- org.apiguardian:apiguardian-api:jar:1.1.0:test
 |  |  +- org.opentest4j:opentest4j:jar:1.2.0:test
 |  |  \- org.junit.platform:junit-platform-commons:jar:1.7.0:test
-|  +- org.junit.jupiter:junit-jupiter-params:jar:5.7.0:test
-|  \- org.junit.jupiter:junit-jupiter-engine:jar:5.7.0:test
-|     \- org.junit.platform:junit-platform-engine:jar:1.7.0:test
+|  \- org.junit.jupiter:junit-jupiter-params:jar:5.7.0:test
++- org.junit.jupiter:junit-jupiter-engine:jar:5.7.0:test
+|  +- org.apiguardian:apiguardian-api:jar:1.1.0:test
+|  \- org.junit.platform:junit-platform-engine:jar:1.7.0:test
 +- org.assertj:assertj-core:jar:3.19.0:test
++- ch.qos.logback:logback-classic:jar:1.2.3:test
+|  \- ch.qos.logback:logback-core:jar:1.2.3:test
 +- org.mockito:mockito-core:jar:3.7.7:test
 |  +- net.bytebuddy:byte-buddy:jar:1.10.1:test
 |  +- net.bytebuddy:byte-buddy-agent:jar:1.10.1:test
 |  \- org.objenesis:objenesis:jar:3.1:test
-\- org.mockito:mockito-junit-jupiter:jar:3.7.7:test
++- org.mockito:mockito-junit-jupiter:jar:3.7.7:test
+\- org.skyscreamer:jsonassert:jar:1.5.0:compile
+   \- com.vaadin.external.google:android-json:jar:0.0.20131108.vaadin1:compile
