@@ -12,7 +12,7 @@ List of third-party dependencies grouped by their license type
 * RxJava ([io.reactivex.rxjava3:rxjava:3.0.8](https://github.com/ReactiveX/RxJava))
 * AssertJ fluent assertions ([org.assertj:assertj-core:3.19.0](https://assertj.github.io/doc/assertj-core/))
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
-* common ([uk.gov.gchq.palisade:common:0.5.0-20210308.120007-25](https://github.com/gchq/Palisade-common))
+* common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
 
 ### [Apache-2.0](./licenses/not recognised):
 * akka-http ([com.typesafe.akka:akka-http_2.13:10.2.1](https://akka.io))
