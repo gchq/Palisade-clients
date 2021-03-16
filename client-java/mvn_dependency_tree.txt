@@ -52,7 +52,7 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 |  |  +- org.apiguardian:apiguardian-api:jar:1.1.0:test
 |  |  +- org.opentest4j:opentest4j:jar:1.2.0:test
 |  |  \- org.junit.platform:junit-platform-commons:jar:1.7.0:test
-|  +- org.junit.jupiter:junit-jupiter-params:jar:5.7.0:test
+|  +- org.junit.jupiter:junit-jupiter-params:jar:5.5.2:test
 |  \- org.junit.jupiter:junit-jupiter-engine:jar:5.7.0:test
 |     \- org.junit.platform:junit-platform-engine:jar:1.7.0:test
 +- org.assertj:assertj-core:jar:3.19.0:test
