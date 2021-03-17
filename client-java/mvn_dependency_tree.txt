@@ -60,4 +60,6 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 |  +- net.bytebuddy:byte-buddy:jar:1.10.1:test
 |  +- net.bytebuddy:byte-buddy-agent:jar:1.10.1:test
 |  \- org.objenesis:objenesis:jar:3.1:test
-\- org.mockito:mockito-junit-jupiter:jar:3.7.7:test
++- org.mockito:mockito-junit-jupiter:jar:3.7.7:test
+\- ch.qos.logback:logback-classic:jar:1.2.3:test
+   \- ch.qos.logback:logback-core:jar:1.2.3:test
