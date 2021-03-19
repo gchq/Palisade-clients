@@ -27,8 +27,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <!--  *********** Artifact ID ***********    -->
     <artifactId>client-akka</artifactId>
     <url>https://github.com/gchq/Palisade-clients/tree/develop/client-akka</url>
+    <!--  *********** Artifact ID ***********    -->
 
     <properties>
         <!-- Dependency versions -->
@@ -39,11 +41,18 @@
     </properties>
 
     <dependencies>
+        <!--
+        ~ Palisade
+        -->
         <dependency>
+            <!-- Common types (User, Resource, Context) -->
             <groupId>uk.gov.gchq.palisade</groupId>
             <artifactId>common</artifactId>
             <version>0.5.0-${common.revision}</version>
         </dependency>
+        <!--
+        ~ Akka and Alpakka (Kafka)
+        -->
         <dependency>
             <!-- Core Akka streaming -->
             <groupId>com.typesafe.akka</groupId>
@@ -51,21 +60,9 @@
             <version>${akka.version}</version>
         </dependency>
         <dependency>
-            <!-- Core Akka streaming -->
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-stream-typed_${scala.version}</artifactId>
-            <version>${akka.version}</version>
-        </dependency>
-        <dependency>
             <!-- Akka HTTP/Websocket server -->
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http_${scala.version}</artifactId>
-            <version>${akka.http.version}</version>
-        </dependency>
-        <dependency>
-            <!-- Akka HTTP JSON serialisation -->
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-http-jackson_${scala.version}</artifactId>
             <version>${akka.http.version}</version>
         </dependency>
         <dependency>
