@@ -16,7 +16,8 @@
 
 package uk.gov.gchq.palisade.client.akka;
 
-import uk.gov.gchq.palisade.resource.LeafResource;
+import uk.gov.gchq.palisade.client.akka.common.resource.LeafResource;
+import uk.gov.gchq.palisade.client.akka.common.service.ConnectionDetail;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -49,7 +50,7 @@ public interface Client {
     Publisher<LeafResource> fetch(final String token);
 
     /**
-     * Read a single resource from the appropriate data-service specified by the resource's {@link uk.gov.gchq.palisade.service.ConnectionDetail}.
+     * Read a single resource from the appropriate data-service specified by the resource's {@link ConnectionDetail}.
      *
      * @param token    the token returned from the palisade-service by the {@link #register(String, String, Map)} method.
      * @param resource a resource returned by the filtered-resource-service that the client wishes to read.

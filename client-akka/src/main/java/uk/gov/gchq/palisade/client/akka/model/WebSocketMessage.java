@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import uk.gov.gchq.palisade.Generated;
+import uk.gov.gchq.palisade.client.akka.common.Generated;
 
 import java.util.Collections;
 import java.util.HashMap;
