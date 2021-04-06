@@ -58,6 +58,10 @@ public class DefaultQueryResponse implements QueryResponse {
         this.palisadeResponse = palisadeResponse;
     }
 
+    public PalisadeResponse getPalisadeResponse() {
+        return palisadeResponse;
+    }
+
     @Override
     public Publisher<QueryItem> stream() {
 

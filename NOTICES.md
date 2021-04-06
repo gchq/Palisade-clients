@@ -11,6 +11,9 @@ List of third-party dependencies grouped by their license type
 * RxJava ([io.reactivex.rxjava3:rxjava:3.0.8](https://github.com/ReactiveX/RxJava))
 * AssertJ fluent assertions ([org.assertj:assertj-core:3.19.0](https://assertj.github.io/doc/assertj-core/))
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
+* Spring Shell Starter ([org.springframework.shell:spring-shell-starter:2.0.0.RELEASE](http://projects.spring.io/spring-boot/spring-shell-parent/spring-shell-starter/))
+* client-akka ([uk.gov.gchq.palisade:client-akka:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/client-akka))
+* client-java ([uk.gov.gchq.palisade:client-java:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/client-java))
 * common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
 
 ### [Apache-2.0](./licenses/not recognised):
@@ -30,7 +33,13 @@ List of third-party dependencies grouped by their license type
 ### [GNU Lesser General Public License 2.1](./licenses/gnu_lgpl_2.1.html):
 * Logback Classic Module ([ch.qos.logback:logback-classic:1.2.3](http://logback.qos.ch/logback-classic))
 
+### [GNU Lesser General Public License 2.1](./licenses/gnu_lgpl_2.1.html):
+* Logback Classic Module ([ch.qos.logback:logback-classic:1.2.3](http://logback.qos.ch/logback-classic))
+
 ### [MIT License](./licenses/mit_license.txt):
 * mockito-core ([org.mockito:mockito-core:3.7.7](https://github.com/mockito/mockito))
 * mockito-junit-jupiter ([org.mockito:mockito-junit-jupiter:3.7.7](https://github.com/mockito/mockito))
 * SLF4J API Module ([org.slf4j:slf4j-api:1.7.26](http://www.slf4j.org))
+
+### [The MIT License (MIT)](./licenses/not recognised):
+* jnr-fuse ([com.github.serceman:jnr-fuse:0.5.5](https://github.com/SerCeMan/jnr-fuse))
