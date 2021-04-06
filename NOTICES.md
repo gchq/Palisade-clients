@@ -16,7 +16,6 @@ List of third-party dependencies grouped by their license type
 * Apache Commons Lang ([org.apache.commons:commons-lang3:3.8.1](http://commons.apache.org/proper/commons-lang/))
 * AssertJ fluent assertions ([org.assertj:assertj-core:3.19.0](https://assertj.github.io/doc/assertj-core/))
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
-* common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
 
 ### [Apache-2.0](./licenses/not recognised):
 * akka-http ([com.typesafe.akka:akka-http_2.13:10.2.1](https://akka.io))

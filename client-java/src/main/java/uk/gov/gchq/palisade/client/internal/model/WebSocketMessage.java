@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import uk.gov.gchq.palisade.Generated;
+import uk.gov.gchq.palisade.client.common.Generated;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,9 +44,9 @@ public final class WebSocketMessage {
 
     @JsonCreator
     private WebSocketMessage(
-        final @JsonProperty("type") MessageType type,
-        final @JsonProperty("headers") Map<String, String> headers,
-        final @JsonProperty("body") String body) {
+            final @JsonProperty("type") MessageType type,
+            final @JsonProperty("headers") Map<String, String> headers,
+            final @JsonProperty("body") String body) {
         this.type = type;
         this.headers = headers;
         this.body = body;
@@ -70,7 +70,7 @@ public final class WebSocketMessage {
     @Generated
     public Map<String, String> getHeaders() {
         return Optional.ofNullable(headers)
-            .orElse(Collections.emptyMap());
+                .orElse(Collections.emptyMap());
     }
 
     /**
@@ -97,6 +97,16 @@ public final class WebSocketMessage {
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Failed to deserialize message body as class " + clazz.getName(), e);
         }
+    }
+
+    @Override
+    @Generated
+    public String toString() {
+        return new StringJoiner(", ", WebSocketMessage.class.getSimpleName() + "[", "]")
+                .add("type=" + type)
+                .add("headers=" + headers)
+                .add("body='" + body + "'")
+                .toString();
     }
 
     /**
@@ -178,7 +188,7 @@ public final class WebSocketMessage {
             WebSocketMessage withSerialisedBody(String serialisedBody);
 
             /**
-             * Adds an object body to the WebSocketMessage which is then seralised before adding to the class
+             * Adds an object body to the WebSocketMessage which is then serialised before adding to the class
              *
              * @param body the body
              * @return class {@link WebSocketMessage} for the completed class from the builder.
@@ -200,15 +210,5 @@ public final class WebSocketMessage {
                 return withSerialisedBody(null);
             }
         }
-    }
-
-    @Override
-    @Generated
-    public String toString() {
-        return new StringJoiner(", ", WebSocketMessage.class.getSimpleName() + "[", "]")
-            .add("type=" + type)
-            .add("headers=" + headers)
-            .add("body='" + body + "'")
-            .toString();
     }
 }

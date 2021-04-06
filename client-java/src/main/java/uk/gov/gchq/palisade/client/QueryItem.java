@@ -16,7 +16,7 @@
 
 package uk.gov.gchq.palisade.client;
 
-import uk.gov.gchq.palisade.resource.LeafResource;
+import uk.gov.gchq.palisade.client.common.resource.LeafResource;
 
 /**
  * A QueryItem represents a single available resource as reported by the Filtered-Resource-Service, or an error.
@@ -25,16 +25,6 @@ import uk.gov.gchq.palisade.resource.LeafResource;
  * @since 0.5.0
  */
 public interface QueryItem {
-    /**
-     * The ItemType is the type of the QueryItem received.
-     * This is a narrowing of the full range of responses from the Filtered-Resource-Service
-     * to only the output types the {@link QueryResponse} flow will emit.
-     */
-    enum ItemType {
-        RESOURCE,
-        ERROR
-    }
-
     /**
      * Get the type of this QueryItem, either a leaf resource or an error message
      *
@@ -62,4 +52,14 @@ public interface QueryItem {
      * @return the resource if this item's {@link #getType()} was a {@link ItemType#RESOURCE}, null otherwise
      */
     LeafResource asResource();
+
+    /**
+     * The ItemType is the type of the QueryItem received.
+     * This is a narrowing of the full range of responses from the Filtered-Resource-Service
+     * to only the output types the {@link QueryResponse} flow will emit.
+     */
+    enum ItemType {
+        RESOURCE,
+        ERROR
+    }
 }

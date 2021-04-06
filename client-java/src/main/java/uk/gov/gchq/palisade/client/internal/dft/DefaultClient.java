@@ -44,7 +44,7 @@ public class DefaultClient implements Client {
 
     /*
      * When this class is loaded by a class loader we need to register it with the
-     * {@code Clientmanager}.
+     * {@code ClientManager}.
      */
     static {
         load();

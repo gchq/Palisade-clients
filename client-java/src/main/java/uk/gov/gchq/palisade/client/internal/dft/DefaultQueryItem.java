@@ -17,10 +17,10 @@
 package uk.gov.gchq.palisade.client.internal.dft;
 
 import uk.gov.gchq.palisade.client.QueryItem;
+import uk.gov.gchq.palisade.client.common.resource.LeafResource;
 import uk.gov.gchq.palisade.client.internal.model.MessageType;
 import uk.gov.gchq.palisade.client.internal.model.Token;
 import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
-import uk.gov.gchq.palisade.resource.LeafResource;
 
 import java.util.Optional;
 
@@ -67,16 +67,16 @@ public class DefaultQueryItem implements QueryItem {
     @Override
     public String asError() {
         return Optional.of(getType())
-            .filter(ItemType.ERROR::equals)
-            .map(isError -> message.getBodyObject(String.class))
-            .orElse(null);
+                .filter(ItemType.ERROR::equals)
+                .map(isError -> message.getBodyObject(String.class))
+                .orElse(null);
     }
 
     @Override
     public LeafResource asResource() {
         return Optional.of(getType())
-            .filter(ItemType.RESOURCE::equals)
-            .map(isResource -> message.getBodyObject(LeafResource.class))
-            .orElse(null);
+                .filter(ItemType.RESOURCE::equals)
+                .map(isResource -> message.getBodyObject(LeafResource.class))
+                .orElse(null);
     }
 }

@@ -59,13 +59,13 @@ public abstract class ClientTestData {
             var name = split[0];
             long seed = -1;
             try {
-                seed = Long.valueOf(split[1]);
+                seed = Long.parseLong(split[1]);
             } catch (NumberFormatException nfe) {
                 throw new IllegalArgumentException("Expected seed to be a long value, but was: " + split[1]);
             }
             int bytes = -1;
             try {
-                bytes = Integer.valueOf(split[2]);
+                bytes = Integer.parseInt(split[2]);
                 checkArgument(seed >= 0, "#bytes must be >0");
             } catch (NumberFormatException nfe) {
                 throw new IllegalArgumentException("Expected bytes to be an int value > 0, but was: " + split[2]);

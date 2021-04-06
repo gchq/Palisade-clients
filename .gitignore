@@ -25,7 +25,6 @@ bin/
 _book
 node_modules/
 .extract/
-.project/
 .settings/
 .terraform/
 terraform.tfvars
@@ -44,14 +43,12 @@ eclipse-formatter.xml
 
 ### Eclipse ###
 .metadata
-bin/
 tmp/
 *.tmp
 *.bak
 *.swp
 *~.nib
 local.properties
-.settings/
 .loadpath
 .recommenders
 

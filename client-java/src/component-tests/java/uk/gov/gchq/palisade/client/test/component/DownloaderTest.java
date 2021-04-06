@@ -23,10 +23,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import uk.gov.gchq.palisade.client.common.resource.impl.FileResource;
+import uk.gov.gchq.palisade.client.common.service.SimpleConnectionDetail;
 import uk.gov.gchq.palisade.client.internal.download.Downloader;
 import uk.gov.gchq.palisade.client.internal.download.DownloaderException;
-import uk.gov.gchq.palisade.resource.impl.FileResource;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 
@@ -80,7 +80,7 @@ class DownloaderTest {
         // the one in /tmp. Both these files are compared byte by byte for equality.
 
         try (var actual = download.getInputStream();
-             var expected = FILE_NAME_0.createStream();
+             var expected = FILE_NAME_0.createStream()
         ) {
             assertThat(actual)
                 .as("check downloaded input stream")

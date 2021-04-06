@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import uk.gov.gchq.palisade.Generated;
+import uk.gov.gchq.palisade.client.common.Generated;
 
 import java.util.Optional;
 import java.util.StringJoiner;
@@ -57,7 +57,7 @@ public final class PalisadeResponse {
     @Generated
     public String toString() {
         return new StringJoiner(", ", PalisadeResponse.class.getSimpleName() + "[", "]")
-            .add("token='" + token + "'")
-            .toString();
+                .add("token='" + token + "'")
+                .toString();
     }
 }

@@ -76,7 +76,7 @@ class FullTest {
         assertThat(download).as("check download exists").isNotNull();
 
         try (var actual = download.getInputStream();
-             var expected = FILE_NAME_0.createStream();
+             var expected = FILE_NAME_0.createStream()
         ) {
             assertThat(actual).as("check stream download").hasSameContentAs(expected);
         }

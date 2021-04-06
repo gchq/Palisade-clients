@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import uk.gov.gchq.palisade.Generated;
+import uk.gov.gchq.palisade.client.common.Generated;
 
 import java.util.Optional;
 import java.util.StringJoiner;
@@ -37,13 +37,13 @@ public final class DataRequest {
 
     @JsonCreator
     private DataRequest(
-        final @JsonProperty("token") String token,
-        final @JsonProperty("leafResourceId") String leafResourceId) {
+            final @JsonProperty("token") String token,
+            final @JsonProperty("leafResourceId") String leafResourceId) {
 
         this.token = Optional.ofNullable(token)
-            .orElseThrow(() -> new IllegalArgumentException("token cannot be null"));
+                .orElseThrow(() -> new IllegalArgumentException("token cannot be null"));
         this.leafResourceId = Optional.ofNullable(leafResourceId)
-            .orElseThrow(() -> new IllegalArgumentException("leafResourceId cannot be null"));
+                .orElseThrow(() -> new IllegalArgumentException("leafResourceId cannot be null"));
     }
 
     @Generated
@@ -54,6 +54,15 @@ public final class DataRequest {
     @Generated
     public String getLeafResourceId() {
         return leafResourceId;
+    }
+
+    @Override
+    @Generated
+    public String toString() {
+        return new StringJoiner(", ", DataRequest.class.getSimpleName() + "[", "]")
+                .add("token='" + token + "'")
+                .add("leafResourceId='" + leafResourceId + "'")
+                .toString();
     }
 
     /**
@@ -69,7 +78,7 @@ public final class DataRequest {
          */
         public static IToken create() {
             return token -> leafResourceId ->
-                new DataRequest(token, leafResourceId);
+                    new DataRequest(token, leafResourceId);
         }
 
         /**
@@ -98,14 +107,5 @@ public final class DataRequest {
             DataRequest withLeafResourceId(String leafResourceId);
         }
 
-    }
-
-    @Override
-    @Generated
-    public String toString() {
-        return new StringJoiner(", ", DataRequest.class.getSimpleName() + "[", "]")
-            .add("token='" + token + "'")
-            .add("leafResourceId='" + leafResourceId + "'")
-            .toString();
     }
 }

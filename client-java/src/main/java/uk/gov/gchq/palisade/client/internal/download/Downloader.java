@@ -20,11 +20,11 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.client.common.resource.LeafResource;
 import uk.gov.gchq.palisade.client.internal.impl.ConfigurationException;
 import uk.gov.gchq.palisade.client.internal.model.DataRequest;
 import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 import uk.gov.gchq.palisade.client.util.Util;
-import uk.gov.gchq.palisade.resource.LeafResource;
 
 import java.io.IOException;
 import java.io.InputStream;

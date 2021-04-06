@@ -13,24 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.gchq.palisade.client.internal.download;
 
-import org.junit.jupiter.api.Test;
+package uk.gov.gchq.palisade.client.common.resource;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-class DownloaderExceptionTest {
-
-    /**
-     * Test method for {@link DownloaderException#getStatusCode()}.
-     */
-    @Test
-    void testGetStatusCode() {
-        var expectedCode = 400;
-        var exception = new DownloaderException("oops", expectedCode);
-        assertThat(exception.getStatusCode())
-                .as("check %s's status code", DownloaderException.class.getSimpleName())
-                .isEqualTo(400);
-    }
+/**
+ * This interface indicates that a resource has child resources which can be
+ * found by using the resource service to getResourcesByResource passing in the
+ * current resource
+ */
+public interface ParentResource extends Resource {
 
 }

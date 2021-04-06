@@ -22,13 +22,13 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import uk.gov.gchq.palisade.client.common.resource.LeafResource;
+import uk.gov.gchq.palisade.client.common.service.ConnectionDetail;
+import uk.gov.gchq.palisade.client.common.service.SimpleConnectionDetail;
 import uk.gov.gchq.palisade.client.internal.model.MessageType;
 import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketClient;
 import uk.gov.gchq.palisade.client.testing.ClientTestData;
-import uk.gov.gchq.palisade.resource.LeafResource;
-import uk.gov.gchq.palisade.service.ConnectionDetail;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 
@@ -59,18 +59,22 @@ class ResourceClientTest {
 
     private int port;
 
+    private static ConnectionDetail connDet(final String uri) {
+        return new SimpleConnectionDetail().serviceName("data-service");
+    }
+
     @BeforeEach
     void setup() {
         this.port = embeddedServer.getPort();
         this.objectMapper = new ObjectMapper().registerModule(new Jdk8Module());
 
         this.resourceClient = WebSocketClient
-            .createResourceClient(b -> b
-                .httpClient(HttpClient.newHttpClient())
-                .token(TOKEN)
-                .uri(URI.create("ws://localhost:" + port + "/cluster/filteredResource/resource/%25t"))
-                .objectMapper(objectMapper))
-            .connect();
+                .createResourceClient(b -> b
+                        .httpClient(HttpClient.newHttpClient())
+                        .token(TOKEN)
+                        .uri(URI.create("ws://localhost:" + port + "/cluster/filteredResource/resource/%25t"))
+                        .objectMapper(objectMapper))
+                .connect();
     }
 
     @Test
@@ -91,35 +95,31 @@ class ResourceClientTest {
         assertThat(messages).hasSize(ClientTestData.FILE_NAMES.size() + 2); // (n*resources) + (1*error) + (1*complete)
 
         assertThat(messages.get(0))
-            .as("check resource event0")
-            .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.RESOURCE))
-            .extracting(msg -> msg.getBodyObject(LeafResource.class))
-            .extracting("id", "connectionDetail")
-            .containsExactly(FILE_NAME_0.asString(), connDet("http://localhost:" + embeddedServer.getPort() + "/cluster/data"));
+                .as("check resource event0")
+                .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.RESOURCE))
+                .extracting(msg -> msg.getBodyObject(LeafResource.class))
+                .extracting("id", "connectionDetail")
+                .containsExactly(FILE_NAME_0.asString(), connDet("http://localhost:" + embeddedServer.getPort() + "/cluster/data"));
 
         assertThat(messages.get(1))
-            .as("check resource event1")
-            .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.RESOURCE))
-            .extracting(msg -> msg.getBodyObject(LeafResource.class))
-            .extracting("id", "connectionDetail")
-            .containsExactly(FILE_NAME_1.asString(), connDet("http://localhost:" + embeddedServer.getPort() + "/cluster/data"));
+                .as("check resource event1")
+                .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.RESOURCE))
+                .extracting(msg -> msg.getBodyObject(LeafResource.class))
+                .extracting("id", "connectionDetail")
+                .containsExactly(FILE_NAME_1.asString(), connDet("http://localhost:" + embeddedServer.getPort() + "/cluster/data"));
 
         assertThat(messages.get(2))
-            .as("check event2 (error)")
-            .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.ERROR))
-            .extracting(msg -> msg.getBodyObject(String.class))
-            .isEqualTo("test error");
+                .as("check event2 (error)")
+                .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.ERROR))
+                .extracting(msg -> msg.getBodyObject(String.class))
+                .isEqualTo("test error");
 
         assertThat(messages.get(3))
-            .as("check event3 (complete)")
-            .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.COMPLETE))
-            .extracting(WebSocketMessage::getBody)
-            .isNull();
+                .as("check event3 (complete)")
+                .satisfies(msg -> assertThat(msg.getType()).isEqualTo(MessageType.COMPLETE))
+                .extracting(WebSocketMessage::getBody)
+                .isNull();
 
-    }
-
-    private static ConnectionDetail connDet(final String uri) {
-        return new SimpleConnectionDetail().serviceName("data-service");
     }
 
 }

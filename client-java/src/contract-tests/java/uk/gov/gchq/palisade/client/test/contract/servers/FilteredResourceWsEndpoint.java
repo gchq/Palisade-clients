@@ -26,12 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import uk.gov.gchq.palisade.client.common.resource.impl.FileResource;
+import uk.gov.gchq.palisade.client.common.resource.impl.SystemResource;
+import uk.gov.gchq.palisade.client.common.service.SimpleConnectionDetail;
 import uk.gov.gchq.palisade.client.internal.model.MessageType;
 import uk.gov.gchq.palisade.client.internal.model.Token;
 import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
-import uk.gov.gchq.palisade.resource.impl.FileResource;
-import uk.gov.gchq.palisade.resource.impl.SystemResource;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 
@@ -52,55 +52,9 @@ import static uk.gov.gchq.palisade.client.testing.ClientTestData.FILE_NAMES;
 public class FilteredResourceWsEndpoint {
 
     private static final String TOKEN_KEY = "token";
-
-    /**
-     * Generates test resources
-     *
-     * @since 0.5.0
-     */
-    public static class ResourceGenerator implements Iterable<WebSocketMessage> {
-
-        private final List<WebSocketMessage> messages;
-        private final String token;
-
-        /**
-         * Creates a new {@code ResourceGenerator} with the provided {@code token} and
-         * {@code port}
-         *
-         * @param token the token
-         * @param port  the port
-         */
-        public ResourceGenerator(final String token, final int port) {
-            this.token = token;
-            this.messages = Stream.of(FILE_NAMES.stream()
-                    .map(filename -> WebSocketMessage.Builder.create().withType(MessageType.RESOURCE)
-                        .withHeader(Token.HEADER, token).noHeaders()
-                        .withBody(new FileResource()
-                            .id(filename)
-                            .serialisedFormat("format")
-                            .type("type")
-                            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"))
-                            .parent(new SystemResource().id("parent")))),
-                Stream.of(WebSocketMessage.Builder.create()
-                    .withType(MessageType.ERROR)
-                    .withHeader(Token.HEADER, token).noHeaders()
-                    .withBody("test error")))
-                .flatMap(Function.identity())
-                .collect(Collectors.toList());
-
-        }
-
-        @Override
-        public Iterator<WebSocketMessage> iterator() {
-            return messages.iterator();
-        }
-
-    }
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilteredResourceWsEndpoint.class);
     @Inject
     EmbeddedServer embeddedServer;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FilteredResourceWsEndpoint.class);
     private Iterator<WebSocketMessage> messages;
 
     /**
@@ -111,6 +65,23 @@ public class FilteredResourceWsEndpoint {
      */
     public FilteredResourceWsEndpoint(final WebSocketBroadcaster broadcaster) {
         // noop
+    }
+
+    private static void sendComplete(final WebSocketSession session) {
+        send(session, WebSocketMessage.Builder.create()
+                .withType(MessageType.COMPLETE)
+                .noHeaders()
+                .noBody());
+    }
+
+    private static void send(final WebSocketSession session, final WebSocketMessage message) {
+        try {
+            MDC.put("server", "FR-SVC");
+            session.sendSync(message);
+            LOGGER.debug("SEND: {}", message);
+        } finally {
+            MDC.remove("server");
+        }
     }
 
     /**
@@ -175,21 +146,46 @@ public class FilteredResourceWsEndpoint {
         }
     }
 
-    private static void sendComplete(final WebSocketSession session) {
-        send(session, WebSocketMessage.Builder.create()
-            .withType(MessageType.COMPLETE)
-            .noHeaders()
-            .noBody());
-    }
+    /**
+     * Generates test resources
+     *
+     * @since 0.5.0
+     */
+    public static class ResourceGenerator implements Iterable<WebSocketMessage> {
 
-    private static void send(final WebSocketSession session, final WebSocketMessage message) {
-        try {
-            MDC.put("server", "FR-SVC");
-            session.sendSync(message);
-            LOGGER.debug("SEND: {}", message);
-        } finally {
-            MDC.remove("server");
+        private final List<WebSocketMessage> messages;
+
+        /**
+         * Creates a new {@code ResourceGenerator} with the provided {@code token} and
+         * {@code port}
+         *
+         * @param token the token
+         * @param port  the port
+         */
+        public ResourceGenerator(final String token, final int port) {
+            this.messages = Stream.of(FILE_NAMES.stream()
+                            .map(filename -> WebSocketMessage.Builder.create().withType(MessageType.RESOURCE)
+                                    .withHeader(Token.HEADER, token).noHeaders()
+                                    .withBody(new FileResource()
+                                            .id(filename)
+                                            .serialisedFormat("format")
+                                            .type("type")
+                                            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"))
+                                            .parent(new SystemResource().id("parent")))),
+                    Stream.of(WebSocketMessage.Builder.create()
+                            .withType(MessageType.ERROR)
+                            .withHeader(Token.HEADER, token).noHeaders()
+                            .withBody("test error")))
+                    .flatMap(Function.identity())
+                    .collect(Collectors.toList());
+
         }
+
+        @Override
+        public Iterator<WebSocketMessage> iterator() {
+            return messages.iterator();
+        }
+
     }
 
 }

@@ -178,7 +178,7 @@ public final class WebSocketMessage {
             WebSocketMessage withSerialisedBody(String serialisedBody);
 
             /**
-             * Adds an object body to the WebSocketMessage which is then seralised before adding to the class
+             * Adds an object body to the WebSocketMessage which is then serialised before adding to the class
              *
              * @param body the body
              * @return class {@link WebSocketMessage} for the completed class from the builder.
