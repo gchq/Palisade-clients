@@ -123,7 +123,7 @@ public class AkkaClient implements Client {
                 // Expose source and sink to this stage in materialization
                 .viaMat(exposeSinkAndSource, Keep.right())
                 // Take until COMPLETE message is seen
-                .takeWhile(wsMessage -> !wsMessage.getType().equals(MessageType.COMPLETE))
+                .takeWhile(wsMessage -> wsMessage.getType() != MessageType.COMPLETE)
                 // Handle how to 'echo back' a message
                 .map((WebSocketMessage wsMessage) -> {
                     switch (wsMessage.getType()) {
@@ -152,9 +152,9 @@ public class AkkaClient implements Client {
                 // Return the connected Source
                 .thenApply(ignored -> downstreamSource))
                 // Take until COMPLETE message is seen
-                .takeWhile(wsMessage -> !wsMessage.getType().equals(MessageType.COMPLETE))
+                .takeWhile(wsMessage -> wsMessage.getType() != MessageType.COMPLETE)
                 // Extract LeafResource from message object
-                .filter(wsMessage -> wsMessage.getType().equals(MessageType.RESOURCE))
+                .filter(wsMessage -> wsMessage.getType() == MessageType.RESOURCE)
                 .map(msg -> msg.getBodyObject(LeafResource.class));
     }
 

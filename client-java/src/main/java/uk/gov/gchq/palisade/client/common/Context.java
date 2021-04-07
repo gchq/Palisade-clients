@@ -48,10 +48,18 @@ public class Context {
     private static final String PURPOSE = "purpose";
     private Map<String, Object> contents;
 
+    /**
+     * Creates a context class with an empty contents
+     */
     public Context() {
         this(new HashMap<>());
     }
 
+    /**
+     * Creates a context object with a Map of contents containing purposes
+     *
+     * @param contents a map of reasons to access the data, as a purpose
+     */
     @JsonCreator
     public Context(@JsonProperty("contents") final Map<String, Object> contents) {
         this.setContents(contents);
@@ -69,7 +77,7 @@ public class Context {
     }
 
     @Generated
-    public void setContents(final Map<String, Object> contents) {
+    public final void setContents(final Map<String, Object> contents) {
         requireNonNull(contents);
         this.contents = contents;
     }
@@ -88,6 +96,7 @@ public class Context {
     }
 
     @JsonIgnore
+    @SuppressWarnings({"java:S1166", "java:S112"})
     public String getPurpose() {
         try {
             return (String) contents.get(PURPOSE);
