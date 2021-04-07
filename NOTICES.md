@@ -5,6 +5,7 @@ List of third-party dependencies grouped by their license type
 * jackson-databind ([com.fasterxml.jackson.core:jackson-databind:2.10.0](http://github.com/FasterXML/jackson))
 * Jackson datatype: jdk8 ([com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.10.0](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jdk8))
 * Micronaut ([io.micronaut:micronaut-http-server-netty:2.3.2](http://micronaut.io))
+* Micronaut ([io.micronaut:micronaut-inject:2.3.2](http://micronaut.io))
 * Micronaut ([io.micronaut:micronaut-inject-java:2.3.2](http://micronaut.io))
 * Micronaut ([io.micronaut:micronaut-runtime:2.3.2](http://micronaut.io))
 * Micronaut Test ([io.micronaut.test:micronaut-test-junit5:2.3.2](http://micronaut.io))
@@ -29,9 +30,6 @@ List of third-party dependencies grouped by their license type
 * JUnit Jupiter Engine ([org.junit.jupiter:junit-jupiter-engine:5.7.0](https://junit.org/junit5/))
 * JUnit Platform Commons ([org.junit.platform:junit-platform-commons:1.7.0](https://junit.org/junit5/))
 * JUnit Platform Engine API ([org.junit.platform:junit-platform-engine:1.7.0](https://junit.org/junit5/))
-
-### [GNU Lesser General Public License 2.1](./licenses/gnu_lgpl_2.1.html):
-* Logback Classic Module ([ch.qos.logback:logback-classic:1.2.3](http://logback.qos.ch/logback-classic))
 
 ### [GNU Lesser General Public License 2.1](./licenses/gnu_lgpl_2.1.html):
 * Logback Classic Module ([ch.qos.logback:logback-classic:1.2.3](http://logback.qos.ch/logback-classic))

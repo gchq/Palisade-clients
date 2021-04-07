@@ -16,52 +16,43 @@
 
 package uk.gov.gchq.palisade.client.fuse;
 
-import akka.actor.ActorSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.gov.gchq.palisade.client.akka.AkkaClient;
 import uk.gov.gchq.palisade.client.fuse.client.ResourceTreeClient;
 import uk.gov.gchq.palisade.client.fuse.client.ResourceTreeClient.ResourceTreeWithContext;
 import uk.gov.gchq.palisade.client.fuse.fs.ResourceTreeFS;
+import uk.gov.gchq.palisade.client.fuse.tree.impl.LeafResourceNode;
+import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
 
-import java.net.URI;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.function.Function;
 
 public class FuseClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(FuseClient.class);
     private final ResourceTreeClient client;
-    private final Map<String, String> dataServiceMap;
 
-    public FuseClient(final String palisadeService, final String filteredResourceService, final String dataService) {
-        ActorSystem actorSystem = ActorSystem.create();
-        AkkaClient akkaClient = new AkkaClient(palisadeService, filteredResourceService, actorSystem);
-        this.client = new ResourceTreeClient(actorSystem, akkaClient);
-        this.dataServiceMap = Map.of("data-service", dataService);
+    public FuseClient(String clientUri) {
+        this.client = new ResourceTreeClient(new DefaultClient().connect(clientUri));
     }
 
     public static void main(final String... args) {
-        if (args.length == 8) {
-            new FuseClient(args[1], args[2], args[3])
-                    .mount(args[4], args[5], args[6], args[7]);
+        if (args.length == 4) {
+            new FuseClient(args[1])
+                    .mount(args[2], args[3]);
         } else {
-            LOGGER.error("Usage: {} <palisadeService> <filteredResourceService> <dataService> <userId> <purpose> <resourceId> <mountDir>", args[0]);
+            LOGGER.error("Usage: {} <clientUri> <resourceId> <mountDir>", args[0]);
         }
     }
 
-    public void mount(final String userId, final String purpose, final String resourceId, final String mountDir) {
-        Map<String, String> env = Stream.of(dataServiceMap, Map.of("userId", userId, "purpose", purpose))
-                .flatMap(map -> map.entrySet().stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        URI resourceIdUri = URI.create(resourceId);
+    public void mount(final String resourceId, final String mountDir) {
         Path mountPath = Paths.get(mountDir);
 
-        ResourceTreeWithContext tree = client.register(resourceIdUri, env);
-        ResourceTreeFS fuseFs = new ResourceTreeFS(tree, node -> client.read(tree.getToken(), node));
+        ResourceTreeWithContext tree = client.register(resourceId);
+        Function<LeafResourceNode, InputStream> reader = node -> client.read(tree.getToken(), node);
+        ResourceTreeFS fuseFs = new ResourceTreeFS(tree, reader);
 
         try {
             fuseFs.mount(mountPath, true, false);

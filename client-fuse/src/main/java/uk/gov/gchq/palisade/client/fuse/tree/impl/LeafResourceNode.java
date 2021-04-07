@@ -51,7 +51,7 @@ public class LeafResourceNode implements ChildNode<Resource> {
     }
 
     @Override
-    public Resource get() {
+    public LeafResource get() {
         return resource;
     }
 

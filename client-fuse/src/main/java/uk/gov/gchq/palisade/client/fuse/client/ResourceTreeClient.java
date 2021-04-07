@@ -16,14 +16,14 @@
 
 package uk.gov.gchq.palisade.client.fuse.client;
 
-import akka.actor.ActorSystem;
-
-import uk.gov.gchq.palisade.client.akka.AkkaClient;
+import uk.gov.gchq.palisade.client.QueryItem;
 import uk.gov.gchq.palisade.client.fuse.tree.ResourceTree;
 import uk.gov.gchq.palisade.client.fuse.tree.impl.LeafResourceNode;
+import uk.gov.gchq.palisade.client.internal.dft.DefaultQueryResponse;
+import uk.gov.gchq.palisade.client.internal.dft.DefaultSession;
+import uk.gov.gchq.palisade.client.internal.model.PalisadeResponse;
 import uk.gov.gchq.palisade.resource.ChildResource;
 import uk.gov.gchq.palisade.resource.LeafResource;
-import uk.gov.gchq.palisade.resource.ParentResource;
 import uk.gov.gchq.palisade.resource.Resource;
 import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 
@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
 
+@SuppressWarnings("unchecked")
 public class ResourceTreeClient {
     public static class ResourceTreeWithContext extends ResourceTree {
         private final String token;
@@ -46,19 +47,17 @@ public class ResourceTreeClient {
         }
     }
 
-    private ActorSystem actorSystem;
-    private AkkaClient client;
+    private final DefaultSession session;
 
-    public ResourceTreeClient(final ActorSystem actorSystem, final AkkaClient client) {
-        this.actorSystem = actorSystem;
-        this.client = client;
+    public ResourceTreeClient(DefaultSession session) {
+        this.session = session;
     }
 
-    URI stripScheme(final URI uri) {
+    static URI stripScheme(final URI uri) {
         return URI.create(uri.getSchemeSpecificPart());
     }
 
-    String stripScheme(final String uri) {
+    static String stripScheme(final String uri) {
         return stripScheme(URI.create(uri)).toString();
     }
 
@@ -66,8 +65,7 @@ public class ResourceTreeClient {
         return resource.id(stripScheme(resource.getId()));
     }
 
-
-    String reapplyScheme(final String path) {
+    static String reapplyScheme(final String path) {
         return "file:" + URI.create(path).getSchemeSpecificPart();
     }
 
@@ -89,28 +87,43 @@ public class ResourceTreeClient {
         };
     }
 
-    Resource formatResource(final Resource resource, final UnaryOperator<Resource> formatter) {
+    <T extends Resource> T formatResource(final T resource, final UnaryOperator<Resource> formatter) {
         if (resource instanceof ChildResource) {
-            ((ChildResource) resource).parent((ParentResource) formatResource(((ChildResource) resource).getParent(), formatter));
+            ((ChildResource) resource).parent(formatResource(((ChildResource) resource).getParent(), formatter));
         }
-        return formatter.apply(resource);
+        return (T) formatter.apply(resource);
     }
 
-    public ResourceTreeWithContext register(final URI resourceId, final Map<String, String> env) {
-        String userId = env.get("userId");
-        Map<String, String> context = Map.of("purpose", env.get("purpose"));
-        CompletableFuture<ResourceTreeWithContext> resourceTree = client.register(userId, resourceId.toString(), context)
-                .thenApply(ResourceTreeWithContext::new)
-                .toCompletableFuture();
-        resourceTree.thenCompose(tree ->
-                client.fetchSource(tree.getToken())
-                        .runForeach(leaf -> tree.add(formatResource(formatResource(leaf, this::stripScheme), substDataServiceAddress(env))), actorSystem)
-                        .toCompletableFuture())
-                .join();
-        return resourceTree.join();
+    public ResourceTreeWithContext register(final String resourceId) {
+        CompletableFuture<DefaultQueryResponse> response = session
+                .createQuery(resourceId)
+                .execute()
+                .thenApply(DefaultQueryResponse.class::cast);
+        CompletableFuture<ResourceTreeWithContext> resourceTree = response
+                .thenApply(DefaultQueryResponse::getPalisadeResponse)
+                .thenApply(PalisadeResponse::getToken)
+                .thenApply(ResourceTreeWithContext::new);
+        CompletableFuture<ResourceTreeWithContext> populator = response
+                .thenApply(DefaultQueryResponse::stream)
+                .thenCombine(
+                        resourceTree,
+                        (stream, tree) -> {
+                            stream.subscribe((OnNextStubSubscriber<QueryItem>) queryItem -> {
+                                LeafResource leaf = queryItem.asResource();
+                                UnaryOperator<Resource> formatter = this::stripScheme;
+                                tree.add(formatResource(leaf, formatter));
+                            });
+                            return tree;
+                        }
+                );
+        return populator.join();
     }
 
     public InputStream read(final String token, final LeafResourceNode node) {
-        return client.read(token, (LeafResource) formatResource(node.get(), this::reapplyScheme));
+        UnaryOperator<Resource> formatter = this::reapplyScheme;
+        QueryItem queryItem = new LeafResourceQueryItem(formatResource(node.get(), formatter), token);
+        return session
+                .fetch(queryItem)
+                .getInputStream();
     }
 }
