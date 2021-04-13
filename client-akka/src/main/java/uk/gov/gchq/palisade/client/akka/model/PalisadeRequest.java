@@ -21,9 +21,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import uk.gov.gchq.palisade.client.akka.common.Context;
 import uk.gov.gchq.palisade.client.akka.common.Generated;
-
-import javax.naming.Context;
 
 import java.util.Map;
 import java.util.Optional;

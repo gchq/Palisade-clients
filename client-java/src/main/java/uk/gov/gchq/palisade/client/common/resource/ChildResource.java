@@ -25,8 +25,8 @@ public interface ChildResource extends Resource {
     /**
      * Creates a child resource by specifying its parent
      *
-     * @param parent the parent of this ChildResouce
-     * @return a ChildResource with a parent in its heirarchy
+     * @param parent the parent of this ChildResource
+     * @return a ChildResource with a parent in its hierarchy
      */
     ChildResource parent(ParentResource parent);
 

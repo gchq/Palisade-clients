@@ -16,7 +16,6 @@
 
 package uk.gov.gchq.palisade.client.akka.common.resource.impl;
 
-
 import uk.gov.gchq.palisade.client.akka.common.resource.AbstractLeafResource;
 import uk.gov.gchq.palisade.client.akka.common.resource.ParentResource;
 import uk.gov.gchq.palisade.client.akka.common.service.ConnectionDetail;
