@@ -130,6 +130,5 @@ class FullTest {
                     LOGGER.debug("## Subscribed");
                 }
             });
-
     }
 }

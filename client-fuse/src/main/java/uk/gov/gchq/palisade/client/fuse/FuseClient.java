@@ -34,7 +34,7 @@ public class FuseClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(FuseClient.class);
     private final ResourceTreeClient client;
 
-    public FuseClient(String clientUri) {
+    public FuseClient(final String clientUri) {
         this.client = new ResourceTreeClient(new DefaultClient().connect(clientUri));
     }
 

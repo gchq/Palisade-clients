@@ -23,7 +23,7 @@ class LeafResourceQueryItem implements QueryItem {
     private final LeafResource leafResource;
     private final String token;
 
-    public LeafResourceQueryItem(final LeafResource leafResource, final String token) {
+    protected LeafResourceQueryItem(final LeafResource leafResource, final String token) {
         this.leafResource = leafResource;
         this.token = token;
     }

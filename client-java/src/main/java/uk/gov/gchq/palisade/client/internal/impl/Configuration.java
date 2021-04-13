@@ -121,6 +121,12 @@ public class Configuration {
 
     // Required and derived
     /**
+     * The original URI Spec string passed to the configuration class.
+     * <p>
+     * Required
+     */
+    public static final String SPEC_URI = "spec.uri";
+    /**
      * Full path to palisade-service request endpoint.
      * <p>
      * Derived, example 'http://my.cluster:1234/ingress/palisade/api/registerDataRequest'
@@ -202,6 +208,7 @@ public class Configuration {
         URI defaultDataUri = Util.createUri(dataScheme + "://" + clusterUri, "/data");
         // Update config
         config.properties.putAll(Map.of(
+                SPEC_URI, spec,
             PALISADE_URI, palisadeUri,
             FILTERED_RESOURCE_URI, filteredResourceUri,
             DATA_SERVICE_MAP, Map.of("data-service", defaultDataUri)

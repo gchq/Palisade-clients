@@ -49,7 +49,7 @@ public class ResourceTreeClient {
 
     private final DefaultSession session;
 
-    public ResourceTreeClient(DefaultSession session) {
+    public ResourceTreeClient(final DefaultSession session) {
         this.session = session;
     }
 

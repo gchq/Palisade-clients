@@ -30,6 +30,8 @@ import uk.gov.gchq.palisade.client.util.ImmutableStyle;
 import java.io.IOException;
 import java.net.http.WebSocket;
 import java.net.http.WebSocket.Listener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -91,6 +93,7 @@ public class WebSocketListener implements Listener {
 
     private final ObjectMapper objectMapper;
     private final Consumer<WebSocketMessage> handler;
+    private final Map<WebSocket, StringBuilder> buffer = new HashMap<>();
     private final String token;
 
     /**
@@ -119,8 +122,7 @@ public class WebSocketListener implements Listener {
 
     @Override
     public void onError(final WebSocket ws, final Throwable error) {
-        LOGGER.debug("A {} exception was thrown.", error.getCause().getClass().getSimpleName());
-        LOGGER.debug("Message: {}", error.getLocalizedMessage());
+        LOGGER.error("An error occurred while processing the websocket stream:", error);
     }
 
     @Override
@@ -132,35 +134,44 @@ public class WebSocketListener implements Listener {
 
     @Override
     public CompletionStage<?> onText(final WebSocket ws, final CharSequence data, final boolean last) {
-
-        var text = data.toString();
-
         ws.request(1);
 
-        WebSocketMessage wsMsg;
-        try {
-            wsMsg = objectMapper.readValue(text, WebSocketMessage.class);
-        } catch (JsonProcessingException e) {
-            onError(ws, e);
-            return null;
-        }
+        // Buffer CharSequence data in case last==false and the message was split across multiple TCP frames
+        buffer.putIfAbsent(ws, new StringBuilder());
+        buffer.get(ws).append(data);
 
-        LOGGER.debug("RCVD: {}", wsMsg);
+        if (last) {
+            // Remove buffer once we find the last CharSequence for a message
+            String text = buffer.get(ws).toString();
+            buffer.remove(ws);
 
-        switch (wsMsg.getType()) {
-            case RESOURCE:
-            case ERROR:
-                LOGGER.debug("EMIT: {}", wsMsg);
-                handler.accept(wsMsg);
-                send(ws, WebSocketMessage.Builder.create().withType(MessageType.CTS));
-                break;
-            case COMPLETE:
-                LOGGER.debug("COMPLETE: {}", wsMsg);
-                handler.accept(wsMsg);
-                break;
-            default:
-                LOGGER.warn("Ignoring unsupported '{}' message type", wsMsg.getType());
-                break;
+            WebSocketMessage wsMsg;
+            try {
+                wsMsg = objectMapper.readValue(text, WebSocketMessage.class);
+            } catch (JsonProcessingException e) {
+                onError(ws, e);
+                return null;
+            }
+
+            LOGGER.debug("RCVD: {}", wsMsg);
+
+            switch (wsMsg.getType()) {
+                case RESOURCE:
+                case ERROR:
+                    LOGGER.debug("EMIT: {}", wsMsg);
+                    handler.accept(wsMsg);
+                    send(ws, WebSocketMessage.Builder.create().withType(MessageType.CTS));
+                    break;
+                case COMPLETE:
+                    LOGGER.debug("COMPLETE: {}", wsMsg);
+                    handler.accept(wsMsg);
+                    break;
+                default:
+                    LOGGER.warn("Ignoring unsupported '{}' message type", wsMsg.getType());
+                    break;
+            }
+        } else {
+            LOGGER.debug("PART: {}", data.length());
         }
 
         return CompletableFuture.completedFuture(null);
