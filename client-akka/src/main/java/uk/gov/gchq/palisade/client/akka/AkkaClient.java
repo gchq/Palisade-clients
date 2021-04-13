@@ -177,7 +177,7 @@ public class AkkaClient implements Client {
     /**
      * This method connects to the data service to read the leafResource from the original request, linked by the uuid token
      *
-     * @param token    the token returned from the palisade-service by the {@link #register} method.
+     * @param token    the token returned from the Palisade Service by the {@link #register} method.
      * @param resource that the user wants to read
      * @return a stream of bytes representing the contents of the resource
      */
