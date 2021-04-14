@@ -65,29 +65,55 @@ public class Context {
         this.setContents(contents);
     }
 
+    /**
+     * Creates a context object with a Map of contents containing purposes
+     *
+     * @param contents a map of reasons to access the data, as a purpose
+     */
     @Generated
     public Context contents(final Map<String, Object> contents) {
         this.setContents(contents);
         return this;
     }
 
+    /**
+     * Get the contents map of the {@link Context}
+     *
+     * @return a map of {@link String} and {@link Object}
+     */
     @Generated
     public Map<String, Object> getContents() {
         return contents;
     }
 
+    /**
+     * Set the contents map of the {@link Context}
+     *
+     * @param contents the map to be added to the Context
+     */
     @Generated
     public final void setContents(final Map<String, Object> contents) {
         requireNonNull(contents);
         this.contents = contents;
     }
 
+    /**
+     * Get a copy of the contents map of the {@link Context}
+     *
+     * @return an unmodifiable map of {@link String} and {@link Object}
+     */
     @JsonIgnore
     @Generated
     public Map<String, Object> getContentsCopy() {
         return Collections.unmodifiableMap(contents);
     }
 
+    /**
+     * Sets the purpose value for the contents
+     *
+     * @param purpose the purpose for accessing the data
+     * @return the {@link Context} object
+     */
     @JsonIgnore
     @Generated
     public Context purpose(final String purpose) {
@@ -95,6 +121,11 @@ public class Context {
         return this;
     }
 
+    /**
+     * Get the purpose from the {@link Context}
+     *
+     * @return a string value for the purpose
+     */
     @JsonIgnore
     @SuppressWarnings({"java:S1166", "java:S112"})
     public String getPurpose() {
@@ -105,11 +136,24 @@ public class Context {
         }
     }
 
+    /**
+     * Gets the contents map value for the specified key
+     *
+     * @param key the key value
+     * @return the object associated with the key
+     */
     @Generated
     public Object get(final String key) {
         return contents.get(key);
     }
 
+    /**
+     * Put the provided key and value into the contents map
+     *
+     * @param key the key value
+     * @param value the value object
+     * @return the {@link Context} object
+     */
     @Generated
     public Context put(final String key, final Object value) {
         requireNonNull(key, "The key cannot be null.");
@@ -118,6 +162,13 @@ public class Context {
         return this;
     }
 
+    /**
+     * Put the provided key and value into the contents map if it does not already exist
+     *
+     * @param key the key value
+     * @param value the value object
+     * @return the {@link Context} object
+     */
     @Generated
     public Context putIfAbsent(final String key, final Object value) {
         requireNonNull(key, "The key cannot be null.");
