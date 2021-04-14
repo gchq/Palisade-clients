@@ -69,6 +69,7 @@ public class Context {
      * Creates a context object with a Map of contents containing purposes
      *
      * @param contents a map of reasons to access the data, as a purpose
+     * @return the {@link Context} object
      */
     @Generated
     public Context contents(final Map<String, Object> contents) {
