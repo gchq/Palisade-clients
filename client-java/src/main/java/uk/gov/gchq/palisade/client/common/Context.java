@@ -49,26 +49,27 @@ public class Context {
     private Map<String, Object> contents;
 
     /**
-     * Creates a context class with an empty contents
+     * Create a new context object with an empty hashMap of attributes
      */
     public Context() {
         this(new HashMap<>());
     }
 
     /**
-     * Creates a context object with a Map of contents containing purposes
+     * Create a new context object, passing in a map of attributes
      *
-     * @param contents a map of reasons to access the data, as a purpose
+     * @param contents a map of attributes, containing a purpose
      */
     @JsonCreator
+    @SuppressWarnings("java:S1699")
     public Context(@JsonProperty("contents") final Map<String, Object> contents) {
         this.setContents(contents);
     }
 
     /**
-     * Creates a context object with a Map of contents containing purposes
+     * Sets the contents of this Context object
      *
-     * @param contents a map of reasons to access the data, as a purpose
+     * @param contents a map of contents that will be added to this class
      * @return the {@link Context} object
      */
     @Generated
@@ -93,7 +94,7 @@ public class Context {
      * @param contents the map to be added to the Context
      */
     @Generated
-    public final void setContents(final Map<String, Object> contents) {
+    public void setContents(final Map<String, Object> contents) {
         requireNonNull(contents);
         this.contents = contents;
     }
@@ -101,7 +102,7 @@ public class Context {
     /**
      * Get a copy of the contents map of the {@link Context}
      *
-     * @return an unmodifiable map of {@link String} and {@link Object}
+     * @return an unmodifiable map of the contents
      */
     @JsonIgnore
     @Generated
@@ -110,10 +111,10 @@ public class Context {
     }
 
     /**
-     * Sets the purpose value for the {@link Context}
+     * Adds a purpose, or reason for requesting data to the Context object.
      *
-     * @param purpose the purpose for accessing the data
-     * @return the {@link Context} object
+     * @param purpose a String containing why the User wants access to the data
+     * @return the Context object with the purpose added to the contents map
      */
     @JsonIgnore
     @Generated
@@ -123,12 +124,12 @@ public class Context {
     }
 
     /**
-     * Get the purpose from the {@link Context}
+     * Get the purpose from the contents map of the {@link Context}
      *
-     * @return a string value for the purpose
+     * @return a string value of the purpose
      */
+    @SuppressWarnings({"java:S112", "java:S1166"})
     @JsonIgnore
-    @SuppressWarnings({"java:S1166", "java:S112"})
     public String getPurpose() {
         try {
             return (String) contents.get(PURPOSE);
@@ -138,10 +139,10 @@ public class Context {
     }
 
     /**
-     * Gets the contents map value for the specified key
+     * Get the purpose by the key value in the map
      *
-     * @param key the key value
-     * @return the object associated with the key
+     * @param key the key value associated with the purpose
+     * @return the Object purpose associated with to the String key
      */
     @Generated
     public Object get(final String key) {
