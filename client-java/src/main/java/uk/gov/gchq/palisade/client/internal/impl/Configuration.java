@@ -82,10 +82,10 @@ public class Configuration {
 
     // Allowed user-configurable properties
     protected static final Map<String, StringProperty<?>> WHITELIST_PROPERTIES = Map.of(
-        USER_ID, String::new,
-        SSL_ENABLED, Boolean::valueOf,
-        HTTP2_ENABLED, Boolean::valueOf,
-        POLL_SECONDS, Long::valueOf
+            USER_ID, String::new,
+            SSL_ENABLED, Boolean::valueOf,
+            HTTP2_ENABLED, Boolean::valueOf,
+            POLL_SECONDS, Long::valueOf
     );
 
     // Dafaults
@@ -109,14 +109,14 @@ public class Configuration {
     public static final String DATA_PATH = "data.path";
     public static final String DATA_SERVICE_MAP = "data.service-map";
     protected static final Map<String, Object> DEFAULT_PROPERTIES = Map.of(
-        // Static
-        PALISADE_PATH, "/palisade/api/registerDataRequest",
-        FILTERED_RESOURCE_PATH, "/filteredResource/resource/" + TOKEN_PARAM,
-        DATA_PATH, "/read/chunked",
-        // Configurable defaults
-        SSL_ENABLED, Boolean.FALSE,
-        HTTP2_ENABLED, Boolean.FALSE,
-        POLL_SECONDS, 3600L
+            // Static
+            PALISADE_PATH, "/palisade/api/registerDataRequest",
+            FILTERED_RESOURCE_PATH, "/filteredResource/resource/" + TOKEN_PARAM,
+            DATA_PATH, "/read/chunked",
+            // Configurable defaults
+            SSL_ENABLED, Boolean.FALSE,
+            HTTP2_ENABLED, Boolean.FALSE,
+            POLL_SECONDS, 3600L
     );
 
     // Required and derived
@@ -152,7 +152,7 @@ public class Configuration {
     @SuppressWarnings("unchecked")
     public <T> T get(final String key) {
         return (T) Optional.ofNullable(this.properties.get(key))
-            .orElseThrow(() -> new ConfigurationException(String.format("Missing value for key '%s'", key)));
+                .orElseThrow(() -> new ConfigurationException(String.format("Missing value for key '%s'", key)));
     }
 
     /**
@@ -181,8 +181,8 @@ public class Configuration {
         // Parse spec
         var clusterUri = spec.getAuthority() + spec.getPath();
         var queryParams = Optional.ofNullable(spec.getQuery())
-            .map(Configuration::parseQueryParams)
-            .orElse(Map.of());
+                .map(Configuration::parseQueryParams)
+                .orElse(Map.of());
         var config = new Configuration(queryParams);
 
         // Default scheme config
@@ -202,9 +202,9 @@ public class Configuration {
         URI defaultDataUri = Util.createUri(dataScheme + "://" + clusterUri, "/data");
         // Update config
         config.properties.putAll(Map.of(
-            PALISADE_URI, palisadeUri,
-            FILTERED_RESOURCE_URI, filteredResourceUri,
-            DATA_SERVICE_MAP, Map.of("data-service", defaultDataUri)
+                PALISADE_URI, palisadeUri,
+                FILTERED_RESOURCE_URI, filteredResourceUri,
+                DATA_SERVICE_MAP, Map.of("data-service", defaultDataUri)
         ));
 
         LOGGER.debug("Using spec {} built config:", spec);
@@ -224,27 +224,27 @@ public class Configuration {
     private static Map<String, Object> parseQueryParams(final String queryParamString) {
         // Split ?queryParam string over separator - i.e. uri?propA&propB -> [propA, propB]
         return Arrays.stream(queryParamString.split(QUERY_STRING_SEP))
-            // Assert each property pair is of the format propKey=propVal
-            .map(kvPair -> Optional.of(kvPair.split(QUERY_STRING_ASSIGN))
-                .filter(kvArray -> kvArray.length == KV_PAIR_LENGTH)
-                .map(kvArray -> new SimpleEntry<>(kvArray[0], kvArray[1]))
-                .orElseThrow(() -> new ConfigurationException(String.format("Key-value pair '%s' was not of the format 'key%svalue'", kvPair, QUERY_STRING_ASSIGN))))
-            // Assert the key is in the whitelist and the value can be converted
-            .map(kvEntry -> Optional.ofNullable(WHITELIST_PROPERTIES.get(kvEntry.getKey()))
-                // Can the value be converted?
-                .map((StringProperty<?> valueClass) -> {
-                    try {
-                        return (Object) valueClass.valueOf(kvEntry.getValue());
-                    } catch (RuntimeException ex) {
-                        throw new ConfigurationException(
-                            String.format("Failed to convert value '%s' using converter '%s' from key '%s'", kvEntry.getValue(), valueClass, kvEntry.getKey()),
-                            ex);
-                    }
-                })
-                .map(value -> new SimpleEntry<>(kvEntry.getKey(), value))
-                // Did we fail to find a value converter (illegal key)
-                .orElseThrow(() -> new ConfigurationException(String.format("Illegal configuration key '%s'", kvEntry.getKey()))))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                // Assert each property pair is of the format propKey=propVal
+                .map(kvPair -> Optional.of(kvPair.split(QUERY_STRING_ASSIGN))
+                        .filter(kvArray -> kvArray.length == KV_PAIR_LENGTH)
+                        .map(kvArray -> new SimpleEntry<>(kvArray[0], kvArray[1]))
+                        .orElseThrow(() -> new ConfigurationException(String.format("Key-value pair '%s' was not of the format 'key%svalue'", kvPair, QUERY_STRING_ASSIGN))))
+                // Assert the key is in the whitelist and the value can be converted
+                .map(kvEntry -> Optional.ofNullable(WHITELIST_PROPERTIES.get(kvEntry.getKey()))
+                        // Can the value be converted?
+                        .map((StringProperty<?> valueClass) -> {
+                            try {
+                                return (Object) valueClass.valueOf(kvEntry.getValue());
+                            } catch (RuntimeException ex) {
+                                throw new ConfigurationException(
+                                        String.format("Failed to convert value '%s' using converter '%s' from key '%s'", kvEntry.getValue(), valueClass, kvEntry.getKey()),
+                                        ex);
+                            }
+                        })
+                        .map(value -> new SimpleEntry<>(kvEntry.getKey(), value))
+                        // Did we fail to find a value converter (illegal key)
+                        .orElseThrow(() -> new ConfigurationException(String.format("Illegal configuration key '%s'", kvEntry.getKey()))))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override

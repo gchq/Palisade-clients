@@ -32,8 +32,8 @@ class DefaultSessionTest {
         var expectedClass = DefaultQuery.class;
 
         assertThat(query)
-            .as("check actual type")
-            .isInstanceOf(expectedClass);
+                .as("check actual type")
+                .isInstanceOf(expectedClass);
     }
 
 }

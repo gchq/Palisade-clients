@@ -56,21 +56,21 @@ class FullTest {
         var session = ClientManager.openSession(String.format("pal://localhost:%d/cluster?userid=alice", port));
         var query = session.createQuery("resource_id");
         var publisher = query
-            .execute()
-            .thenApply(QueryResponse::stream)
-            .get();
+                .execute()
+                .thenApply(QueryResponse::stream)
+                .get();
 
         var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
-            .filter(m -> m.getType().equals(ItemType.RESOURCE))
-            .collect(Collectors.toList())
-            .blockingGet();
+                .filter(m -> m.getType().equals(ItemType.RESOURCE))
+                .collect(Collectors.toList())
+                .blockingGet();
 
         assertThat(resources).as("check resource count").hasSizeGreaterThan(0);
 
         var resource = resources.get(0);
         assertThat(resource.asResource().getId())
-            .as("check leaf resource id")
-            .isEqualTo(FILE_NAME_0.asString());
+                .as("check leaf resource id")
+                .isEqualTo(FILE_NAME_0.asString());
 
         var download = session.fetch(resource);
         assertThat(download).as("check download exists").isNotNull();
@@ -89,47 +89,47 @@ class FullTest {
         var session = ClientManager.openSession(String.format("pal://localhost:%d/cluster?userid=alice", embeddedServer.getPort()));
         var query = session.createQuery("resource_id");
         var publisher = query
-            .execute()
-            .thenApply(QueryResponse::stream)
-            .get();
+                .execute()
+                .thenApply(QueryResponse::stream)
+                .get();
 
         Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
-            .filter(m -> m.getType().equals(ItemType.RESOURCE))
-            .map(session::fetch)
-            .subscribe(new FlowableSubscriber<>() {
+                .filter(m -> m.getType().equals(ItemType.RESOURCE))
+                .map(session::fetch)
+                .subscribe(new FlowableSubscriber<>() {
 
-                @Override
-                public void onNext(final Download t) {
-                    LOGGER.debug("## Got message: {}", t);
-                    try (var is = t.getInputStream()) {
-                        LOGGER.debug("## reading bytes");
-                        var ba = is.readAllBytes();
-                        LOGGER.debug("## read {} bytes", ba.length);
-                        LOGGER.debug(new String(ba));
-                    } catch (Throwable e) {
-                        LOGGER.error("Got error reading input stream into byte array", e);
-                        throw new IllegalStateException("Got error reading input stream into byte array", e);
+                    @Override
+                    public void onNext(final Download t) {
+                        LOGGER.debug("## Got message: {}", t);
+                        try (var is = t.getInputStream()) {
+                            LOGGER.debug("## reading bytes");
+                            var ba = is.readAllBytes();
+                            LOGGER.debug("## read {} bytes", ba.length);
+                            LOGGER.debug(new String(ba));
+                        } catch (Throwable e) {
+                            LOGGER.error("Got error reading input stream into byte array", e);
+                            throw new IllegalStateException("Got error reading input stream into byte array", e);
+                        }
                     }
-                }
 
-                @Override
-                public void onError(final Throwable t) {
-                    LOGGER.error("## Error: {}", t.getMessage());
-                    Assertions.fail("Failed due to:" + t.getMessage());
-                }
+                    @Override
+                    public void onError(final Throwable t) {
+                        LOGGER.error("## Error: {}", t.getMessage());
+                        Assertions.fail("Failed due to:" + t.getMessage());
+                    }
 
-                @Override
-                public void onComplete() {
-                    LOGGER.debug("## complete");
+                    @Override
+                    public void onComplete() {
+                        LOGGER.debug("## complete");
 
-                }
+                    }
 
-                @Override
-                public void onSubscribe(final org.reactivestreams.@NonNull Subscription s) {
-                    s.request(Long.MAX_VALUE);
-                    LOGGER.debug("## Subscribed");
-                }
-            });
+                    @Override
+                    public void onSubscribe(final org.reactivestreams.@NonNull Subscription s) {
+                        s.request(Long.MAX_VALUE);
+                        LOGGER.debug("## Subscribed");
+                    }
+                });
 
     }
 }

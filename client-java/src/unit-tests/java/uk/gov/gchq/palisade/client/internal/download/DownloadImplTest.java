@@ -42,8 +42,8 @@ class DownloadImplTest {
     @SuppressWarnings("resource") // suppress potential resource leak warning
     @BeforeEach
     void setUp(
-        @Mock final HttpResponse<InputStream> response,
-        @Mock final HttpHeaders headers) throws Exception {
+            @Mock final HttpResponse<InputStream> response,
+            @Mock final HttpHeaders headers) throws Exception {
 
         lenient().when(response.headers()).thenReturn(headers);
         lenient().when(response.body()).thenReturn(BODY);
@@ -57,8 +57,8 @@ class DownloadImplTest {
     void testGetInputStream() throws Exception {
         try (var is = download.getInputStream()) {
             assertThat(is)
-                .as("check input stream")
-                .isEqualTo(BODY);
+                    .as("check input stream")
+                    .isEqualTo(BODY);
         }
     }
 

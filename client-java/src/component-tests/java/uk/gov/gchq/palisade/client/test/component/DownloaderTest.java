@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.gchq.palisade.client.internal.download.Downloader;
 import uk.gov.gchq.palisade.client.internal.download.DownloaderException;
 import uk.gov.gchq.palisade.resource.impl.FileResource;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
+import uk.gov.gchq.palisade.resource.impl.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 
@@ -62,17 +62,17 @@ class DownloaderTest {
     void setup() {
         this.uri = URI.create(String.format(BASE_URL, embeddedServer.getPort()));
         this.downloader = Downloader.createDownloader(b -> b
-            .httpClient(HttpClient.newHttpClient())
-            .objectMapper(objectMapper)
-            .path(ENDPOINT)
-            .putServiceNameMap("data-service", uri));
+                .httpClient(HttpClient.newHttpClient())
+                .objectMapper(objectMapper)
+                .path(ENDPOINT)
+                .putServiceNameMap("data-service", uri));
     }
 
     @Test
     void testSuccessfulDownload() throws Exception {
         var resource = new FileResource()
-            .id(FILE_NAME_0.asString())
-            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
+                .id(FILE_NAME_0.asString())
+                .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
 
         var download = downloader.fetch(TOKEN, resource);
 
@@ -83,8 +83,8 @@ class DownloaderTest {
              var expected = FILE_NAME_0.createStream();
         ) {
             assertThat(actual)
-                .as("check downloaded input stream")
-                .hasSameContentAs(expected);
+                    .as("check downloaded input stream")
+                    .hasSameContentAs(expected);
         }
     }
 
@@ -93,17 +93,17 @@ class DownloaderTest {
         var filename = "doesnotexist";
 
         var resource = new FileResource()
-            .id(filename)
-            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
+                .id(filename)
+                .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
 
         var expectedClass = DownloaderException.class;
         var expectedStatus = 500;
 
         assertThatExceptionOfType(expectedClass)
-            .as("check correct exception when resource is not found")
-            .isThrownBy(() -> downloader.fetch(TOKEN, resource))
-            .withMessage("[" + expectedStatus + "] Request to DataService '" + uri + ENDPOINT + "' failed")
-            .matches(ex -> ex.getStatusCode() == expectedStatus, "statuscode " + expectedStatus);
+                .as("check correct exception when resource is not found")
+                .isThrownBy(() -> downloader.fetch(TOKEN, resource))
+                .withMessage("[" + expectedStatus + "] Request to DataService '" + uri + ENDPOINT + "' failed")
+                .matches(ex -> ex.getStatusCode() == expectedStatus, "statuscode " + expectedStatus);
     }
 
 }

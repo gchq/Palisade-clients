@@ -80,8 +80,8 @@ public class DataHttpEndpoint {
             LOG.debug("RETN: Stream");
 
             return HttpResponse
-                .ok(sf)
-                .contentType(octetStream);
+                    .ok(sf)
+                    .contentType(octetStream);
 
         } finally {
             MDC.remove("server");

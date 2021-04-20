@@ -5,6 +5,7 @@ List of third-party dependencies grouped by their license type
 * jackson-databind ([com.fasterxml.jackson.core:jackson-databind:2.10.0](http://github.com/FasterXML/jackson))
 * Jackson datatype: jdk8 ([com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.10.0](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jdk8))
 * Micronaut ([io.micronaut:micronaut-http-server-netty:2.3.2](http://micronaut.io))
+* Micronaut ([io.micronaut:micronaut-inject:2.3.2](http://micronaut.io))
 * Micronaut ([io.micronaut:micronaut-inject-java:2.3.2](http://micronaut.io))
 * Micronaut ([io.micronaut:micronaut-runtime:2.3.2](http://micronaut.io))
 * Micronaut Test ([io.micronaut.test:micronaut-test-junit5:2.3.2](http://micronaut.io))

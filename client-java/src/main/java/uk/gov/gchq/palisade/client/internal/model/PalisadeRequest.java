@@ -44,9 +44,9 @@ public final class PalisadeRequest {
 
     @JsonCreator
     private PalisadeRequest(
-        final @JsonProperty("userId") String userId,
-        final @JsonProperty("resourceId") String resourceId,
-        final @JsonProperty("context") Map<String, String> context) {
+            final @JsonProperty("userId") String userId,
+            final @JsonProperty("resourceId") String resourceId,
+            final @JsonProperty("context") Map<String, String> context) {
 
         this.userId = Optional.ofNullable(userId).orElseThrow(() -> new IllegalArgumentException("User ID cannot be null"));
         this.resourceId = Optional.ofNullable(resourceId).orElseThrow(() -> new IllegalArgumentException("Resource ID  cannot be null"));
@@ -82,7 +82,7 @@ public final class PalisadeRequest {
          */
         public static IUserId create() {
             return userId -> resourceId -> context ->
-                new PalisadeRequest(userId, resourceId, context);
+                    new PalisadeRequest(userId, resourceId, context);
         }
 
         /**
@@ -129,9 +129,9 @@ public final class PalisadeRequest {
     @Generated
     public String toString() {
         return new StringJoiner(", ", PalisadeRequest.class.getSimpleName() + "[", "]")
-            .add("userId='" + userId + "'")
-            .add("resourceId='" + resourceId + "'")
-            .add("context=" + context)
-            .toString();
+                .add("userId='" + userId + "'")
+                .add("resourceId='" + resourceId + "'")
+                .add("context=" + context)
+                .toString();
     }
 }

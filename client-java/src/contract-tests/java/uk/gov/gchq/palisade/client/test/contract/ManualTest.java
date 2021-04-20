@@ -52,36 +52,36 @@ class ManualTest {
         // Manual configuration for a local 'helm install' with 'kubectl expose deployment xxx's and 'kubectl expose pod xxx's
         // Minikube users need to also use 'minikube service xxx'
         var session = new DefaultSession(new TestConfiguration(Map.of(
-            Configuration.USER_ID, "Alice",
-            Configuration.PALISADE_URI, URI.create("http://192.168.49.2:32586/api/registerDataRequest"),
-            Configuration.FILTERED_RESOURCE_URI, URI.create("ws://192.168.49.2:30598/resource/%25t"),
-            Configuration.DATA_SERVICE_MAP, Map.of("data-service", URI.create("http://192.168.49.2:32405"))
+                Configuration.USER_ID, "Alice",
+                Configuration.PALISADE_URI, URI.create("http://192.168.49.2:32586/api/registerDataRequest"),
+                Configuration.FILTERED_RESOURCE_URI, URI.create("ws://192.168.49.2:30598/resource/%25t"),
+                Configuration.DATA_SERVICE_MAP, Map.of("data-service", URI.create("http://192.168.49.2:32405"))
         )));
 
         var query = session.createQuery("file:/data/local-data-store/", Map.of("purpose", "SALARY"));
         var publisher = query
-            .execute()
-            .thenApply(QueryResponse::stream)
-            .get();
+                .execute()
+                .thenApply(QueryResponse::stream)
+                .get();
 
         var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
-            .filter(m -> m.getType().equals(MessageType.RESOURCE))
-            .collect(Collectors.toList())
-            .blockingGet();
+                .filter(m -> m.getType().equals(MessageType.RESOURCE))
+                .collect(Collectors.toList())
+                .blockingGet();
 
         assertThat(resources).as("check resource count").hasSizeGreaterThan(0);
 
         assertThat(List.of(resources.get(0), resources.get(1)))
-            .extracting(item -> item.asResource().getId())
-            .as("check leaf resource id")
-            .containsExactly("file:/data/local-data-store/employee_file0.avro", "file:/data/local-data-store/employee_file1.avro");
+                .extracting(item -> item.asResource().getId())
+                .as("check leaf resource id")
+                .containsExactly("file:/data/local-data-store/employee_file0.avro", "file:/data/local-data-store/employee_file1.avro");
 
         var download = session.fetch(resources.get(0));
         assertThat(download).as("check download exists").isNotNull();
 
         try (var inputStream = download.getInputStream()) {
             System.out.println(new BufferedReader(new InputStreamReader(inputStream))
-                .lines().collect(Collectors.joining("\n")));
+                    .lines().collect(Collectors.joining("\n")));
         }
     }
 }
