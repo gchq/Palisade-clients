@@ -22,6 +22,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.shell.jline.PromptProvider;
 
 import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
+import uk.gov.gchq.palisade.client.shell.shell.ClientShell;
 import uk.gov.gchq.palisade.client.shell.shell.CustomPromptProvider;
 
 @Configuration
@@ -33,8 +34,8 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    PromptProvider customPromptProvider() {
-        return new CustomPromptProvider();
+    PromptProvider customPromptProvider(final ClientShell shell) {
+        return new CustomPromptProvider(shell);
     }
 
     @Bean

@@ -71,8 +71,8 @@
 
     <modules>
         <module>client-akka</module>
-        <module>client-fuse</module>
         <module>client-java</module>
+        <module>client-fuse</module>
         <module>client-shell</module>
     </modules>
 

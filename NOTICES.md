@@ -15,6 +15,7 @@ List of third-party dependencies grouped by their license type
 * AssertJ fluent assertions ([org.assertj:assertj-core:3.19.0](https://assertj.github.io/doc/assertj-core/))
 * org.immutables.value ([org.immutables:value:2.8.2](http://immutables.org/value))
 * Spring Boot AOP Starter ([org.springframework.boot:spring-boot-starter-aop:2.2.0.RELEASE](https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-aop))
+* Spring Boot Test Starter ([org.springframework.boot:spring-boot-starter-test:2.2.0.RELEASE](https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-test))
 * Spring Shell Starter ([org.springframework.shell:spring-shell-starter:2.0.0.RELEASE](http://projects.spring.io/spring-boot/spring-shell-parent/spring-shell-starter/))
 * client-java ([uk.gov.gchq.palisade:client-java:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/client-java))
 * common ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))

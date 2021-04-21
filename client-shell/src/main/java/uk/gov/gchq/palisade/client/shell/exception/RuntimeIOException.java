@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.gchq.palisade.client.shell;
+package uk.gov.gchq.palisade.client.shell.exception;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
+import java.io.IOException;
 
-@SpringBootApplication
-public class ClientShellApplication {
-
-    public static void main(final String[] args) {
-        new SpringApplicationBuilder(ClientShellApplication.class)
-            .run(args);
+public class RuntimeIOException extends RuntimeException {
+    public RuntimeIOException(final String message, final IOException cause) {
+        super(message, cause);
     }
-
 }

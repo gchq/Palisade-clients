@@ -32,24 +32,30 @@ public class CustomPromptProvider implements PromptProvider {
     private static final AttributedString NO_ONE = new AttributedString("no-one", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
     private static final AttributedString DISCONNECTED = new AttributedString("disconnected", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
 
+    private final ClientShell shell;
+
+    public CustomPromptProvider(final ClientShell shell) {
+        this.shell = shell;
+    }
+
     @Override
     public AttributedString getPrompt() {
-        AttributedString userInfo = Optional.ofNullable(ClientShell.getSession())
-                .map(session -> session.getConfiguration().<String>get(Configuration.USER_ID))
-                .map(user -> new AttributedString(user, AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE)))
-                .orElse(NO_ONE);
+        AttributedString userInfo = Optional.ofNullable(shell.getSessionState())
+            .map(session -> session.getConfiguration().<String>get(Configuration.USER_ID))
+            .map(user -> new AttributedString(user, AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE)))
+            .orElse(NO_ONE);
 
-        AttributedString hostInfo = Optional.ofNullable(ClientShell.getSession())
-                .map(session -> session.getConfiguration().<URI>get(Configuration.SPEC_URI).getHost())
-                .map(host -> new AttributedString(host, AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN)))
-                .orElse(DISCONNECTED);
+        AttributedString hostInfo = Optional.ofNullable(shell.getSessionState())
+            .map(session -> session.getConfiguration().<URI>get(Configuration.SPEC_URI).getHost())
+            .map(host -> new AttributedString(host, AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN)))
+            .orElse(DISCONNECTED);
 
-        AttributedString delimitedTokenInfo = Optional.ofNullable(ClientShell.getSelectedToken())
-                .map(token -> new AttributedString(token, AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW)))
-                .map(attrStr -> AttributedString.join(TOKEN_DELIM, attrStr))
-                .orElse(AttributedString.EMPTY);
+        AttributedString delimitedTokenInfo = Optional.ofNullable(shell.getTokenState())
+            .map(token -> new AttributedString(token, AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW)))
+            .map(attrStr -> AttributedString.join(AttributedString.EMPTY, TOKEN_DELIM, attrStr))
+            .orElse(AttributedString.EMPTY);
 
         return AttributedString.join(AttributedString.EMPTY,
-                userInfo, USER_DELIM, hostInfo, delimitedTokenInfo, PROMPT);
+            userInfo, USER_DELIM, hostInfo, delimitedTokenInfo, PROMPT);
     }
 }

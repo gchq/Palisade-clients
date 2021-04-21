@@ -23,6 +23,25 @@ In the case of the [Palisade examples](https://github.com/gchq/Palisade-examples
 Additionally, there are a number of pre-populated users (`Alice`, `Bob`, and `Eve`), resources (the pair of files `/data/local-data-store/employee_file{0,1}.avro`) and rules.
 All examples here are therefore written to be compliant with this example pre-populated data.
 
+## Sample Extract
+```shell script
+no-one@disconnected> connect pal://192.168.49.2:30094/?userid=Alice
+Connected to pal://192.168.49.2:30094/?userid=Alice
+
+Alice@192.168.49.2> register purpose=SALARY file:/data/local-data-store/
+6b6784e4-2383-40ac-92dc-7daa3b0a67b4
+
+Alice@192.168.49.2> cd 6b6784e4-2383-40ac-92dc-7daa3b0a67b4
+Selected 6b6784e4-2383-40ac-92dc-7daa3b0a67b4
+
+Alice@192.168.49.2#6b6784e4-2383-40ac-92dc-7daa3b0a67b4> ls
+file:/data/local-data-store/employee_file1.avro
+file:/data/local-data-store/employee_file0.avro
+
+Alice@192.168.49.2#6b6784e4-2383-40ac-92dc-7daa3b0a67b4> cat file:/data/local-data-store/employee_file0.avro
+Objavro.schema`{"type":"record","name":"Employee","namespace":"uk.gov.gchq.synt[+ 18086 characters]
+```
+
 
 ## Commands
 Some effort has been made to make the Shell appear somewhat similar to a UNIX shell (bash, etc.).
@@ -36,12 +55,10 @@ Use the `exit` command to exit the shell.
 ### Connect - `connect`
 Configure the backing [Java Client](../client-java/README.md) to point to a cluster address, as well as setting the `userId`.
 
-Suppose the target instance of Palisade is running locally in K8s and the ingress is exposed at `192.168.49.2:30042`, and we want to issue a request for data as "Alice", then our connect command would be:
-```
-disconnected> connect pal://192.168.49.2:30042/?userid=Alice
-Connected to pal://192.168.49.2:30042/?userid=Alice
-
-Alice@192.168.49.2> 
+Suppose the target instance of Palisade is running locally in K8s and the ingress is exposed at `192.168.49.2:30094`, and we want to issue a request for data as "Alice", then our connect command would be:
+```shell script
+disconnected> connect pal://192.168.49.2:30094/?userid=Alice
+Connected to pal://192.168.49.2:30094/?userid=Alice
 ```
 No checks are necessarily made that the server is available at this point, it is purely configuration for the client.
 This is described more in-depth in the [URL configuration](../client-java/README.md#URL) and [client properties](../client-java/README.md#Client%20properties) sections of the [client-java README](../client-java/README.md).
@@ -50,19 +67,19 @@ This is described more in-depth in the [URL configuration](../client-java/README
 Given a `context` for accessing data, register a request for a `resourceId`.
 
 Suppose the target resource is the directory `file:/data/local-data-store/`, then our register command would be:
-```
-Alice@192.168.49.2> register purpose=SALARY,some-other=thing file:/data/local-data-store/
-TODO-some-token-here
+```shell script
+Alice@192.168.49.2> register purpose=SALARY file:/data/local-data-store/
+6b6784e4-2383-40ac-92dc-7daa3b0a67b4
 ```
 
 ### List - `list`, `ls`
 List either all registered requests and their tokens, or all resources returned for a given token token.
-
-```
+```shell script
 Alice@192.168.49.2> ls
-TODO-some-token-here
+6b6784e4-2383-40ac-92dc-7daa3b0a67b4
 
-Alice@192.168.49.2> ls TODO-some-token-here
+Alice@192.168.49.2> ls 6b6784e4-2383-40ac-92dc-7daa3b0a67b4
+
 file:/data/local-data-store/employee_file0.avro
 file:/data/local-data-store/employee_file1.avro
 ```
@@ -70,22 +87,22 @@ file:/data/local-data-store/employee_file1.avro
 ### Read - `read`, `cat`
 
 Suppose we want to read the file `file:/data/local-data-store/employee_file0.avro`, then our read command would be:
-```
-Alice@192.168.49.2> cat TODO-some-token-here file:/data/local-data-store/employee_file0.avro
+```shell script
+Alice@192.168.49.2> cat file:/data/local-data-store/employee_file0.avro 6b6784e4-2383-40ac-92dc-7daa3b0a67b4
 Objavro.schema`{"type":"record","name":"Employee","namespace":"uk.gov.gchq.synt[+ 18086 characters]
 ```
 
 ### Select - `select`, `cd`
 Select a `token` to replace the need to enter it for subsequent commands.
 
-```
-Alice@192.168.49.2> cd TODO-some-token-here
-Selected TODO-some-token-here
+```shell script
+Alice@192.168.49.2> cd 6b6784e4-2383-40ac-92dc-7daa3b0a67b4
+Selected 6b6784e4-2383-40ac-92dc-7daa3b0a67b4
 
-Alice@192.168.49.2#TODO-some-token-here> ls
+Alice@192.168.49.2#6b6784e4-2383-40ac-92dc-7daa3b0a67b4> ls
 file:/data/local-data-store/employee_file0.avro
 file:/data/local-data-store/employee_file1.avro
 
-Alice@192.168.49.2#TODO-some-token-here> read file:/data/local-data-store/employee_file0.avro
+Alice@192.168.49.2#6b6784e4-2383-40ac-92dc-7daa3b0a67b4> cat file:/data/local-data-store/employee_file0.avro
 Objavro.schema`{"type":"record","name":"Employee","namespace":"uk.gov.gchq.synt[+ 18086 characters]
 ```

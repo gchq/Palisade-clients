@@ -19,6 +19,7 @@ package uk.gov.gchq.palisade.client.shell.shell;
 import io.reactivex.rxjava3.core.Flowable;
 import org.reactivestreams.FlowAdapters;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.shell.Availability;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -29,10 +30,10 @@ import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
 import uk.gov.gchq.palisade.client.internal.dft.DefaultQueryItem;
 import uk.gov.gchq.palisade.client.internal.dft.DefaultQueryResponse;
 import uk.gov.gchq.palisade.client.internal.dft.DefaultSession;
+import uk.gov.gchq.palisade.client.shell.exception.RuntimeIOException;
 
-import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,21 +47,13 @@ import java.util.stream.Stream;
 
 @ShellComponent
 public class ClientShell {
-
-    private static final AtomicReference<DefaultSession> SESSION = new AtomicReference<>();
-    private static final AtomicReference<String> SELECTED_TOKEN = new AtomicReference<>();
     private static final String DESELECT = "..";
 
-    public static DefaultSession getSession() {
-        return SESSION.get();
-    }
+    protected final AtomicReference<DefaultSession> sessionState = new AtomicReference<>();
+    protected final AtomicReference<String> tokenState = new AtomicReference<>();
+    protected final Map<String, DefaultQueryResponse> registeredQueries = new HashMap<>();
+    protected final Map<String, List<DefaultQueryItem>> filteredResources = new HashMap<>();
 
-    public static String getSelectedToken() {
-        return SELECTED_TOKEN.get();
-    }
-
-    private final Map<String, DefaultQueryResponse> registeredQueries = new HashMap<>();
-    private final Map<String, List<DefaultQueryItem>> filteredResources = new HashMap<>();
     private final DefaultClient client;
 
     public ClientShell(final DefaultClient client, final Map<String, DefaultQueryResponse> initialQueryState, final Map<String, List<DefaultQueryItem>> initialResourceState) {
@@ -74,18 +67,29 @@ public class ClientShell {
         this(client, Map.of(), Map.of());
     }
 
+    // --- Internal State Accessors --- //
+
+    public DefaultSession getSessionState() {
+        return sessionState.get();
+    }
+
+    public String getTokenState() {
+        return tokenState.get();
+    }
+
+
     // --- Availability Checks --- //
 
     public Availability openSession() {
-        return SESSION.get() == null
-                ? Availability.unavailable("Not connected, specify a client connect url with 'connect <url>'")
-                : Availability.available();
+        return sessionState.get() == null
+            ? Availability.unavailable("Not connected, specify a client connect url with 'connect <url>'")
+            : Availability.available();
     }
 
     public Availability selectedToken() {
-        return SELECTED_TOKEN.get() == null
-                ? Availability.unavailable("No selected token, specify a token with 'cd <token>'")
-                : Availability.available();
+        return tokenState.get() == null
+            ? Availability.unavailable("No selected token, specify a token with 'cd <token>'")
+            : Availability.available();
     }
 
 
@@ -96,7 +100,7 @@ public class ClientShell {
         if (!client.acceptsURL(url)) {
             throw new IllegalArgumentException("Client does not accept url: " + url);
         }
-        SESSION.set(client.connect(url));
+        sessionState.set(client.connect(url));
         return String.format("Connected to %s", url);
     }
 
@@ -104,16 +108,16 @@ public class ClientShell {
     @ShellMethod(value = "Register a request for resources with Palisade and receive the request token.", key = {"register"})
     public String register(final String[] context, final String resourceId) {
         Map<String, String> contextMap = Arrays.stream(context)
-                .map(entry -> entry.split("=", 2))
-                .map(entry -> new SimpleImmutableEntry<>(entry[0], entry[1]))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .map(entry -> entry.split("=", 2))
+            .map(entry -> new SimpleImmutableEntry<>(entry[0], entry[1]))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        DefaultQueryResponse response = (DefaultQueryResponse) SESSION.get()
-                .createQuery(resourceId, contextMap)
-                .execute()
-                .join();
+        DefaultQueryResponse response = (DefaultQueryResponse) sessionState.get()
+            .createQuery(resourceId, contextMap)
+            .execute()
+            .join();
         String token = response.getPalisadeResponse()
-                .getToken();
+            .getToken();
 
         registeredQueries.putIfAbsent(token, response);
 
@@ -121,9 +125,9 @@ public class ClientShell {
     }
 
     @ShellMethod(value = "List the resources returned for a request, or the tokens for each request.", key = {"list", "ls"})
-    public String list(@ShellOption(defaultValue = ShellOption.NULL) final String token) {
+    public String list(@Nullable @ShellOption(defaultValue = ShellOption.NULL) final String token) {
         String selectedToken = Optional.ofNullable(token)
-                .orElse(SELECTED_TOKEN.get());
+            .orElse(this.tokenState.get());
 
         Stream<String> lines;
 
@@ -131,12 +135,12 @@ public class ClientShell {
             this.computeResourcesIfAbsent(selectedToken);
 
             lines = filteredResources.get(selectedToken)
-                    .stream()
-                    .map(item -> item.asResource().getId());
+                .stream()
+                .map(item -> item.asResource().getId());
 
         } else {
             lines = registeredQueries.keySet()
-                    .stream();
+                .stream();
         }
 
         return lines.collect(Collectors.joining("\n"));
@@ -145,33 +149,35 @@ public class ClientShell {
     @ShellMethod(value = "Select a token for a given request, such that further commands are relative to this token ('..' for no token).", key = {"select", "cd"})
     public String select(@ShellOption(defaultValue = "..") final String token) {
         if (token.equals(DESELECT)) {
-            SELECTED_TOKEN.set(null);
+            tokenState.set(null);
+            return "Deselected token";
         } else {
-            SELECTED_TOKEN.set(registeredQueries.keySet()
-                    .stream()
-                    .filter(token::equals)
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No such registered token: " + token)));
+            tokenState.set(registeredQueries.keySet()
+                .stream()
+                .filter(token::equals)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No such registered token: " + token)));
+            return "Selected " + token;
         }
-        return "Selected " + token;
     }
 
     @ShellMethod(value = "Read the data from a resource returned for a request.", key = {"read", "cat"})
-    public String read(@ShellOption(defaultValue = ShellOption.NULL) final String token, final String leafResourceId) {
+    public String read(final String leafResourceId, @Nullable @ShellOption(defaultValue = ShellOption.NULL) final String token) {
         String selectedToken = Optional.ofNullable(token)
-                .orElse(SELECTED_TOKEN.get());
+            .or(() -> Optional.ofNullable(this.tokenState.get()))
+            .orElseThrow(() -> new IllegalArgumentException("No token selected"));
 
         this.computeResourcesIfAbsent(selectedToken);
 
         return filteredResources.get(selectedToken)
-                .stream()
-                .filter(response -> response.asResource().getId().equals(leafResourceId))
-                .findAny()
-                .map(response -> SESSION.get()
-                        .fetch(response)
-                        .getInputStream())
-                .map(ClientShell::dumpInputStream)
-                .orElse(null);
+            .stream()
+            .filter(response -> response.asResource().getId().equals(leafResourceId))
+            .findAny()
+            .map(response -> sessionState.get()
+                .fetch(response)
+                .getInputStream())
+            .map(ClientShell::dumpInputStream)
+            .orElseThrow(() -> new IllegalArgumentException("No such received resource: " + leafResourceId));
     }
 
 
@@ -181,14 +187,16 @@ public class ClientShell {
         filteredResources.computeIfAbsent(token, tk -> {
             LinkedList<DefaultQueryItem> resources = new LinkedList<>();
             Flowable.fromPublisher(FlowAdapters.toPublisher(registeredQueries.get(token).stream()))
-                    .blockingForEach(next -> resources.addLast((DefaultQueryItem) next));
+                .blockingForEach(next -> resources.addLast((DefaultQueryItem) next));
             return resources;
         });
     }
 
     private static String dumpInputStream(final InputStream is) {
-        return new BufferedReader(new InputStreamReader(is))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        try {
+            return new String(is.readAllBytes());
+        } catch (IOException e) {
+            throw new RuntimeIOException("Failed to read all bytes from input stream", e);
+        }
     }
 }
