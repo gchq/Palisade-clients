@@ -59,19 +59,19 @@ public class DefaultQuery implements Query {
     @Override
     public CompletableFuture<QueryResponse> execute() {
         var palisadeService = createPalisadeService(b -> b
-                .httpClient(session.getHttpClient())
-                .objectMapper(session.getObjectMapper())
-                .uri(session.getConfiguration().get(Configuration.PALISADE_URI)));
+            .httpClient(session.getHttpClient())
+            .objectMapper(session.getObjectMapper())
+            .uri(session.getConfiguration().get(Configuration.PALISADE_URI)));
 
         var palisadeRequest = PalisadeRequest.Builder.create()
-                .withUserId(session.getConfiguration().get(Configuration.USER_ID))
-                .withResourceId(queryString)
-                .withContext(context);
+            .withUserId(session.getConfiguration().get(Configuration.USER_ID))
+            .withResourceId(queryString)
+            .withContext(context);
 
         LOGGER.debug("Executing query: {}", palisadeRequest);
         return palisadeService
-                .submitAsync(palisadeRequest)
-                .thenApply(response -> new DefaultQueryResponse(session, response));
+            .submitAsync(palisadeRequest)
+            .thenApply(response -> new DefaultQueryResponse(session, response));
 
     }
 

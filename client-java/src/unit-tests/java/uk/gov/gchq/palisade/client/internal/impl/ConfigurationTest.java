@@ -35,43 +35,43 @@ class ConfigurationTest {
     @Test
     void testGetPalisadeUri() {
         assertThat(configuration.<URI>get(Configuration.PALISADE_URI))
-                .as("check generated Palisade Service URI")
-                .isEqualTo(URI.create("http://eve@localhost:8081/cluster/palisade/api/registerDataRequest"));
+            .as("check generated Palisade Service URI")
+            .isEqualTo(URI.create("http://eve@localhost:8081/cluster/palisade/api/registerDataRequest"));
     }
 
     @Test
     void testFilteredResourceUri() {
         assertThat(configuration.<URI>get(Configuration.FILTERED_RESOURCE_URI))
-                .as("check generated Filtered Resource Service URI")
-                .isEqualTo(URI.create("ws://eve@localhost:8081/cluster/filteredResource/resource/%25t"));
+            .as("check generated Filtered Resource Service URI")
+            .isEqualTo(URI.create("ws://eve@localhost:8081/cluster/filteredResource/resource/%25t"));
     }
 
     @Test
     void testDataPath() {
         assertThat(configuration.<String>get(Configuration.DATA_PATH))
-                .as("check Data Service path")
-                .isEqualTo("/read/chunked");
+            .as("check Data Service path")
+            .isEqualTo("/read/chunked");
     }
 
     @Test
     void testUserNone() {
         var incompleteConfig = Configuration.create("pal://localhost:8081/cluster");
         assertThatExceptionOfType(ConfigurationException.class)
-                .as("check no user is configured")
-                .isThrownBy(() -> incompleteConfig.get(Configuration.USER_ID));
+            .as("check no user is configured")
+            .isThrownBy(() -> incompleteConfig.get(Configuration.USER_ID));
     }
 
     @Test
     void testUserId() {
         assertThat(configuration.<String>get(Configuration.USER_ID))
-                .as("check user from query param")
-                .isEqualTo("alice");
+            .as("check user from query param")
+            .isEqualTo("alice");
     }
 
     @Test
     void testInvalidServiceUrl() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .as("check Configuration validates service URL")
-                .isThrownBy(() -> Configuration.create("\\"));
+            .as("check Configuration validates service URL")
+            .isThrownBy(() -> Configuration.create("\\"));
     }
 }

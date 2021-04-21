@@ -37,13 +37,13 @@ public final class DataRequest {
 
     @JsonCreator
     private DataRequest(
-            final @JsonProperty("token") String token,
-            final @JsonProperty("leafResourceId") String leafResourceId) {
+        final @JsonProperty("token") String token,
+        final @JsonProperty("leafResourceId") String leafResourceId) {
 
         this.token = Optional.ofNullable(token)
-                .orElseThrow(() -> new IllegalArgumentException("token cannot be null"));
+            .orElseThrow(() -> new IllegalArgumentException("token cannot be null"));
         this.leafResourceId = Optional.ofNullable(leafResourceId)
-                .orElseThrow(() -> new IllegalArgumentException("leafResourceId cannot be null"));
+            .orElseThrow(() -> new IllegalArgumentException("leafResourceId cannot be null"));
     }
 
     @Generated
@@ -69,7 +69,7 @@ public final class DataRequest {
          */
         public static IToken create() {
             return token -> leafResourceId ->
-                    new DataRequest(token, leafResourceId);
+                new DataRequest(token, leafResourceId);
         }
 
         /**
@@ -104,8 +104,8 @@ public final class DataRequest {
     @Generated
     public String toString() {
         return new StringJoiner(", ", DataRequest.class.getSimpleName() + "[", "]")
-                .add("token='" + token + "'")
-                .add("leafResourceId='" + leafResourceId + "'")
-                .toString();
+            .add("token='" + token + "'")
+            .add("leafResourceId='" + leafResourceId + "'")
+            .toString();
     }
 }

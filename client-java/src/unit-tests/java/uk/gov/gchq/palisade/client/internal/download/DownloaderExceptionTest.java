@@ -29,8 +29,8 @@ class DownloaderExceptionTest {
         var expectedCode = 400;
         var exception = new DownloaderException("oops", expectedCode);
         assertThat(exception.getStatusCode())
-                .as("check %s's status code", DownloaderException.class.getSimpleName())
-                .isEqualTo(400);
+            .as("check %s's status code", DownloaderException.class.getSimpleName())
+            .isEqualTo(400);
     }
 
 }

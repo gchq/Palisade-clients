@@ -28,13 +28,13 @@ class DefaultClientTest {
 
         var url = "pal://localhost";
         assertThat(client.acceptsURL(url))
-                .as("check %s accepts URL \"%s\"", DefaultClient.class.getSimpleName(), url)
-                .isTrue();
+            .as("check %s accepts URL \"%s\"", DefaultClient.class.getSimpleName(), url)
+            .isTrue();
 
         url = "jdbc://localhost";
         assertThat(client.acceptsURL(url))
-                .as("check %s does not accept URL \"%s\"", DefaultClient.class.getSimpleName(), url)
-                .isFalse();
+            .as("check %s does not accept URL \"%s\"", DefaultClient.class.getSimpleName(), url)
+            .isFalse();
     }
 
     @Test
@@ -43,8 +43,8 @@ class DefaultClientTest {
         var session = client.connect("pal://localhost?userid=alice");
         var expectedClass = DefaultSession.class;
         assertThat(session)
-                .as("check session type")
-                .isInstanceOf(expectedClass);
+            .as("check session type")
+            .isInstanceOf(expectedClass);
     }
 
 }

@@ -144,19 +144,19 @@ public final class PalisadeService {
         var httpClient = getHttpClient();
 
         var httpRequest = HttpRequest.newBuilder(uri)
-                .setHeader("Content-Type", "application/json")
-                .POST(bodyPublisher)
-                .build();
+            .setHeader("Content-Type", "application/json")
+            .POST(bodyPublisher)
+            .build();
 
         return httpClient
-                .sendAsync(httpRequest, BodyHandlers.ofString())
-                .thenApply(PalisadeService::checkStatusOK)
-                .thenApply(HttpResponse::body)
-                .thenApply(this::toResponse)
-                .thenApply((final PalisadeResponse pr) -> {
-                    LOGGER.debug("RCVD: {}", pr);
-                    return pr;
-                });
+            .sendAsync(httpRequest, BodyHandlers.ofString())
+            .thenApply(PalisadeService::checkStatusOK)
+            .thenApply(HttpResponse::body)
+            .thenApply(this::toResponse)
+            .thenApply((final PalisadeResponse pr) -> {
+                LOGGER.debug("RCVD: {}", pr);
+                return pr;
+            });
 
     }
 

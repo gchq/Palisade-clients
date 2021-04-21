@@ -81,10 +81,10 @@ public class DefaultQueryResponse implements QueryResponse {
             var configuration = session.getConfiguration();
 
             var webSocketClient = WebSocketClient.createResourceClient(b -> b
-                    .httpClient(httpClient)
-                    .objectMapper(session.getObjectMapper())
-                    .token(palisadeResponse.getToken())
-                    .uri(configuration.get(Configuration.FILTERED_RESOURCE_URI)));
+                .httpClient(httpClient)
+                .objectMapper(session.getObjectMapper())
+                .token(palisadeResponse.getToken())
+                .uri(configuration.get(Configuration.FILTERED_RESOURCE_URI)));
 
             webSocketClient.connect();
 

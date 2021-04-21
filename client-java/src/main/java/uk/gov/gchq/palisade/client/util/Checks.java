@@ -125,9 +125,9 @@ public interface Checks {
      * @throws IllegalArgumentException if {@code expression} is false
      */
     static void checkArgument(
-            final boolean expression,
-            final String template,
-            final Object... args) {
+        final boolean expression,
+        final String template,
+        final Object... args) {
         if (!expression) {
             throw new IllegalArgumentException(format(template, args));
         }
@@ -192,7 +192,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final Object p1) {
+        final boolean b, final String template, final Object p1) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1));
         }
@@ -210,7 +210,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final char p1, final char p2) {
+        final boolean b, final String template, final char p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -228,7 +228,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final char p1, final int p2) {
+        final boolean b, final String template, final char p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -246,7 +246,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final char p1, final long p2) {
+        final boolean b, final String template, final char p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -264,7 +264,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final char p1, final Object p2) {
+        final boolean b, final String template, final char p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -282,7 +282,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final int p1, final char p2) {
+        final boolean b, final String template, final int p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -300,7 +300,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final int p1, final int p2) {
+        final boolean b, final String template, final int p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -318,7 +318,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final int p1, final long p2) {
+        final boolean b, final String template, final int p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -336,7 +336,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final int p1, final Object p2) {
+        final boolean b, final String template, final int p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -354,7 +354,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final long p1, final char p2) {
+        final boolean b, final String template, final long p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -372,7 +372,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final long p1, final int p2) {
+        final boolean b, final String template, final long p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -390,7 +390,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final long p1, final long p2) {
+        final boolean b, final String template, final long p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -408,7 +408,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final long p1, final Object p2) {
+        final boolean b, final String template, final long p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -426,7 +426,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final Object p1, final char p2) {
+        final boolean b, final String template, final Object p1, final char p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -444,7 +444,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final Object p1, final int p2) {
+        final boolean b, final String template, final Object p1, final int p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -462,7 +462,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final Object p1, final long p2) {
+        final boolean b, final String template, final Object p1, final long p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -480,7 +480,7 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b, final String template, final Object p1, final Object p2) {
+        final boolean b, final String template, final Object p1, final Object p2) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2));
         }
@@ -499,11 +499,11 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b,
-            final String template,
-            final Object p1,
-            final Object p2,
-            final Object p3) {
+        final boolean b,
+        final String template,
+        final Object p1,
+        final Object p2,
+        final Object p3) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2, p3));
         }
@@ -523,12 +523,12 @@ public interface Checks {
      * @see #checkArgument(boolean, String, Object...) for details.
      */
     static void checkArgument(
-            final boolean b,
-            final String template,
-            final Object p1,
-            final Object p2,
-            final Object p3,
-            final Object p4) {
+        final boolean b,
+        final String template,
+        final Object p1,
+        final Object p2,
+        final Object p3,
+        final Object p4) {
         if (!b) {
             throw new IllegalArgumentException(format(template, p1, p2, p3, p4));
         }

@@ -58,10 +58,10 @@ public final class ClientManager {
         // add the default client to the palisade.clients system property, appending it
         // if it is already set
         Optional
-                .ofNullable(System.getProperty(PALISADE_CLIENTS_PROPERTY, ""))
-                .map(prop -> prop.isEmpty() ? "" : (prop + ":"))
-                .map(prop -> prop + DefaultClient.class.getName())
-                .ifPresent(prop -> System.setProperty(PALISADE_CLIENTS_PROPERTY, prop));
+            .ofNullable(System.getProperty(PALISADE_CLIENTS_PROPERTY, ""))
+            .map(prop -> prop.isEmpty() ? "" : (prop + ":"))
+            .map(prop -> prop + DefaultClient.class.getName())
+            .ifPresent(prop -> System.setProperty(PALISADE_CLIENTS_PROPERTY, prop));
     }
 
     private ClientManager() { // prevent instantiation
@@ -78,9 +78,9 @@ public final class ClientManager {
         LOGGER.debug("ClientManager.getClient(\"{}\"", url);
         ensureClientsInitialized();
         return REGISTERED_CLIENTS.stream()
-                .filter(c -> c.acceptsURL(url))
-                .findFirst()
-                .orElseThrow(() -> new ClientException("No suitable client found accepting url: " + url));
+            .filter(c -> c.acceptsURL(url))
+            .findFirst()
+            .orElseThrow(() -> new ClientException("No suitable client found accepting url: " + url));
     }
 
     /**
@@ -145,12 +145,12 @@ public final class ClientManager {
         synchronized (LOCK_FOR_INIT_CLIENTS) {
             if (!clientsInitialized) { // again, in case something squeezed in.
                 Optional
-                        .ofNullable(System.getProperty(PALISADE_CLIENTS_PROPERTY))
-                        .filter(clients -> !clients.isEmpty())
-                        .ifPresent(clients -> Arrays
-                                .stream(clients.split(":"))
-                                .filter(client -> !client.isEmpty())
-                                .forEach(ClientManager::loadClient));
+                    .ofNullable(System.getProperty(PALISADE_CLIENTS_PROPERTY))
+                    .filter(clients -> !clients.isEmpty())
+                    .ifPresent(clients -> Arrays
+                        .stream(clients.split(":"))
+                        .filter(client -> !client.isEmpty())
+                        .forEach(ClientManager::loadClient));
                 clientsInitialized = true;
                 LOGGER.debug("Palisade ClientManager initialized");
             }

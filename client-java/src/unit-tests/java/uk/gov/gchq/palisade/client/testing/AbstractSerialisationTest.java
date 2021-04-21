@@ -66,10 +66,10 @@ public class AbstractSerialisationTest {
         var actualInstance = objectMapper.readValue(actualJson, valueType);
 
         assertThat(actualInstance)
-                .as("check equality using recursive equals()",
-                        expectedInstance.getClass().getSimpleName())
-                .usingRecursiveComparison()
-                .isEqualTo(expectedInstance);
+            .as("check equality using recursive equals()",
+                expectedInstance.getClass().getSimpleName())
+            .usingRecursiveComparison()
+            .isEqualTo(expectedInstance);
     }
 
     /**

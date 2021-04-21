@@ -38,9 +38,9 @@ class DataRequestSerialisationTest extends AbstractSerialisationTest {
      */
     static Stream<Arguments> instances() {
         return Stream.of(arguments(DataRequest.Builder.create()
-                        .withToken("test-request-token")
-                        .withLeafResourceId("leaf-resource-id"),
-                "{\"token\":\"test-request-token\",\"leafResourceId\":\"leaf-resource-id\"}"));
+                .withToken("test-request-token")
+                .withLeafResourceId("leaf-resource-id"),
+            "{\"token\":\"test-request-token\",\"leafResourceId\":\"leaf-resource-id\"}"));
     }
 
     /**

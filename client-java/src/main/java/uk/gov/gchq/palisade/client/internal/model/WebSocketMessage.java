@@ -44,9 +44,9 @@ public final class WebSocketMessage {
 
     @JsonCreator
     private WebSocketMessage(
-            final @JsonProperty("type") MessageType type,
-            final @JsonProperty("headers") Map<String, String> headers,
-            final @JsonProperty("body") String body) {
+        final @JsonProperty("type") MessageType type,
+        final @JsonProperty("headers") Map<String, String> headers,
+        final @JsonProperty("body") String body) {
         this.type = type;
         this.headers = headers;
         this.body = body;
@@ -70,7 +70,7 @@ public final class WebSocketMessage {
     @Generated
     public Map<String, String> getHeaders() {
         return Optional.ofNullable(headers)
-                .orElse(Collections.emptyMap());
+            .orElse(Collections.emptyMap());
     }
 
     /**
@@ -206,9 +206,9 @@ public final class WebSocketMessage {
     @Generated
     public String toString() {
         return new StringJoiner(", ", WebSocketMessage.class.getSimpleName() + "[", "]")
-                .add("type=" + type)
-                .add("headers=" + headers)
-                .add("body='" + body + "'")
-                .toString();
+            .add("type=" + type)
+            .add("headers=" + headers)
+            .add("body='" + body + "'")
+            .toString();
     }
 }

@@ -67,16 +67,16 @@ public class DefaultQueryItem implements QueryItem {
     @Override
     public String asError() {
         return Optional.of(getType())
-                .filter(ItemType.ERROR::equals)
-                .map(isError -> message.getBodyObject(String.class))
-                .orElse(null);
+            .filter(ItemType.ERROR::equals)
+            .map(isError -> message.getBodyObject(String.class))
+            .orElse(null);
     }
 
     @Override
     public LeafResource asResource() {
         return Optional.of(getType())
-                .filter(ItemType.RESOURCE::equals)
-                .map(isResource -> message.getBodyObject(LeafResource.class))
-                .orElse(null);
+            .filter(ItemType.RESOURCE::equals)
+            .map(isResource -> message.getBodyObject(LeafResource.class))
+            .orElse(null);
     }
 }

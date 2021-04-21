@@ -40,15 +40,15 @@ class RequestSerialisationTest extends AbstractSerialisationTest {
      */
     static Stream<Arguments> instances() {
         return Stream.of(
-                arguments(
-                        new PalisadeResponse("blah"),
-                        "{\"token\":\"blah\"}"),
-                arguments(
-                        PalisadeRequest.Builder.create()
-                                .withUserId("userId")
-                                .withResourceId("resourceId")
-                                .withContext(Map.of("key", "value")),
-                        "{\"resourceId\":\"resourceId\",\"userId\":\"userId\",\"context\":{\"key\":\"value\"}}"));
+            arguments(
+                new PalisadeResponse("blah"),
+                "{\"token\":\"blah\"}"),
+            arguments(
+                PalisadeRequest.Builder.create()
+                    .withUserId("userId")
+                    .withResourceId("resourceId")
+                    .withContext(Map.of("key", "value")),
+                "{\"resourceId\":\"resourceId\",\"userId\":\"userId\",\"context\":{\"key\":\"value\"}}"));
     }
 
     /**

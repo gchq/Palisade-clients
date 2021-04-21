@@ -51,22 +51,22 @@ class PalisadeServiceTest {
         var port = embeddedServer.getPort();
         var uri = new URI("http://localhost:" + port + "/cluster/palisade/api/registerDataRequest");
         var palisadeRequest = PalisadeRequest.Builder.create()
-                .withUserId("user_id")
-                .withResourceId("resource_id")
-                .withContext(Map.of("key", "value"));
+            .withUserId("user_id")
+            .withResourceId("resource_id")
+            .withContext(Map.of("key", "value"));
 
         var service = PalisadeService.createPalisadeService(b -> b
-                .httpClient(HttpClient.newHttpClient())
-                .objectMapper(objectMapper)
-                .uri(uri));
+            .httpClient(HttpClient.newHttpClient())
+            .objectMapper(objectMapper)
+            .uri(uri));
 
         var palisadeResponse = service.submit(palisadeRequest);
 
         assertThat(palisadeResponse)
-                .as("check valid response")
-                .isNotNull()
-                .extracting("token")
-                .isEqualTo(TOKEN);
+            .as("check valid response")
+            .isNotNull()
+            .extracting("token")
+            .isEqualTo(TOKEN);
 
     }
 
@@ -79,8 +79,8 @@ class PalisadeServiceTest {
         when(expectedResponse.statusCode()).thenReturn(202);
 
         assertThat(PalisadeService.checkStatusOK(expectedResponse))
-                .as("check response is valid")
-                .isEqualTo(expectedResponse);
+            .as("check response is valid")
+            .isEqualTo(expectedResponse);
     }
 
     @SuppressWarnings("unchecked")
@@ -93,16 +93,16 @@ class PalisadeServiceTest {
         when(response.statusCode()).thenReturn(404);
 
         assertThatExceptionOfType(expectedException)
-                .as("check valid exception thrown for response with no body")
-                .isThrownBy(() -> PalisadeService.checkStatusOK(response))
-                .withMessage("Request to Palisade Service failed (404) with no body");
+            .as("check valid exception thrown for response with no body")
+            .isThrownBy(() -> PalisadeService.checkStatusOK(response))
+            .withMessage("Request to Palisade Service failed (404) with no body");
 
         when(response.body()).thenReturn("body");
 
         assertThatExceptionOfType(expectedException)
-                .as("check valid exception thrown response with a body")
-                .isThrownBy(() -> PalisadeService.checkStatusOK(response))
-                .withMessage("Request to Palisade Service failed (404) with body:\nbody");
+            .as("check valid exception thrown response with a body")
+            .isThrownBy(() -> PalisadeService.checkStatusOK(response))
+            .withMessage("Request to Palisade Service failed (404) with body:\nbody");
 
     }
 

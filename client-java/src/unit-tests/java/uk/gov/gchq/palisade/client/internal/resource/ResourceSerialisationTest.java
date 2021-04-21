@@ -43,20 +43,20 @@ class ResourceSerialisationTest extends AbstractSerialisationTest {
      */
     static Stream<Arguments> instances() {
         return Stream.of(
-                arguments(
-                        WebSocketMessage.Builder.create()
-                                .withType(MessageType.RESOURCE)
-                                .withHeaders(Map.of("key", "value"))
-                                .withSerialisedBody("body"),
-                        "{\"type\":\"RESOURCE\",\"headers\":{\"key\":\"value\"},\"body\":\"body\"}"),
-                arguments(
-                        new FileResource()
-                                .id("leaf-resource-id")
-                                .connectionDetail(new SimpleConnectionDetail().serviceName("serviceName"))
-                                .type("type")
-                                .serialisedFormat("format")
-                                .parent(new SystemResource().id("parent")),
-                        "{\"id\":\"leaf-resource-id\",\"serialisedFormat\":\"format\",\"type\":\"type\",\"connectionDetail\":{\"serviceName\":\"serviceName\"},\"attributes\":null,\"parent\":{\"id\":\"parent/\"}}"));
+            arguments(
+                WebSocketMessage.Builder.create()
+                    .withType(MessageType.RESOURCE)
+                    .withHeaders(Map.of("key", "value"))
+                    .withSerialisedBody("body"),
+                "{\"type\":\"RESOURCE\",\"headers\":{\"key\":\"value\"},\"body\":\"body\"}"),
+            arguments(
+                new FileResource()
+                    .id("leaf-resource-id")
+                    .connectionDetail(new SimpleConnectionDetail().serviceName("serviceName"))
+                    .type("type")
+                    .serialisedFormat("format")
+                    .parent(new SystemResource().id("parent")),
+                "{\"id\":\"leaf-resource-id\",\"serialisedFormat\":\"format\",\"type\":\"type\",\"connectionDetail\":{\"serviceName\":\"serviceName\"},\"attributes\":null,\"parent\":{\"id\":\"parent/\"}}"));
     }
 
     /**

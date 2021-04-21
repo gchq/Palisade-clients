@@ -73,20 +73,20 @@ public class FilteredResourceWsEndpoint {
         public ResourceGenerator(final String token, final int port) {
             this.token = token;
             this.messages = Stream.of(FILE_NAMES.stream()
-                            .map(filename -> WebSocketMessage.Builder.create().withType(MessageType.RESOURCE)
-                                    .withHeader(Token.HEADER, token).noHeaders()
-                                    .withBody(new FileResource()
-                                            .id(filename)
-                                            .serialisedFormat("format")
-                                            .type("type")
-                                            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"))
-                                            .parent(new SystemResource().id("parent")))),
-                    Stream.of(WebSocketMessage.Builder.create()
-                            .withType(MessageType.ERROR)
-                            .withHeader(Token.HEADER, token).noHeaders()
-                            .withBody("test error")))
-                    .flatMap(Function.identity())
-                    .collect(Collectors.toList());
+                    .map(filename -> WebSocketMessage.Builder.create().withType(MessageType.RESOURCE)
+                        .withHeader(Token.HEADER, token).noHeaders()
+                        .withBody(new FileResource()
+                            .id(filename)
+                            .serialisedFormat("format")
+                            .type("type")
+                            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"))
+                            .parent(new SystemResource().id("parent")))),
+                Stream.of(WebSocketMessage.Builder.create()
+                    .withType(MessageType.ERROR)
+                    .withHeader(Token.HEADER, token).noHeaders()
+                    .withBody("test error")))
+                .flatMap(Function.identity())
+                .collect(Collectors.toList());
 
         }
 
@@ -177,9 +177,9 @@ public class FilteredResourceWsEndpoint {
 
     private static void sendComplete(final WebSocketSession session) {
         send(session, WebSocketMessage.Builder.create()
-                .withType(MessageType.COMPLETE)
-                .noHeaders()
-                .noBody());
+            .withType(MessageType.COMPLETE)
+            .noHeaders()
+            .noBody());
     }
 
     private static void send(final WebSocketSession session, final WebSocketMessage message) {

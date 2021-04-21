@@ -41,10 +41,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.PACKAGE, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS) // Make it class retention for incremental compilation
 @Value.Style(
-        visibility = ImplementationVisibility.PACKAGE,
-        overshadowImplementation = true,
-        depluralize = true,
-        defaults = @Value.Immutable(copy = false)
+    visibility = ImplementationVisibility.PACKAGE,
+    overshadowImplementation = true,
+    depluralize = true,
+    defaults = @Value.Immutable(copy = false)
 )
 public @interface ImmutableStyle { // empty
 }

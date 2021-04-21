@@ -72,8 +72,8 @@ public final class Util {
     public static String createUrl(final String baseUri, final String endpoint, final String... endpoints) {
 
         var uri = new StringBuilder(trimSlashes(baseUri))
-                .append(URI_SEP)
-                .append(trimSlashes(endpoint));
+            .append(URI_SEP)
+            .append(trimSlashes(endpoint));
 
         for (String string : endpoints) {
             uri.append(URI_SEP).append(trimSlashes(string));
