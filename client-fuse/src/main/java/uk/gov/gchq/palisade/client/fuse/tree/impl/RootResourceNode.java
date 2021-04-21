@@ -109,17 +109,17 @@ public class RootResourceNode implements ParentNode<Resource> {
     @Override
     public boolean addAll(final Collection<? extends TreeNode<Resource>> collection) {
         return collection.stream()
-                .map(this::add)
-                .reduce(Boolean::logicalOr)
-                .orElse(false);
+            .map(this::add)
+            .reduce(Boolean::logicalOr)
+            .orElse(false);
     }
 
     @Override
     public boolean removeAll(final Collection<?> collection) {
         return collection.stream()
-                .map(this::remove)
-                .reduce(Boolean::logicalOr)
-                .orElse(false);
+            .map(this::remove)
+            .reduce(Boolean::logicalOr)
+            .orElse(false);
     }
 
     @Override

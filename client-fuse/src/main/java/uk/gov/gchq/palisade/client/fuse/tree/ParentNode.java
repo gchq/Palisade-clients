@@ -29,8 +29,8 @@ public interface ParentNode<T> extends TreeNode<T> {
     @Override
     default Stream<T> traverse() {
         return Stream.concat(
-                Stream.of(this.get()),
-                this.getChildren().stream().flatMap(TreeNode::traverse)
+            Stream.of(this.get()),
+            this.getChildren().stream().flatMap(TreeNode::traverse)
         );
     }
 
@@ -86,17 +86,17 @@ public interface ParentNode<T> extends TreeNode<T> {
     @Override
     default boolean addAll(final Collection<? extends TreeNode<T>> collection) {
         return collection.stream()
-                .map(this::add)
-                .reduce(Boolean::logicalOr)
-                .orElse(false);
+            .map(this::add)
+            .reduce(Boolean::logicalOr)
+            .orElse(false);
     }
 
     @Override
     default boolean removeAll(final Collection<?> collection) {
         return collection.stream()
-                .map(this::remove)
-                .reduce(Boolean::logicalOr)
-                .orElse(false);
+            .map(this::remove)
+            .reduce(Boolean::logicalOr)
+            .orElse(false);
     }
 
     @Override

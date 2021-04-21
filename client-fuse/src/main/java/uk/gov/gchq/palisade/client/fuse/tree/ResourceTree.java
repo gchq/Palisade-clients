@@ -37,8 +37,8 @@ public class ResourceTree implements Collection<Resource> {
     public static TreeNode<Resource> create(final ParentNode<Resource> parent, final Resource resource) {
         List<String> pathComponents = getPath(resource.getId());
         String id = pathComponents.isEmpty()
-                ? ""
-                : pathComponents.get(pathComponents.size() - 1);
+            ? ""
+            : pathComponents.get(pathComponents.size() - 1);
 
         TreeNode<Resource> node;
         if (resource instanceof LeafResource) {
@@ -59,11 +59,11 @@ public class ResourceTree implements Collection<Resource> {
 
     public static List<String> getPath(final String path) {
         String strippedPath = path
-                .replaceAll("^/+", "")
-                .replaceAll("/+$", "");
+            .replaceAll("^/+", "")
+            .replaceAll("/+$", "");
         return "".equals(strippedPath)
-                ? List.of()
-                : List.of(strippedPath.split("/"));
+            ? List.of()
+            : List.of(strippedPath.split("/"));
     }
 
     public static List<String> getPath(final Resource resource) {
@@ -84,8 +84,8 @@ public class ResourceTree implements Collection<Resource> {
 
     private <T> List<T> dropFirst(final List<T> list) {
         return list.size() > 1
-                ? list.subList(1, list.size())
-                : List.of();
+            ? list.subList(1, list.size())
+            : List.of();
     }
 
     private Optional<TreeNode<Resource>> getNode(final TreeNode<Resource> node, final List<String> path) {
@@ -95,11 +95,11 @@ public class ResourceTree implements Collection<Resource> {
             return Optional.of(node);
         } else if (node instanceof ParentNode) {
             return ((ParentNode<Resource>) node).getChildren()
-                    .stream()
-                    .filter(child -> child.getId().equals(path.get(0)))
-                    .map(child -> getNode(child, dropFirst(path)))
-                    .flatMap(Optional::stream)
-                    .findAny();
+                .stream()
+                .filter(child -> child.getId().equals(path.get(0)))
+                .map(child -> getNode(child, dropFirst(path)))
+                .flatMap(Optional::stream)
+                .findAny();
         } else {
             // Cannot subpath a non-parent (ie. file)
             return Optional.empty();
@@ -148,10 +148,10 @@ public class ResourceTree implements Collection<Resource> {
                 ParentResource parent = ((ChildResource) resource).getParent();
                 add(parent);
                 getNode(parent)
-                        .ifPresent(node -> node
-                                .add(create((ParentNode) node, resource)));
+                    .ifPresent(node -> node
+                        .add(create((ParentNode) node, resource)));
             } else if (resource instanceof ParentResource && root == null) {
-                    root = (RootResourceNode) create(null, resource);
+                root = (RootResourceNode) create(null, resource);
             }
             return true;
         }

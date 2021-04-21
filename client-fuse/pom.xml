@@ -37,6 +37,9 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
+        <jnr-fuse.version>0.5.5</jnr-fuse.version>
+        <slf4j.version>1.7.26</slf4j.version>
+
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <assertj.version>3.19.0</assertj.version>
     </properties>
@@ -45,12 +48,17 @@
         <dependency>
             <groupId>com.github.serceman</groupId>
             <artifactId>jnr-fuse</artifactId>
-            <version>0.5.5</version>
+            <version>${jnr-fuse.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.gchq.palisade</groupId>
             <artifactId>client-java</artifactId>
             <version>0.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
@@ -66,5 +74,64 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/unit-tests/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/component-tests/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/contract-tests/resources</directory>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${basedir}/src/unit-tests/java</source>
+                                <source>${basedir}/src/component-tests/java</source>
+                                <source>${basedir}/src/contract-tests/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-test-resources</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <filtering>true</filtering>
+                                    <directory>${basedir}/src/unit-tests/resources</directory>
+                                    <directory>${basedir}/src/component-tests/resources</directory>
+                                    <directory>${basedir}/src/contract-tests/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

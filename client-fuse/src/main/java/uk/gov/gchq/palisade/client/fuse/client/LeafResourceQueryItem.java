@@ -16,7 +16,7 @@
 
 package uk.gov.gchq.palisade.client.fuse.client;
 
-import uk.gov.gchq.palisade.client.QueryItem;
+import uk.gov.gchq.palisade.client.java.QueryItem;
 import uk.gov.gchq.palisade.resource.LeafResource;
 
 class LeafResourceQueryItem implements QueryItem {

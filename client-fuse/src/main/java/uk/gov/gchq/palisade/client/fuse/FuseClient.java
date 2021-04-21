@@ -23,7 +23,7 @@ import uk.gov.gchq.palisade.client.fuse.client.ResourceTreeClient;
 import uk.gov.gchq.palisade.client.fuse.client.ResourceTreeClient.ResourceTreeWithContext;
 import uk.gov.gchq.palisade.client.fuse.fs.ResourceTreeFS;
 import uk.gov.gchq.palisade.client.fuse.tree.impl.LeafResourceNode;
-import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
+import uk.gov.gchq.palisade.client.java.internal.dft.DefaultClient;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -41,7 +41,7 @@ public class FuseClient {
     public static void main(final String... args) {
         if (args.length == 4) {
             new FuseClient(args[1])
-                    .mount(args[2], args[3]);
+                .mount(args[2], args[3]);
         } else {
             LOGGER.error("Usage: {} <clientUri> <resourceId> <mountDir>", args[0]);
         }

@@ -73,8 +73,8 @@ public class ResourceTreeFS extends FuseStubFS {
 
     private void readdir(final ParentNode<Resource> node, final Pointer buf, final FuseFillDir filler) {
         node.getChildren()
-                .forEach(child ->
-                        filler.apply(buf, child.getId(), null, 0));
+            .forEach(child ->
+                filler.apply(buf, child.getId(), null, 0));
     }
 
     private ResourceTree resourceTree;
@@ -88,8 +88,8 @@ public class ResourceTreeFS extends FuseStubFS {
     @Override
     public int getattr(final String path, final FileStat stat) {
         return resourceTree.getNode(path)
-                .map(node -> getattr(node, stat))
-                .orElse(-ErrorCodes.ENOENT());
+            .map(node -> getattr(node, stat))
+            .orElse(-ErrorCodes.ENOENT());
     }
 
     @Override

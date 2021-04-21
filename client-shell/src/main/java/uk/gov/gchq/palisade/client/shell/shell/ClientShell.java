@@ -26,10 +26,10 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellMethodAvailability;
 import org.springframework.shell.standard.ShellOption;
 
-import uk.gov.gchq.palisade.client.internal.dft.DefaultClient;
-import uk.gov.gchq.palisade.client.internal.dft.DefaultQueryItem;
-import uk.gov.gchq.palisade.client.internal.dft.DefaultQueryResponse;
-import uk.gov.gchq.palisade.client.internal.dft.DefaultSession;
+import uk.gov.gchq.palisade.client.java.internal.dft.DefaultClient;
+import uk.gov.gchq.palisade.client.java.internal.dft.DefaultQueryItem;
+import uk.gov.gchq.palisade.client.java.internal.dft.DefaultQueryResponse;
+import uk.gov.gchq.palisade.client.java.internal.dft.DefaultSession;
 import uk.gov.gchq.palisade.client.shell.exception.RuntimeIOException;
 
 import java.io.IOException;
@@ -186,7 +186,9 @@ public class ClientShell {
     private void computeResourcesIfAbsent(final String token) {
         filteredResources.computeIfAbsent(token, tk -> {
             LinkedList<DefaultQueryItem> resources = new LinkedList<>();
-            Flowable.fromPublisher(FlowAdapters.toPublisher(registeredQueries.get(token).stream()))
+            DefaultQueryResponse query = Optional.ofNullable(registeredQueries.get(token))
+                .orElseThrow(() -> new IllegalArgumentException("No such registered token: " + token));
+            Flowable.fromPublisher(FlowAdapters.toPublisher(query.stream()))
                 .blockingForEach(next -> resources.addLast((DefaultQueryItem) next));
             return resources;
         });

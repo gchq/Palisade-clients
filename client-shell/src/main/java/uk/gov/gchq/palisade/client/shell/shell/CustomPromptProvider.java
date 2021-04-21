@@ -20,7 +20,7 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.jline.PromptProvider;
 
-import uk.gov.gchq.palisade.client.internal.impl.Configuration;
+import uk.gov.gchq.palisade.client.java.internal.impl.Configuration;
 
 import java.net.URI;
 import java.util.Optional;

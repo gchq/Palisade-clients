@@ -14,7 +14,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -22,8 +21,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.0.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>2.3.1.RELEASE</version>
     </parent>
 
     <groupId>uk.gov.gchq.palisade</groupId>
@@ -48,15 +46,17 @@
 
         <!-- Plugins -->
         <compiler.plugin.version>3.8.0</compiler.plugin.version>
-        <maven-shade.plugin.version>3.1.2</maven-shade.plugin.version>
         <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <depends.plugin.version>3.1.2</depends.plugin.version>
         <javax-annotation.plugin.version>1.3.2</javax-annotation.plugin.version>
-
-        <!-- Testing properties -->
         <surefire.plugin.version>2.22.1</surefire.plugin.version>
         <failsafe.version>2.22.1</failsafe.version>
+
+        <!-- Testing properties -->
+        <unit-test.skip>false</unit-test.skip>
+        <component-test.skip>false</component-test.skip>
+        <contract-test.skip>false</contract-test.skip>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.25</slf4j.api.version>
@@ -76,17 +76,6 @@
         <module>client-shell</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Hoxton.RELEASE</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <profiles>
         <profile>
             <id>quick</id>
@@ -107,12 +96,14 @@
             <!-- Snapshot repositories can be build on each commit to develop branch -->
             <id>nexus</id>
             <name>releases</name>
+            <!--suppress UnresolvedMavenProperty -->
             <url>${release.url}</url>
         </repository>
         <snapshotRepository>
             <!-- Snapshot repositories can be build on each commit to develop branch -->
             <id>nexus</id>
             <name>snapshots</name>
+            <!--suppress UnresolvedMavenProperty -->
             <url>${snapshot.url}</url>
         </snapshotRepository>
     </distributionManagement>
@@ -190,11 +181,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -304,26 +290,60 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.plugin.version}</version>
+                <configuration>
+                    <skipTests>${unit-test.skip}</skipTests>
+                    <includes>
+                        <include>uk/gov/gchq/palisade/client/**</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe.version}</version>
+                <executions>
+                    <execution>
+                        <id>component-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${component-test.skip}</skipITs>
+                            <includes>
+                                <include>uk/gov/gchq/palisade/component/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>contract-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${contract-test.skip}</skipITs>
+                            <includes>
+                                <include>uk/gov/gchq/palisade/contract/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.5</version>
-                <configuration>
-                    <destFile>${sonar.jacoco.reportPath}</destFile>
-                    <append>true</append>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
                             <goal>report</goal>
-                            <goal>report-aggregate</goal>
+                            <goal>prepare-agent-integration</goal>
+                            <goal>report-integration</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -338,8 +358,7 @@
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
-                    <headerLocation>code-style/licenseHeader.txt
-                    </headerLocation>
+                    <headerLocation>code-style/licenseHeader.txt</headerLocation>
                     <suppressionsLocation>code-style/checkstyle-suppressions.xml</suppressionsLocation>
                     <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                 </configuration>
@@ -352,11 +371,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe.version}</version>
             </plugin>
         </plugins>
     </build>
