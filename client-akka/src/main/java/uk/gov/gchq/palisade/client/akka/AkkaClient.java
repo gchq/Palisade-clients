@@ -67,9 +67,9 @@ public class AkkaClient implements Client {
     /**
      * Constructor used to create the AkkaClient
      *
-     * @param palisadeUrl the location of the Palisade Service
+     * @param palisadeUrl         the location of the Palisade Service
      * @param filteredResourceUrl the location of the Filtered Resource Service
-     * @param actorSystem the akka Actor System bean
+     * @param actorSystem         the akka Actor System bean
      */
     public AkkaClient(final String palisadeUrl, final String filteredResourceUrl, final ActorSystem actorSystem) {
         this.palisadeUrl = palisadeUrl;
@@ -81,6 +81,7 @@ public class AkkaClient implements Client {
     /**
      * Registers a request into the Palisade Service, taking a userId, resourceId and Map as a context, it then sends the request to the
      * Palisade registerDataRequest endpoint via rest and returns the token after the request has ben processed.
+     *
      * @param userId     the userId of the user making the request.
      * @param resourceId the resourceId requested to read - note this is not necessarily the filename.
      * @param context    the context for this data access.
@@ -101,6 +102,7 @@ public class AkkaClient implements Client {
 
     /**
      * By taking the uuid token, this method deserializes the message from the websocket, and if completed, returns the processed LeafResource to the user
+     *
      * @param token uuid of the request
      * @return a processed LeafResource that has been processed by the Palisade Service
      */
@@ -159,6 +161,7 @@ public class AkkaClient implements Client {
     /**
      * Converts the akka stream to a reactive stream publisher
      * for use in the {@link #fetchSource(String)} method
+     *
      * @param token the token returned from the palisade-service by the {@link #register} method.
      * @return a Reactive streams publisher containing the LeafResource from the Palisade Service
      */
@@ -173,7 +176,8 @@ public class AkkaClient implements Client {
 
     /**
      * This method connects to the data service to read the leafResource from the original request, linked by the uuid token
-     * @param token the token returned from the palisade-service by the {@link #register} method.
+     *
+     * @param token    the token returned from the palisade-service by the {@link #register} method.
      * @param resource that the user wants to read
      * @return a stream of bytes representing the contents of the resource
      */
@@ -189,6 +193,7 @@ public class AkkaClient implements Client {
 
     /**
      * Converts an akka ByteString source to java a stdlib InputStream
+     *
      * @param token    the token returned from the palisade-service by the {@link #register(String, String, Map)} method.
      * @param resource a resource returned by the filtered-resource-service that the client wishes to read.
      * @return a java stdlib InputStream

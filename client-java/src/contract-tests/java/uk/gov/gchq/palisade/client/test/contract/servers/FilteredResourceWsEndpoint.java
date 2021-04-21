@@ -30,8 +30,8 @@ import uk.gov.gchq.palisade.client.internal.model.MessageType;
 import uk.gov.gchq.palisade.client.internal.model.Token;
 import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
 import uk.gov.gchq.palisade.resource.impl.FileResource;
+import uk.gov.gchq.palisade.resource.impl.SimpleConnectionDetail;
 import uk.gov.gchq.palisade.resource.impl.SystemResource;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 

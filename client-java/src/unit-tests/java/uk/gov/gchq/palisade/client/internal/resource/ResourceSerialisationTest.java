@@ -23,8 +23,8 @@ import uk.gov.gchq.palisade.client.internal.model.MessageType;
 import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
 import uk.gov.gchq.palisade.client.testing.AbstractSerialisationTest;
 import uk.gov.gchq.palisade.resource.impl.FileResource;
+import uk.gov.gchq.palisade.resource.impl.SimpleConnectionDetail;
 import uk.gov.gchq.palisade.resource.impl.SystemResource;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
 
 import java.util.Map;
 import java.util.stream.Stream;
