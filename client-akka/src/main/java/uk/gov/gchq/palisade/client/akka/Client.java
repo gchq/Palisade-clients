@@ -49,7 +49,7 @@ public interface Client {
     Publisher<LeafResource> fetch(final String token);
 
     /**
-     * Read a single resource from the appropriate data-service specified by the resource's {@link uk.gov.gchq.palisade.service.ConnectionDetail}.
+     * Read a single resource from the appropriate data-service specified by the resource's {@link uk.gov.gchq.palisade.resource.ConnectionDetail}.
      *
      * @param token    the token returned from the palisade-service by the {@link #register(String, String, Map)} method.
      * @param resource a resource returned by the filtered-resource-service that the client wishes to read.

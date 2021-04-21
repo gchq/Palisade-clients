@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.gchq.palisade.client.internal.download.Downloader;
 import uk.gov.gchq.palisade.client.internal.download.DownloaderException;
 import uk.gov.gchq.palisade.resource.impl.FileResource;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
+import uk.gov.gchq.palisade.resource.impl.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 

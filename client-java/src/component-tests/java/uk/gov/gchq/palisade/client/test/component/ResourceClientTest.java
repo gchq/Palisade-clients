@@ -26,9 +26,9 @@ import uk.gov.gchq.palisade.client.internal.model.MessageType;
 import uk.gov.gchq.palisade.client.internal.model.WebSocketMessage;
 import uk.gov.gchq.palisade.client.internal.resource.WebSocketClient;
 import uk.gov.gchq.palisade.client.testing.ClientTestData;
+import uk.gov.gchq.palisade.resource.ConnectionDetail;
 import uk.gov.gchq.palisade.resource.LeafResource;
-import uk.gov.gchq.palisade.service.ConnectionDetail;
-import uk.gov.gchq.palisade.service.SimpleConnectionDetail;
+import uk.gov.gchq.palisade.resource.impl.SimpleConnectionDetail;
 
 import javax.inject.Inject;
 
