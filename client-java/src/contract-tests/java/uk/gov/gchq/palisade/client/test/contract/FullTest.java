@@ -33,6 +33,7 @@ import uk.gov.gchq.palisade.client.QueryResponse;
 
 import javax.inject.Inject;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,6 +64,7 @@ class FullTest {
         var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
             .filter(m -> m.getType().equals(ItemType.RESOURCE))
             .collect(Collectors.toList())
+            .timeout(10, TimeUnit.SECONDS)
             .blockingGet();
 
         assertThat(resources).as("check resource count").hasSizeGreaterThan(0);
@@ -96,6 +98,7 @@ class FullTest {
         Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
             .filter(m -> m.getType().equals(ItemType.RESOURCE))
             .map(session::fetch)
+            .timeout(10, TimeUnit.SECONDS)
             .subscribe(new FlowableSubscriber<>() {
 
                 @Override
