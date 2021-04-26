@@ -17,6 +17,7 @@ limitations under the License.
 # Palisade FuseFS Client
 
 ## Introduction
+
 > ***Filesystem in Userspace (FUSE)*** is a software interface for Unix and Unix-like computer operating systems that lets non-privileged users create their own file systems without editing kernel code.
 This is achieved by running file system code in user space while the FUSE module provides only a "bridge" to the actual kernel interfaces.
 [[1]](https://en.wikipedia.org/wiki/Filesystem_in_Userspace)
@@ -27,11 +28,13 @@ The Data Service read represents a file read.
 
 
 ## Requirements
+Depending on operating system, you will need an appropriate FUSE implementation.
 
+The following are the most popular libraries for the three major OSes:
 * [libfuse for Linux and BSD](https://github.com/libfuse/libfuse)
-    * [libfuse3-dev for Ubuntu](https://packages.ubuntu.com/hirsute/libfuse3-dev)
-    * [libfuse3-dev for Debian](https://packages.debian.org/sid/libfuse3-dev)
-    * [fuse2 for Arch](https://archlinux.org/packages/extra/x86_64/fuse2/)
+    * [libfuse3-dev for Ubuntu Hirsute](https://packages.ubuntu.com/hirsute/libfuse3-dev)
+    * [libfuse3-dev for Debian Sid](https://packages.debian.org/sid/libfuse3-dev)
+    * [fuse2 for Arch (x86-64)](https://archlinux.org/packages/extra/x86_64/fuse2/)
 * [OSXFUSE for MacOS](https://osxfuse.github.io/)
 * [WinFSP for Windows](http://www.secfs.net/winfsp/)
 
