@@ -22,7 +22,7 @@ This exists alongside the [Java Client](../client-java) as both a demonstration 
 ## API Design
 
 The client follows as simple an API as possible.
-After providing configuration for the location of a cluster, the client is otherwise stateless and presents as flat data-structures as possible.
+After providing configuration for the location of a cluster, the client is otherwise stateless and presents the flattest data-structure possible.
 The methods and return types are a one-to-one mapping with each service required to interact with (`register` with Palisade Service, `fetch` from Filtered-Resource Service, `read` from Data Service).
 
 ## Technologies Used
