@@ -16,7 +16,6 @@
 
 package uk.gov.gchq.palisade.client.fuse.fs;
 
-import jnr.ffi.Platform;
 import jnr.ffi.Pointer;
 import jnr.ffi.types.off_t;
 import jnr.ffi.types.size_t;
@@ -24,6 +23,7 @@ import ru.serce.jnrfuse.ErrorCodes;
 import ru.serce.jnrfuse.FuseFillDir;
 import ru.serce.jnrfuse.FuseStubFS;
 import ru.serce.jnrfuse.struct.FileStat;
+import ru.serce.jnrfuse.struct.FuseContext;
 import ru.serce.jnrfuse.struct.FuseFileInfo;
 import ru.serce.jnrfuse.struct.Statvfs;
 
@@ -31,51 +31,27 @@ import uk.gov.gchq.palisade.client.fuse.tree.ParentNode;
 import uk.gov.gchq.palisade.client.fuse.tree.ResourceTree;
 import uk.gov.gchq.palisade.client.fuse.tree.TreeNode;
 import uk.gov.gchq.palisade.client.fuse.tree.impl.LeafResourceNode;
+import uk.gov.gchq.palisade.resource.AbstractLeafResource;
 import uk.gov.gchq.palisade.resource.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static jnr.ffi.Platform.OS.WINDOWS;
-
-@SuppressWarnings({"unchecked", "rawtypes"})
+/**
+ * Implementation of a FuseFS mountable using a {@link ResourceTree} to populate directories.
+ * This uses the stubbed methods from {@link FuseStubFS} where specialisation is not required.
+ * This is where resources (returned from the Filtered-Resource Service) are mounted and presented
+ * to the user.
+ * The API was very much created with C in mind, so there's a lot of setting fields on mutable
+ * objects and returning {@link ErrorCodes} integers from methods.
+ *
+ * @see <a href="https://man7.org/linux/man-pages/man8/mount.fuse3.8.html"/>
+ */
+@SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
 public class ResourceTreeFS extends FuseStubFS {
-
-    private int getattr(final TreeNode<Resource> node, final FileStat stat) {
-        final int readOnly = FileStat.S_IRUSR | FileStat.S_IRGRP; // ug+r
-        if (node instanceof ParentNode) {
-            stat.st_mode.set(FileStat.S_IFDIR | readOnly);
-            stat.st_uid.set(getContext().uid.get());
-            stat.st_gid.set(getContext().gid.get());
-            return 0;
-        } else if (node instanceof LeafResourceNode) {
-            stat.st_mode.set(FileStat.S_IFREG | readOnly);
-            stat.st_size.set(Integer.MAX_VALUE); // unknown
-            stat.st_uid.set(getContext().uid.get());
-            stat.st_gid.set(getContext().gid.get());
-            return 0;
-        }
-        return -ErrorCodes.ENOENT();
-    }
-
-    private int read(final LeafResourceNode node, final Pointer buffer, final long size, final long offset) {
-        InputStream is = reader.apply(node);
-        byte[] buf = new byte[(int) size];
-        try {
-            int bytesRead = is.readNBytes(buf, (int) offset, (int) size);
-            buffer.put(0, buf, 0, bytesRead);
-            return bytesRead;
-        } catch (IOException ex) {
-            return -ErrorCodes.EREMOTEIO();
-        }
-    }
-
-    private void readdir(final ParentNode<Resource> node, final Pointer buf, final FuseFillDir filler) {
-        node.getChildren()
-            .forEach(child ->
-                filler.apply(buf, child.getId(), null, 0));
-    }
 
     private ResourceTree resourceTree;
     private Function<LeafResourceNode, InputStream> reader;
@@ -85,53 +61,202 @@ public class ResourceTreeFS extends FuseStubFS {
         this.reader = reader;
     }
 
+    private static int getattr(final TreeNode<Resource> node, final FuseContext ctx, final FileStat stat) {
+        final int readOnly = FileStat.S_IRUSR | FileStat.S_IRGRP; // ug+r
+        if (node instanceof ParentNode) {
+            // Directory, read-only
+            stat.st_mode.set(FileStat.S_IFDIR | readOnly);
+            // Set user-id and group-id from fuse context (whoever mounted)
+            stat.st_uid.set(ctx.uid.get());
+            stat.st_gid.set(ctx.gid.get());
+            return 0;
+        } else if (node instanceof LeafResourceNode) {
+            // Regular file, read-only
+            stat.st_mode.set(FileStat.S_IFREG | readOnly);
+            // unknown file-size so just go for something big
+            stat.st_size.set(Integer.MAX_VALUE);
+            // Set user-id and group-id from fuse context (whoever mounted)
+            stat.st_uid.set(ctx.uid.get());
+            stat.st_gid.set(ctx.gid.get());
+            return 0;
+        } else {
+            return -ErrorCodes.ENOENT();
+        }
+    }
+
+    private static int getxattr(final AbstractLeafResource resource, final String name, final Pointer value) {
+        Object attribute = resource.getAttribute(name);
+        if (attribute != null) {
+            byte[] buf = attribute.toString().getBytes();
+            value.put(0L, buf, 0, buf.length);
+            return 0;
+        } else {
+            // Attribute does not exist on object
+            return -ErrorCodes.ENODATA();
+        }
+    }
+
+    private static int listxattr(final AbstractLeafResource resource, final Pointer list, final long size) {
+        // Fill buffer with null-terminated string from map key-set, if there's space
+        byte[] buf = String.join("\0", resource.getAttributes().keySet()).getBytes();
+        if (buf.length <= size) {
+            list.put(0L, buf, 0, buf.length);
+            return 0;
+        } else {
+            return -ErrorCodes.E2BIG();
+        }
+    }
+
+    private static int read(final InputStream is, final Pointer buffer, final long size, final long offset) {
+        // Fill buffer with bytes from input stream
+        try {
+            byte[] buf = new byte[(int) size];
+            int bytesRead = is.readNBytes(buf, (int) offset, (int) size);
+            buffer.put(0, buf, 0, bytesRead);
+            return bytesRead;
+        } catch (IOException ex) {
+            return -ErrorCodes.EREMOTEIO();
+        }
+    }
+
+    private static int readdir(final ParentNode<Resource> node, final Pointer buf, final FuseFillDir filler, final long offset) {
+        Stream<String> nodeNames = Stream.concat(Stream.of(".", ".."), node.getChildren().stream().map(TreeNode::getId));
+        // Fill buffer with child resource id's using filter function
+        for (String childName : nodeNames.skip(offset).collect(Collectors.toList())) {
+            // Put the childName into the buffer, returns 1 if the buffer is full
+            if (filler.apply(buf, childName, null, 0) == 1) {
+                // Stop if the buffer is full (~32k entities)
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Get the UNIX FS node attributes for a {@link TreeNode}.
+     *
+     * @param path the path to a node in the tree to generate filesystem attributes for
+     * @param stat mutable object to assign attributes into
+     * @return an {@link ErrorCodes} error-code
+     * @see <a href="https://man7.org/linux/man-pages/man2/stat.2.html"/>
+     */
     @Override
     public int getattr(final String path, final FileStat stat) {
         return resourceTree.getNode(path)
-            .map(node -> getattr(node, stat))
+            .map(node -> getattr(node, this.getContext(), stat))
             .orElse(-ErrorCodes.ENOENT());
     }
 
+    /**
+     * Read a filesystem node by copying bytes from the {@link InputStream} into the buffer.
+     *
+     * @param path   the path to a (file) node in the tree to read
+     * @param buf    the native buffer to write bytes into
+     * @param size   the requested number of bytes to write into the buffer
+     * @param offset the offset in the file to start from
+     * @return an {@link ErrorCodes} error-code
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html"/>
+     */
     @Override
     public int read(final String path, final Pointer buf, @size_t final long size, @off_t final long offset, final FuseFileInfo fi) {
         TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
         if (node == null) {
-            return -ErrorCodes.ENOENT();
-        } else if (!(node instanceof LeafResourceNode)) {
-            return -ErrorCodes.EISDIR();
+            // No entity (tree node) exists for the given path
+            return -ErrorCodes.EBADF();
+        } else if (node instanceof LeafResourceNode) {
+            // Read the file if it's a leaf
+            return read(reader.apply((LeafResourceNode) node), buf, size, offset);
         } else {
-            return read((LeafResourceNode) node, buf, size, offset);
+            // Can't read directories
+            return -ErrorCodes.EISDIR();
         }
     }
 
+    /**
+     * Read a filesystem node by copying bytes from the {@link InputStream} into the buffer.
+     *
+     * @param path   the path to a (file) node in the tree to read
+     * @param buf    the native buffer to write bytes into
+     * @param offset the offset in the file to start from
+     * @return an {@link ErrorCodes} error-code
+     * @see <a href="https://man7.org/linux/man-pages/man2/readdir.2.html"/>
+     */
     @Override
     public int readdir(final String path, final Pointer buf, final FuseFillDir filter, @off_t final long offset, final FuseFileInfo fi) {
         TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
         if (node == null) {
-            return -ErrorCodes.ENOENT();
-        } else if (!(node instanceof ParentNode)) {
-            return -ErrorCodes.ENOTDIR();
+            // No entity (tree node) exists for the given path
+            return -ErrorCodes.EBADF();
+        } else if (node instanceof ParentNode) {
+            // Read the directory if it's a parent
+            return readdir((ParentNode) node, buf, filter, offset);
         } else {
-            filter.apply(buf, ".", null, 0);
-            filter.apply(buf, "..", null, 0);
-            readdir((ParentNode) node, buf, filter);
+            // Can't readdir files
+            return -ErrorCodes.ENOTDIR();
+        }
+    }
+
+    /**
+     * Stat the mounted filesystem, report that it is read-only.
+     *
+     * @param path  the path to a (file) node in the tree to read
+     * @param stbuf the native object to set flags etc. on
+     * @return an {@link ErrorCodes} error-code
+     * @see <a href="https://man7.org/linux/man-pages/man2/statsf.2.html"/>
+     */
+    @Override
+    public int statfs(final String path, final Statvfs stbuf) {
+        // Mount read-only filesystem
+        stbuf.f_flag.set(Statvfs.ST_RDONLY);
+        return 0;
+    }
+
+    /**
+     * Get an extended attribute by name on a file.
+     *
+     * @param path
+     * @param name
+     * @param value
+     * @param size
+     * @return
+     * @see <a href="https://man7.org/linux/man-pages/man2/getxattr.2.html"/>
+     */
+    @Override
+    public int getxattr(final String path, final String name, final Pointer value, final long size) {
+        TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
+        if (node == null) {
+            // No entity (tree node) exists for the given path
+            return -ErrorCodes.ENOENT();
+        } else if (node.get() instanceof AbstractLeafResource) {
+            // Get an attribute on a file
+            return getxattr((AbstractLeafResource) node.get(), name, value);
+        } else {
+            // At the moment, Palisade only has attributes on leaf resources
             return 0;
         }
     }
 
-
+    /**
+     * Get all extended attribute names on a file.
+     *
+     * @param path
+     * @param list
+     * @param size
+     * @return
+     * @see <a href="https://man7.org/linux/man-pages/man2/listxattr.2.html"/>
+     */
     @Override
-    public int statfs(final String path, final Statvfs stbuf) {
-        if (Platform.getNativePlatform().getOS() == WINDOWS && "/".equals(path)) {
-            // statfs needs to be implemented on Windows in order to allow for copying
-            // data from other devices because winfsp calculates the volume size based
-            // on the statvfs call.
-            stbuf.f_blocks.set(1024 * 1024); // total data blocks in file system
-            stbuf.f_frsize.set(1024);        // fs block size
-            stbuf.f_bfree.set(1024 * 1024);  // free blocks in fs
+    public int listxattr(final String path, final Pointer list, final long size) {
+        TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
+        if (node == null) {
+            // No entity (tree node) exists for the given path
+            return -ErrorCodes.ENOENT();
+        } else if (node.get() instanceof AbstractLeafResource) {
+            return listxattr((AbstractLeafResource) node.get(), list, size);
+        } else {
+            // At the moment, Palisade only has attributes on leaf resources
+            return 0;
         }
-        return super.statfs(path, stbuf);
     }
-
 }
 

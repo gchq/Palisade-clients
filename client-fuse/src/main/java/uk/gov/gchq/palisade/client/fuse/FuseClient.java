@@ -28,36 +28,91 @@ import uk.gov.gchq.palisade.client.java.internal.dft.DefaultClient;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Palisade Client to mount query response as a FUSE filesystem
+ */
 public class FuseClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(FuseClient.class);
+
+    private static final int CLIENT_URI_INDEX = 1;
+    private static final int RESOURCE_ID_INDEX = 2;
+    private static final int MOUNT_DIR_INDEX = 3;
+    private static final int CONTEXT_INDEX = 4;
+
+    private static final String KEY_VALUE_SEP = "=";
+    private static final int KEY_VALUE_LEN = 2;
+    private static final int KEY_INDEX = 0;
+    private static final int VALUE_INDEX = 1;
+
     private final ResourceTreeClient client;
 
+    /**
+     * Create a new instance of the client, specifying the {@link DefaultClient#connect(String)} uri config string.
+     *
+     * @param clientUri the client uri string, e.g. pal://cluster/?userid=Alice
+     */
     public FuseClient(final String clientUri) {
         this.client = new ResourceTreeClient(new DefaultClient().connect(clientUri));
     }
 
+    /**
+     * Run a simple CLI application for this client, taking the clientUri, resourceId and mountDir from command-line args
+     *
+     * @param args command-line arguments, expected to contain the application name and three passed arguments
+     *             e.g. [client-fuse.jar, pal://cluster/?userid=Alice, file:/data/local-data-store/, /mnt/palisade, purpose=SALARY]
+     */
     public static void main(final String... args) {
-        if (args.length == 4) {
-            new FuseClient(args[1])
-                .mount(args[2], args[3]);
+        String jarName = args[0];
+        if (args.length >= 4) {
+            // Parse command-line args
+            String clientUri = args[CLIENT_URI_INDEX];
+            String resourceId = args[RESOURCE_ID_INDEX];
+            String mountDir = args[MOUNT_DIR_INDEX];
+            Map<String, String> context = new HashMap<>();
+            for (int i = CONTEXT_INDEX; i < args.length; i++) {
+                String[] keyValue = args[i].split(KEY_VALUE_SEP, KEY_VALUE_LEN);
+                if (keyValue.length == KEY_VALUE_LEN) {
+                    context.put(keyValue[KEY_INDEX], keyValue[VALUE_INDEX]);
+                } else {
+                    throw new IllegalArgumentException("Expected additional args '<key>=<value>' to be parsed as ['key', 'value'], but was " + Arrays.toString(keyValue));
+                }
+            }
+
+            // Mount and block for lifetime of the application
+            new FuseClient(clientUri)
+                .mount(resourceId, mountDir, context);
         } else {
-            LOGGER.error("Usage: {} <clientUri> <resourceId> <mountDir>", args[0]);
+            LOGGER.error("Usage: {} <clientUri> <resourceId> <mountDir> [<contextKey>=<value> ...]", jarName);
         }
     }
 
-    public void mount(final String resourceId, final String mountDir) {
-        Path mountPath = Paths.get(mountDir);
+    /**
+     * Register a request with palisade using a configured client.
+     * Mount the fuse directory and block until application exit.
+     * Attempt to gracefully unmount on application exit.
+     *
+     * @param resourceId the requested resourceId
+     * @param mountDir   the target mount directory
+     * @param context    the context for the Palisade request
+     */
+    public void mount(final String resourceId, final String mountDir, final Map<String, String> context) {
+        Path mountPath = Paths.get(mountDir).toAbsolutePath();
 
-        ResourceTreeWithContext tree = client.register(resourceId);
+        ResourceTreeWithContext tree = client.register(resourceId, context);
         Function<LeafResourceNode, InputStream> reader = node -> client.read(tree.getToken(), node);
         ResourceTreeFS fuseFs = new ResourceTreeFS(tree, reader);
 
         try {
-            fuseFs.mount(mountPath, true, false);
+            LOGGER.info("Mounted at {}, press <Ctrl-C> to unmount and exit", mountPath);
+            fuseFs.mount(mountPath, true);
         } finally {
             fuseFs.umount();
+            LOGGER.info("Unmounted {}", mountPath);
         }
     }
 }

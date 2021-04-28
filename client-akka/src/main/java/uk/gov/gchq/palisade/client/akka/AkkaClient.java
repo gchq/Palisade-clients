@@ -89,15 +89,15 @@ public class AkkaClient implements Client {
      */
     public CompletionStage<String> register(final String userId, final String resourceId, final Map<String, String> context) {
         return http
-            .singleRequest(HttpRequest.POST(String.format("http://%s/api/registerDataRequest", palisadeUrl))
-                .withEntity(ContentTypes.APPLICATION_JSON, serialize(
-                    PalisadeRequest.Builder.create()
-                        .withUserId(userId)
-                        .withResourceId(resourceId)
-                        .withContext(context)
-                )))
-            .thenApply(this::readHttpMessage)
-            .thenApply(PalisadeResponse::getToken);
+                .singleRequest(HttpRequest.POST(String.format("http://%s/api/registerDataRequest", palisadeUrl))
+                        .withEntity(ContentTypes.APPLICATION_JSON, serialize(
+                                PalisadeRequest.Builder.create()
+                                        .withUserId(userId)
+                                        .withResourceId(resourceId)
+                                        .withContext(context)
+                        )))
+                .thenApply(this::readHttpMessage)
+                .thenApply(PalisadeResponse::getToken);
     }
 
     /**
@@ -112,50 +112,50 @@ public class AkkaClient implements Client {
 
         // Map inbound messages to outbound CTS until COMPLETE is seen
         Flow<WebSocketMessage, WebSocketMessage, Pair<Sink<WebSocketMessage, NotUsed>, Source<WebSocketMessage, NotUsed>>> exposeSinkAndSource = Flow.<WebSocketMessage>create()
-            // Merge ws upstream with our decoupled upstream - prefer our source of messages, complete when both ws and ours are complete
-            .mergePreferredMat(MergeHub.of(WebSocketMessage.class), true, false, Keep.right())
-            // Broadcast to both ws downstream and our downstream
-            .alsoToMat(BroadcastHub.of(WebSocketMessage.class), Keep.both());
+                // Merge ws upstream with our decoupled upstream - prefer our source of messages, complete when both ws and ours are complete
+                .mergePreferredMat(MergeHub.of(WebSocketMessage.class), true, false, Keep.right())
+                // Broadcast to both ws downstream and our downstream
+                .alsoToMat(BroadcastHub.of(WebSocketMessage.class), Keep.both());
 
         // Ser/Des for messages to/from the websocket
         Flow<Message, Message, Pair<Sink<WebSocketMessage, NotUsed>, Source<WebSocketMessage, NotUsed>>> clientFlow = Flow.<Message>create()
-            .map(this::readWsMessage)
-            // Expose source and sink to this stage in materialization
-            .viaMat(exposeSinkAndSource, Keep.right())
-            // Take until COMPLETE message is seen
-            .takeWhile(wsMessage -> !wsMessage.getType().equals(MessageType.COMPLETE))
-            // Handle how to 'echo back' a message
-            .map((WebSocketMessage wsMessage) -> {
-                switch (wsMessage.getType()) {
-                    case RESOURCE:
-                    case ERROR:
-                        return cts;
-                    default:
-                        return wsMessage;
-                }
-            })
-            .map(this::writeWsMessage);
+                .map(msg -> AkkaClient.readWsMessage(msg, materializer))
+                // Expose source and sink to this stage in materialization
+                .viaMat(exposeSinkAndSource, Keep.right())
+                // Take until COMPLETE message is seen
+                .takeWhile(wsMessage -> wsMessage.getType() != MessageType.COMPLETE)
+                // Handle how to 'echo back' a message
+                .map((WebSocketMessage wsMessage) -> {
+                    switch (wsMessage.getType()) {
+                        case RESOURCE:
+                        case ERROR:
+                            return cts;
+                        default:
+                            return wsMessage;
+                    }
+                })
+                .map(AkkaClient::writeWsMessage);
 
         // Make the request using the ser/des flow linked to the oscillator
         Pair<CompletionStage<WebSocketUpgradeResponse>, Pair<Sink<WebSocketMessage, NotUsed>, Source<WebSocketMessage, NotUsed>>> wsResponse = http.singleWebSocketRequest(
-            WebSocketRequest.create(String.format("ws://%s/resource/%s", filteredResourceUrl, token)),
-            clientFlow,
-            materializer);
+                WebSocketRequest.create(String.format("ws://%s/resource/%s", filteredResourceUrl, token)),
+                clientFlow,
+                materializer);
 
         Sink<WebSocketMessage, NotUsed> upstreamSink = wsResponse.second().first();
         Source<WebSocketMessage, NotUsed> downstreamSource = wsResponse.second().second();
 
         // Once the wsUpgrade request completes
         return Source.completionStageSource(wsResponse.first()
-            // Initialize connection with a single CTS message
-            .thenRun(() -> Source.single(cts).runWith(upstreamSink, materializer))
-            // Return the connected Source
-            .thenApply(ignored -> downstreamSource))
-            // Take until COMPLETE message is seen
-            .takeWhile(wsMessage -> !wsMessage.getType().equals(MessageType.COMPLETE))
-            // Extract LeafResource from message object
-            .filter(wsMessage -> wsMessage.getType().equals(MessageType.RESOURCE))
-            .map(msg -> msg.getBodyObject(LeafResource.class));
+                // Initialize connection with a single CTS message
+                .thenRun(() -> Source.single(cts).runWith(upstreamSink, materializer))
+                // Return the connected Source
+                .thenApply(ignored -> downstreamSource))
+                // Take until COMPLETE message is seen
+                .takeWhile(wsMessage -> wsMessage.getType() != MessageType.COMPLETE)
+                // Extract LeafResource from message object
+                .filter(wsMessage -> wsMessage.getType() == MessageType.RESOURCE)
+                .map(msg -> msg.getBodyObject(LeafResource.class));
     }
 
     /**
@@ -168,7 +168,7 @@ public class AkkaClient implements Client {
     public Publisher<LeafResource> fetch(final String token) {
         // Convert akka source to reactive-streams publisher
         org.reactivestreams.Publisher<LeafResource> rsPub = fetchSource(token)
-            .runWith(Sink.asPublisher(AsPublisher.WITHOUT_FANOUT), materializer);
+                .runWith(Sink.asPublisher(AsPublisher.WITHOUT_FANOUT), materializer);
 
         // Convert akka reactive-streams to java stdlib flow
         return FlowAdapters.toFlowPublisher(rsPub);
@@ -183,12 +183,12 @@ public class AkkaClient implements Client {
      */
     public Source<ByteString, CompletionStage<NotUsed>> readSource(final String token, final LeafResource resource) {
         return Source.completionStageSource(http.singleRequest(
-            HttpRequest.POST(String.format("http://%s/read/chunked", resource.getConnectionDetail().createConnection()))
-                .withEntity(ContentTypes.APPLICATION_JSON, serialize(DataRequest.Builder.create()
-                    .withToken(token)
-                    .withLeafResourceId(resource.getId()))))
-            .thenApply(response -> response.entity().getDataBytes()
-                .mapMaterializedValue(ignored -> NotUsed.notUsed())));
+                HttpRequest.POST(String.format("http://%s/read/chunked", resource.getConnectionDetail().createConnection()))
+                        .withEntity(ContentTypes.APPLICATION_JSON, serialize(DataRequest.Builder.create()
+                                .withToken(token)
+                                .withLeafResourceId(resource.getId()))))
+                .thenApply(response -> response.entity().getDataBytes()
+                        .mapMaterializedValue(ignored -> NotUsed.notUsed())));
     }
 
     /**
@@ -201,28 +201,28 @@ public class AkkaClient implements Client {
     public InputStream read(final String token, final LeafResource resource) {
         // Convert akka ByteString source to java stdlib InputStream
         return readSource(token, resource)
-            .runWith(StreamConverters.asInputStream(), materializer);
+                .runWith(StreamConverters.asInputStream(), materializer);
     }
 
 
     private PalisadeResponse readHttpMessage(final HttpResponse message) {
         // Akka will sometimes convert a StrictMessage to a StreamedMessage, so we have to handle both cases here
         StringBuilder builder = message.entity().getDataBytes()
-            .map(ByteString::utf8String)
-            .runFold(new StringBuilder(), StringBuilder::append, materializer)
-            .toCompletableFuture().join();
+                .map(ByteString::utf8String)
+                .runFold(new StringBuilder(), StringBuilder::append, materializer)
+                .toCompletableFuture().join();
         return deserialize(builder.toString(), PalisadeResponse.class);
     }
 
-    private WebSocketMessage readWsMessage(final Message message) {
+    private static WebSocketMessage readWsMessage(final Message message, final Materializer materializer) {
         // Akka will sometimes convert a StrictMessage to a StreamedMessage, so we have to handle both cases here
         StringBuilder builder = message.asTextMessage().getStreamedText()
-            .runFold(new StringBuilder(), StringBuilder::append, materializer)
-            .toCompletableFuture().join();
+                .runFold(new StringBuilder(), StringBuilder::append, materializer)
+                .toCompletableFuture().join();
         return deserialize(builder.toString(), WebSocketMessage.class);
     }
 
-    private Message writeWsMessage(final WebSocketMessage message) {
+    private static Message writeWsMessage(final WebSocketMessage message) {
         return new Strict(serialize(message));
     }
 

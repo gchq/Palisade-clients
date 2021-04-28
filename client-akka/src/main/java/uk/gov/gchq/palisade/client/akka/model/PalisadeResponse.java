@@ -57,7 +57,7 @@ public final class PalisadeResponse {
     @Generated
     public String toString() {
         return new StringJoiner(", ", PalisadeResponse.class.getSimpleName() + "[", "]")
-            .add("token='" + token + "'")
-            .toString();
+                .add("token='" + token + "'")
+                .toString();
     }
 }

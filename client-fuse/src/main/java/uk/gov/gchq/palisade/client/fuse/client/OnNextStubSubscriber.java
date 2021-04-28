@@ -19,6 +19,12 @@ package uk.gov.gchq.palisade.client.fuse.client;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
 
+/**
+ * Stub the Subscriber interface such that it only requires an {@link Subscriber#onNext(Object)}
+ * method.
+ *
+ * @param <T> type of elements emitted by the subscriber
+ */
 public interface OnNextStubSubscriber<T> extends Subscriber<T> {
     default void onSubscribe(final Subscription subscription) {
     }
