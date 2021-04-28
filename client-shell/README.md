@@ -16,14 +16,22 @@ limitations under the License.
 
 # Palisade Shell
 
-The Palisade Shell provides a CLI REPL for access to a cluster and its resources.
+The Palisade Shell provides a interactive CLI REPL for access to a cluster and its resources.
+Due to the interactive nature of the shell, it is recommended to get familiar with the example setup from [Palisade examples](https://github.com/gchq/Palisade-examples/), and the [example-library](https://github.com/gchq/Palisade-examples/tree/develop/example-library) in particular.
 
 > :information_source:
-In the case of the [Palisade examples](https://github.com/gchq/Palisade-examples/), the `context` is limited to just a `purpose` - one of `SALARY`, `DUTY_OF_CARE`, or `STAFF_REPORT`.
+In the case of the example-library, the `context` is limited to just a `purpose` - one of `SALARY`, `DUTY_OF_CARE`, or `STAFF_REPORT`.
 Additionally, there are a number of pre-populated users (`Alice`, `Bob`, and `Eve`), resources (the pair of files `/data/local-data-store/employee_file{0,1}.avro`) and rules.
 All examples here are therefore written to be compliant with this example pre-populated data.
 
 ## Sample Extract
+
+Alice wants to read some 'Employee' data because she is doing salary review for the corporation.
+She connects to an instance of Palisade running at `192.168.49.2:30094` (a local k8s deployment).
+The file is in `avro` format, which must be further deserialised if she is to make further use of it.
+The deserialised data will be redacted in-line with corporate policy for userId `Alice`, purpose `SALARY`, and rules for the requested resources.
+
+See the following extract from the session using the shell, demonstrated with the example-library data:
 ```shell script
 no-one@disconnected> connect pal://192.168.49.2:30094/?userid=Alice
 Connected to pal://192.168.49.2:30094/?userid=Alice
@@ -43,7 +51,7 @@ Objavro.schema`{"type":"record","name":"Employee","namespace":"uk.gov.gchq.synt[
 ```
 
 
-## Commands
+## List of Commands
 Some effort has been made to make the Shell appear somewhat similar to a UNIX shell (bash, etc.).
 Subsequently, some commands have aliases to their UNIX counterparts.
 
@@ -62,6 +70,7 @@ Connected to pal://192.168.49.2:30094/?userid=Alice
 ```
 No checks are necessarily made that the server is available at this point, it is purely configuration for the client.
 This is described more in-depth in the [URL configuration](../client-java/README.md#URL) and [client properties](../client-java/README.md#Client%20properties) sections of the [client-java README](../client-java/README.md).
+For most cases, the URL looks like`pal://[ingressAddress]/?userid=[userId]`
 
 ### Register - `register`
 Given a `context` for accessing data, register a request for a `resourceId`.

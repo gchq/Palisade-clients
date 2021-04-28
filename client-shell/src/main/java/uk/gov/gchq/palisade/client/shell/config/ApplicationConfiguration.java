@@ -24,6 +24,7 @@ import org.springframework.shell.jline.PromptProvider;
 import uk.gov.gchq.palisade.client.java.internal.dft.DefaultClient;
 import uk.gov.gchq.palisade.client.shell.shell.ClientShell;
 import uk.gov.gchq.palisade.client.shell.shell.CustomPromptProvider;
+import uk.gov.gchq.palisade.client.shell.shell.ExceptionHandlingAspect;
 
 @Configuration
 @EnableAspectJAutoProxy
