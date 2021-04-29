@@ -48,7 +48,7 @@ import java.util.stream.Stream;
  * The API was very much created with C in mind, so there's a lot of setting fields on mutable
  * objects and returning {@link ErrorCodes} integers from methods.
  *
- * @see <a href="https://man7.org/linux/man-pages/man8/mount.fuse3.8.html"/>
+ * @see <a href="https://man7.org/linux/man-pages/man8/mount.fuse3.8.html>mount.fuse3</a>
  */
 @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
 public class ResourceTreeFS extends FuseStubFS {
@@ -138,7 +138,7 @@ public class ResourceTreeFS extends FuseStubFS {
      * @param path the path to a node in the tree to generate filesystem attributes for
      * @param stat mutable object to assign attributes into
      * @return an {@link ErrorCodes} error-code
-     * @see <a href="https://man7.org/linux/man-pages/man2/stat.2.html"/>
+     * @see <a href="https://man7.org/linux/man-pages/man2/stat.2.html>stat</a>
      */
     @Override
     public int getattr(final String path, final FileStat stat) {
@@ -155,7 +155,7 @@ public class ResourceTreeFS extends FuseStubFS {
      * @param size   the requested number of bytes to write into the buffer
      * @param offset the offset in the file to start from
      * @return an {@link ErrorCodes} error-code
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html"/>
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html>read</a>
      */
     @Override
     public int read(final String path, final Pointer buf, @size_t final long size, @off_t final long offset, final FuseFileInfo fi) {
@@ -179,7 +179,7 @@ public class ResourceTreeFS extends FuseStubFS {
      * @param buf    the native buffer to write bytes into
      * @param offset the offset in the file to start from
      * @return an {@link ErrorCodes} error-code
-     * @see <a href="https://man7.org/linux/man-pages/man2/readdir.2.html"/>
+     * @see <a href="https://man7.org/linux/man-pages/man2/readdir.2.html>readdir</a>
      */
     @Override
     public int readdir(final String path, final Pointer buf, final FuseFillDir filter, @off_t final long offset, final FuseFileInfo fi) {
@@ -202,7 +202,7 @@ public class ResourceTreeFS extends FuseStubFS {
      * @param path  the path to a (file) node in the tree to read
      * @param stbuf the native object to set flags etc. on
      * @return an {@link ErrorCodes} error-code
-     * @see <a href="https://man7.org/linux/man-pages/man2/statsf.2.html"/>
+     * @see <a href="https://man7.org/linux/man-pages/man2/statsf.2.html>statsf</a>
      */
     @Override
     public int statfs(final String path, final Statvfs stbuf) {
@@ -219,7 +219,7 @@ public class ResourceTreeFS extends FuseStubFS {
      * @param value the native buffer to fill with the attribute's value
      * @param size  space available in the buffer
      * @return an {@link ErrorCodes} error-code
-     * @see <a href="https://man7.org/linux/man-pages/man2/getxattr.2.html"/>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getxattr.2.html>getxattr</a>
      * @implNote only file nodes (leaf resources) have attributes
      */
     @Override
@@ -245,7 +245,7 @@ public class ResourceTreeFS extends FuseStubFS {
      *             as concat'ed null-terminated strings
      * @param size space available in the buffer
      * @return an {@link ErrorCodes} error-code
-     * @see <a href="https://man7.org/linux/man-pages/man2/listxattr.2.html"/>
+     * @see <a href="https://man7.org/linux/man-pages/man2/listxattr.2.html>listxattr</a>
      * @implNote only file nodes (leaf resources) have attributes
      */
     @Override
