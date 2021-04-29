@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -43,8 +44,9 @@ import java.util.stream.Stream;
 @SuppressWarnings({"NullableProblems", "unchecked", "rawtypes", "SimplifyStreamApiCallChains"})
 public class ResourceTree implements Collection<Resource> {
     private static final String PATH_SEP = "/";
-    private static final String DOUBLE_SEP = "^" + PATH_SEP + "+";
-    private static final String TRAILING_SEP = PATH_SEP + "+$";
+    private static final Pattern PATH_SEP_PATTERN = Pattern.compile(PATH_SEP);
+    private static final Pattern DOUBLE_SEP_PATTERN = Pattern.compile("^" + PATH_SEP + "+");
+    private static final Pattern TRAILING_SEP_PATTERN = Pattern.compile(PATH_SEP + "+$");
     protected RootResourceNode root;
 
     /**
@@ -88,13 +90,12 @@ public class ResourceTree implements Collection<Resource> {
      * in the tree
      */
     private static List<String> getPath(final String path) {
-        String strippedPath = path
-            .replaceAll(DOUBLE_SEP, "")
-            .replaceAll(TRAILING_SEP, "");
+        String noDoubleSep = DOUBLE_SEP_PATTERN.matcher(path).replaceAll("");
+        String strippedPath = TRAILING_SEP_PATTERN.matcher(noDoubleSep).replaceAll("");
         if (strippedPath.isEmpty()) {
             return List.of();
         } else {
-            return List.of(strippedPath.split(PATH_SEP));
+            return List.of(PATH_SEP_PATTERN.split(strippedPath));
         }
     }
 
@@ -130,7 +131,7 @@ public class ResourceTree implements Collection<Resource> {
     }
 
     // Given a current node and list of child traversals, recursively get the next child in the list
-    private Optional<TreeNode<Resource>> getNode(final TreeNode<Resource> node, final List<String> path) {
+    private static Optional<TreeNode<Resource>> getNode(final TreeNode<Resource> node, final List<String> path) {
         if (node == null) {
             // If we've hit a null node, we're not going to find anything
             return Optional.empty();

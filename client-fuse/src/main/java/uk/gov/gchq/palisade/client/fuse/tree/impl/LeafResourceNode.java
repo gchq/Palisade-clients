@@ -49,6 +49,8 @@ public class LeafResourceNode implements ChildNode<Resource> {
      * @param resource the {@link TreeNode#get()} collection item stored at this point, which
      *                 should implement {@link LeafResource}
      */
+    // We actively want the parent to be a mutable ref, not a copy
+    @SuppressWarnings("java:S2384")
     public LeafResourceNode(final String id, final ParentNode<ParentResource> parent, final LeafResource resource) {
         this.id = id;
         this.parent = parent;

@@ -35,7 +35,7 @@ import java.util.Set;
  * for an analogous {@link Resource} class.
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class BranchResourceNode implements ParentNode<Resource>, ChildNode<Resource>, TreeNode<Resource> {
+public class BranchResourceNode implements ParentNode<Resource>, ChildNode<Resource> {
     private final String id;
     private final ParentNode<ParentResource> parent;
     private final Set<ChildNode<ChildResource>> children;
@@ -49,6 +49,8 @@ public class BranchResourceNode implements ParentNode<Resource>, ChildNode<Resou
      * @param resource the {@link TreeNode#get()} collection item stored at this point, which
      *                 should implement both {@link ChildResource} and {@link ParentResource}
      */
+    // We actively want the parent to be a mutable ref, not a copy
+    @SuppressWarnings("java:S2384")
     public BranchResourceNode(final String id, final ParentNode<ParentResource> parent, final ChildResource resource) {
         this.id = id;
         this.parent = parent;
