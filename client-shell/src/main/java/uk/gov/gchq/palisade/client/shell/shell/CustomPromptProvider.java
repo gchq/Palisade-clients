@@ -25,6 +25,9 @@ import uk.gov.gchq.palisade.client.java.internal.impl.Configuration;
 import java.net.URI;
 import java.util.Optional;
 
+/**
+ * Customise the Spring-Shell CLI prompt.
+ */
 public class CustomPromptProvider implements PromptProvider {
     private static final AttributedString USER_DELIM = new AttributedString("@");
     private static final AttributedString TOKEN_DELIM = new AttributedString("#");
@@ -34,10 +37,28 @@ public class CustomPromptProvider implements PromptProvider {
 
     private final ClientShell shell;
 
+    /**
+     * Construct a new CustomPromptProvider which will use the state of the provided
+     * {@link ClientShell} to create the prompt-line.
+     *
+     * @param shell the shell to customise the prompt for
+     */
     public CustomPromptProvider(final ClientShell shell) {
         this.shell = shell;
     }
 
+    /**
+     * Get the prompt to present for the shell. The format will be:
+     * [user:no-one@][host:disconnected][#token:]  eg.
+     * <ul>
+     *   <li> no-one@disconnected>
+     *   <li> no-one@palisade.cluster>
+     *   <li> Alice@palisade.cluster>
+     *   <li> Alice@palisade.cluster#some-long-token>
+     * </ul>
+     *
+     * @return a coloured string for the prompt-line
+     */
     @Override
     public AttributedString getPrompt() {
         AttributedString userInfo = Optional.ofNullable(shell.getSessionState())

@@ -42,6 +42,9 @@ import java.util.stream.Stream;
 // Override .stream() and use it for implementing other methods
 @SuppressWarnings({"NullableProblems", "unchecked", "rawtypes", "SimplifyStreamApiCallChains"})
 public class ResourceTree implements Collection<Resource> {
+    private static final String PATH_SEP = "/";
+    private static final String DOUBLE_SEP = "^" + PATH_SEP + "+";
+    private static final String TRAILING_SEP = PATH_SEP + "+$";
     protected RootResourceNode root;
 
     /**
@@ -54,9 +57,10 @@ public class ResourceTree implements Collection<Resource> {
      */
     private static TreeNode<Resource> createNode(final ParentNode<Resource> parent, final Resource resource) {
         List<String> pathComponents = getPath(resource.getId());
-        String id = pathComponents.isEmpty()
-            ? ""
-            : pathComponents.get(pathComponents.size() - 1);
+        String id = "";
+        if (!pathComponents.isEmpty()) {
+            id = pathComponents.get(pathComponents.size() - 1);
+        }
 
         TreeNode<Resource> node;
         if (resource instanceof LeafResource) {
@@ -85,11 +89,13 @@ public class ResourceTree implements Collection<Resource> {
      */
     private static List<String> getPath(final String path) {
         String strippedPath = path
-            .replaceAll("^/+", "")
-            .replaceAll("/+$", "");
-        return "".equals(strippedPath)
-            ? List.of()
-            : List.of(strippedPath.split("/"));
+            .replaceAll(DOUBLE_SEP, "")
+            .replaceAll(TRAILING_SEP, "");
+        if (strippedPath.isEmpty()) {
+            return List.of();
+        } else {
+            return List.of(strippedPath.split(PATH_SEP));
+        }
     }
 
     private static List<String> getPath(final Resource resource) {
@@ -115,10 +121,12 @@ public class ResourceTree implements Collection<Resource> {
     }
 
     // Remove the first item of a list
-    private <T> List<T> dropFirst(final List<T> list) {
-        return list.size() > 1
-            ? list.subList(1, list.size())
-            : List.of();
+    private static <T> List<T> dropFirst(final List<T> list) {
+        if (list.size() > 1) {
+            return list.subList(1, list.size());
+        } else {
+            return List.of();
+        }
     }
 
     // Given a current node and list of child traversals, recursively get the next child in the list

@@ -27,12 +27,35 @@ import java.util.stream.Stream;
  * @param <T> the type of an object contained within the node
  */
 public interface TreeNode<T> extends Collection<TreeNode<T>> {
+    /**
+     * Get the identifier for this node. This might be eg. a file name.
+     * This is similar to a Map of Strings to Ts.
+     *
+     * @return the node's identifier
+     */
     String getId();
 
+    /**
+     * Get the content of this node, an element of the collection
+     *
+     * @return the object at this node
+     */
     T get();
 
+    /**
+     * Get all objects at this node and below.
+     * Order does not matter.
+     *
+     * @return a stream of objects as the tree is traversed
+     */
     Stream<T> traverse();
 
+    /**
+     * Try to print this node and its children in a human-readable manner.
+     *
+     * @param printer the logger for the string values
+     * @param indent  the depth of indent, proportional to the depth of the node printed in the tree
+     */
     default void prettyprint(final Consumer<String> printer, final int indent) {
         printer.accept(String.join("", Collections.nCopies(indent, "\t")) + getId() + "\n");
     }

@@ -19,6 +19,7 @@ package uk.gov.gchq.palisade.client.fuse.tree.impl;
 import uk.gov.gchq.palisade.client.fuse.tree.ChildNode;
 import uk.gov.gchq.palisade.client.fuse.tree.ParentNode;
 import uk.gov.gchq.palisade.client.fuse.tree.TreeNode;
+import uk.gov.gchq.palisade.resource.ChildResource;
 import uk.gov.gchq.palisade.resource.LeafResource;
 import uk.gov.gchq.palisade.resource.ParentResource;
 import uk.gov.gchq.palisade.resource.Resource;
@@ -28,12 +29,26 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+/**
+ * A node in a tree which is only a child.
+ * Therefore it is a 'leaf' of the tree, represented by a {@link LeafResource}.
+ * See the {@link uk.gov.gchq.palisade.resource.impl.FileResource} implementation
+ * for an analogous {@link Resource} class.
+ */
 @SuppressWarnings({"NullableProblems", "unchecked", "rawtypes"})
 public class LeafResourceNode implements ChildNode<Resource> {
-    final String id;
-    final ParentNode<ParentResource> parent;
-    final LeafResource resource;
+    private final String id;
+    private final ParentNode<ParentResource> parent;
+    private final LeafResource resource;
 
+    /**
+     * Create a new branch node, given its id, parent and the resource it represents
+     *
+     * @param id       the {@link TreeNode#getId()} identifier for this node
+     * @param parent   the node representing the resource's {@link ChildResource#getParent()}
+     * @param resource the {@link TreeNode#get()} collection item stored at this point, which
+     *                 should implement {@link LeafResource}
+     */
     public LeafResourceNode(final String id, final ParentNode<ParentResource> parent, final LeafResource resource) {
         this.id = id;
         this.parent = parent;
@@ -124,6 +139,7 @@ public class LeafResourceNode implements ChildNode<Resource> {
 
     @Override
     public void clear() {
+        // Nothing to do, leaf has no children in its collection
     }
 
     @Override

@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.fuse.tree.impl;
 
 import uk.gov.gchq.palisade.client.fuse.tree.ChildNode;
 import uk.gov.gchq.palisade.client.fuse.tree.ParentNode;
+import uk.gov.gchq.palisade.client.fuse.tree.TreeNode;
 import uk.gov.gchq.palisade.resource.ChildResource;
 import uk.gov.gchq.palisade.resource.ParentResource;
 import uk.gov.gchq.palisade.resource.Resource;
@@ -26,13 +27,28 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * A node in a tree which is both a parent and a child.
+ * Therefore it is neither a 'root' or a 'leaf', but a 'branch'.
+ * It is represented by the union of {@link ParentResource} and {@link ChildResource}.
+ * See the {@link uk.gov.gchq.palisade.resource.impl.DirectoryResource} implementation
+ * for an analogous {@link Resource} class.
+ */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class BranchResourceNode implements ParentNode<Resource>, ChildNode<Resource> {
-    final String id;
-    final ParentNode<ParentResource> parent;
-    final Set<ChildNode<ChildResource>> children;
-    final ChildResource resource;
+public class BranchResourceNode implements ParentNode<Resource>, ChildNode<Resource>, TreeNode<Resource> {
+    private final String id;
+    private final ParentNode<ParentResource> parent;
+    private final Set<ChildNode<ChildResource>> children;
+    private final ChildResource resource;
 
+    /**
+     * Create a new branch node, given its id, parent and the resource it represents
+     *
+     * @param id       the {@link TreeNode#getId()} identifier for this node
+     * @param parent   the node representing the resource's {@link ChildResource#getParent()}
+     * @param resource the {@link TreeNode#get()} collection item stored at this point, which
+     *                 should implement both {@link ChildResource} and {@link ParentResource}
+     */
     public BranchResourceNode(final String id, final ParentNode<ParentResource> parent, final ChildResource resource) {
         this.id = id;
         this.parent = parent;

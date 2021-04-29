@@ -56,11 +56,13 @@ public class ExceptionHandlingAspect {
         if (result instanceof EndOfFileException) {
             // Respect Ctrl-D
             System.exit(0);
+            return null;
         } else if (result instanceof ExitRequest) {
             // Respect Ctrl-C
             return null;
+        } else {
+            // Proceed as usual
+            return joinPoint.proceed(joinPoint.getArgs());
         }
-        // Proceed as usual
-        return joinPoint.proceed(joinPoint.getArgs());
     }
 }

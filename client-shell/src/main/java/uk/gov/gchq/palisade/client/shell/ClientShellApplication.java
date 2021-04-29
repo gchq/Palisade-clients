@@ -19,9 +19,17 @@ package uk.gov.gchq.palisade.client.shell;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
+/**
+ * Spring application entry-point
+ */
 @SpringBootApplication
 public class ClientShellApplication {
 
+    /**
+     * Application entry-point, creates and runs a spring application, passing in the given command-line args
+     *
+     * @param args command-line arguments passed to the application
+     */
     public static void main(final String[] args) {
         new SpringApplicationBuilder(ClientShellApplication.class)
             .run(args);

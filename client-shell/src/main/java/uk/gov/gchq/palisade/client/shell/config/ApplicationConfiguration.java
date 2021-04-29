@@ -26,6 +26,9 @@ import uk.gov.gchq.palisade.client.shell.shell.ClientShell;
 import uk.gov.gchq.palisade.client.shell.shell.CustomPromptProvider;
 import uk.gov.gchq.palisade.client.shell.shell.ExceptionHandlingAspect;
 
+/**
+ * Spring bean dependency injection graph
+ */
 @Configuration
 @EnableAspectJAutoProxy
 public class ApplicationConfiguration {

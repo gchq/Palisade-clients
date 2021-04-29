@@ -19,6 +19,8 @@ package uk.gov.gchq.palisade.client.fuse.fs;
 import jnr.ffi.Pointer;
 import jnr.ffi.types.off_t;
 import jnr.ffi.types.size_t;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.serce.jnrfuse.ErrorCodes;
 import ru.serce.jnrfuse.FuseFillDir;
 import ru.serce.jnrfuse.FuseStubFS;
@@ -50,12 +52,27 @@ import java.util.stream.Stream;
  *
  * @see <a href="https://man7.org/linux/man-pages/man8/mount.fuse3.8.html">mount.fuse3</a>
  */
+// Unchecked casts with instanceof
+// Raw types with instanceof
+// Duplicated code for getting tree node
 @SuppressWarnings({"unchecked", "rawtypes", "DuplicatedCode"})
 public class ResourceTreeFS extends FuseStubFS {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceTreeFS.class);
 
     private ResourceTree resourceTree;
     private Function<LeafResourceNode, InputStream> reader;
 
+    /**
+     * Construct an instance of the FuseFS implementation, given a mutable tree which will be
+     * updated with new resources, and a function to read the data from nodes of the tree.
+     *
+     * @param resourceTree a tree collection that will be used for directory listings
+     * @param reader       a function for acquiring an {@link InputStream} from a tree node,
+     *                     used for reading files
+     */
+    // We actively want the resourceTree collection to be mutable
+    // The structure should allow for creation of resources asynchronously to the fs mount
+    @SuppressWarnings("java:S2384")
     public ResourceTreeFS(final ResourceTree resourceTree, final Function<LeafResourceNode, InputStream> reader) {
         this.resourceTree = resourceTree;
         this.reader = reader;
@@ -115,6 +132,7 @@ public class ResourceTreeFS extends FuseStubFS {
             buffer.put(0, buf, 0, bytesRead);
             return bytesRead;
         } catch (IOException ex) {
+            LOGGER.warn("Failed to read (remote) input-stream", ex);
             return -ErrorCodes.EREMOTEIO();
         }
     }

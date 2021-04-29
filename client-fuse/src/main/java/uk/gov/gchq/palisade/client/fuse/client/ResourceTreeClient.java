@@ -178,7 +178,7 @@ public class ResourceTreeClient {
             .thenApply(DefaultQueryResponse::stream)
             .thenCombine(resourceTree,
                 (Publisher<QueryItem> stream, ResourceTreeWithContext tree) -> {
-                    stream.subscribe((OnNextStubSubscriber<QueryItem>) queryItem -> {
+                    stream.subscribe((OnNextStubSubscriber<QueryItem>) (QueryItem queryItem) -> {
                         UnaryOperator<Resource> formatter = this::stripScheme;
                         LeafResource leaf = queryItem.asResource();
                         LOGGER.debug("Adding resource {} to tree", leaf.getId());

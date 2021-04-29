@@ -90,24 +90,6 @@ class ClientShellTest {
     }
 
     @Test
-    void testSelectedToken() {
-        // Given
-        var mockToken = "mockToken";
-        shell.tokenState.set(mockToken);
-        // When
-        var availability = shell.selectedToken();
-        // Then
-        assertThat(availability.isAvailable()).isTrue();
-
-        // Given
-        shell.tokenState.set(null);
-        // When
-        availability = shell.selectedToken();
-        // Then
-        assertThat(availability.isAvailable()).isFalse();
-    }
-
-    @Test
     void testConnect() {
         // Given
         var mockSession = Mockito.mock(DefaultSession.class);

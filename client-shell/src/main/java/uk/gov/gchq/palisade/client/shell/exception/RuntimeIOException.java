@@ -18,6 +18,10 @@ package uk.gov.gchq.palisade.client.shell.exception;
 
 import java.io.IOException;
 
+/**
+ * Wrap an {@link IOException} into a {@link RuntimeException} so it may be thrown at runtime.
+ * This is usually done in order to throw inside a lambda.
+ */
 public class RuntimeIOException extends RuntimeException {
     public RuntimeIOException(final String message, final IOException cause) {
         super(message, cause);

@@ -28,12 +28,25 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * A node in a tree which is only a parent.
+ * Therefore it is the 'root' of the tree, represented by a {@link ParentResource}.
+ * See the {@link uk.gov.gchq.palisade.resource.impl.SystemResource} implementation
+ * for an analogous {@link Resource} class.
+ */
 @SuppressWarnings({"NullableProblems", "unchecked", "rawtypes"})
 public class RootResourceNode implements ParentNode<Resource> {
-    final String id;
-    final Set<ChildNode<ChildResource>> children;
-    final ParentResource resource;
+    private final String id;
+    private final Set<ChildNode<ChildResource>> children;
+    private final ParentResource resource;
 
+    /**
+     * Create a new branch node, given its id, parent and the resource it represents
+     *
+     * @param id       the {@link TreeNode#getId()} identifier for this node
+     * @param resource the {@link TreeNode#get()} collection item stored at this point, which
+     *                 should implement {@link ParentResource}
+     */
     public RootResourceNode(final String id, final ParentResource resource) {
         this.id = id;
         this.resource = resource;

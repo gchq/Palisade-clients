@@ -39,6 +39,7 @@ import java.util.function.Function;
 public class FuseClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(FuseClient.class);
 
+    private static final int MIN_ARGS_LEN = 4;
     private static final int CLIENT_URI_INDEX = 1;
     private static final int RESOURCE_ID_INDEX = 2;
     private static final int MOUNT_DIR_INDEX = 3;
@@ -68,11 +69,8 @@ public class FuseClient {
      */
     public static void main(final String... args) {
         String jarName = args[0];
-        if (args.length >= 4) {
+        if (args.length >= MIN_ARGS_LEN) {
             // Parse command-line args
-            String clientUri = args[CLIENT_URI_INDEX];
-            String resourceId = args[RESOURCE_ID_INDEX];
-            String mountDir = args[MOUNT_DIR_INDEX];
             Map<String, String> context = new HashMap<>();
             for (int i = CONTEXT_INDEX; i < args.length; i++) {
                 String[] keyValue = args[i].split(KEY_VALUE_SEP, KEY_VALUE_LEN);
@@ -82,6 +80,10 @@ public class FuseClient {
                     throw new IllegalArgumentException("Expected additional args '<key>=<value>' to be parsed as ['key', 'value'], but was " + Arrays.toString(keyValue));
                 }
             }
+
+            String clientUri = args[CLIENT_URI_INDEX];
+            String resourceId = args[RESOURCE_ID_INDEX];
+            String mountDir = args[MOUNT_DIR_INDEX];
 
             // Mount and block for lifetime of the application
             new FuseClient(clientUri)
