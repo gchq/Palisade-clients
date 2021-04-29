@@ -30,11 +30,29 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * A {@link ResourceTree} is a {@link Collection} of {@link Resource}s, structured as a tree.
+ * The tree points to a {@link RootResourceNode}, and traverses the tree to implement the collection
+ * methods.
+ * Each node of the tree is analogous to the type of the resource it holds - eg. {@link LeafResourceNode}s
+ * hold {@link LeafResource}s.
+ */
+// Non-null collections api
+// Unchecked typecasts and raw types associated with .toArray()
+// Override .stream() and use it for implementing other methods
 @SuppressWarnings({"NullableProblems", "unchecked", "rawtypes", "SimplifyStreamApiCallChains"})
 public class ResourceTree implements Collection<Resource> {
-    RootResourceNode root;
+    protected RootResourceNode root;
 
-    public static TreeNode<Resource> create(final ParentNode<Resource> parent, final Resource resource) {
+    /**
+     * Create a new node of the tree and link it to a (grand-)parent.
+     * This is equivalent to adding a resource to the collection.
+     *
+     * @param parent   the (grand-)parent node to attach this resource to
+     * @param resource the resource to add
+     * @return a new {@link TreeNode} for the added resource
+     */
+    private static TreeNode<Resource> createNode(final ParentNode<Resource> parent, final Resource resource) {
         List<String> pathComponents = getPath(resource.getId());
         String id = pathComponents.isEmpty()
             ? ""
@@ -57,7 +75,15 @@ public class ResourceTree implements Collection<Resource> {
         return node;
     }
 
-    public static List<String> getPath(final String path) {
+    /**
+     * Format a String-based path into a list of path components.
+     * These are used to select children by name while traversing the tree.
+     *
+     * @param path a path for a tree node, using forward-slash path separators
+     * @return a list of names to select for (grand-)children to reach the node
+     * in the tree
+     */
+    private static List<String> getPath(final String path) {
         String strippedPath = path
             .replaceAll("^/+", "")
             .replaceAll("/+$", "");
@@ -66,45 +92,62 @@ public class ResourceTree implements Collection<Resource> {
             : List.of(strippedPath.split("/"));
     }
 
-    public static List<String> getPath(final Resource resource) {
+    private static List<String> getPath(final Resource resource) {
         return getPath(resource.getId());
     }
 
-    public Optional<TreeNode<Resource>> getNode(final List<String> idPath) {
+    private Optional<TreeNode<Resource>> getNode(final List<String> idPath) {
         return getNode(root, idPath);
     }
 
+    /**
+     * Get a node in the tree by path to the node.
+     *
+     * @param path the path to the node, using forward-slash separators
+     * @return the node if it was found in the tree, {@link Optional#empty()} otherwise
+     */
     public Optional<TreeNode<Resource>> getNode(final String path) {
         return getNode(getPath(path));
     }
 
-    public Optional<TreeNode<Resource>> getNode(final Resource resource) {
+    private Optional<TreeNode<Resource>> getNode(final Resource resource) {
         return getNode(getPath(resource));
     }
 
+    // Remove the first item of a list
     private <T> List<T> dropFirst(final List<T> list) {
         return list.size() > 1
             ? list.subList(1, list.size())
             : List.of();
     }
 
+    // Given a current node and list of child traversals, recursively get the next child in the list
     private Optional<TreeNode<Resource>> getNode(final TreeNode<Resource> node, final List<String> path) {
         if (node == null) {
+            // If we've hit a null node, we're not going to find anything
             return Optional.empty();
         } else if (path.isEmpty()) {
+            // Non-null node and no more path to traverse
             return Optional.of(node);
         } else if (node instanceof ParentNode) {
+            // Not the node we're looking for, but it has children and we have more path values to traverse
             return ((ParentNode<Resource>) node).getChildren()
                 .stream()
+                // Get children with the correct name for the next segment of the path
                 .filter(child -> child.getId().equals(path.get(0)))
+                // Drop the now-unnecessary first item off the path list when recursing
                 .map(child -> getNode(child, dropFirst(path)))
                 .flatMap(Optional::stream)
+                // Convert stream to optional
                 .findAny();
         } else {
+            // We've got to something that has no children, but there's still path values to traverse
             // Cannot subpath a non-parent (ie. file)
             return Optional.empty();
         }
     }
+
+    /* Collections API */
 
     @Override
     public int size() {
@@ -141,21 +184,40 @@ public class ResourceTree implements Collection<Resource> {
         return (T[]) toArray();
     }
 
+    /**
+     * In order to successfully add a resource, we also have to add any missing (grand-)parents
+     * for that resource too. We also have to traverse the tree to find out where to add the
+     * new (child) resource, or consider the special case where the tree is empty and we're
+     * having to add a new root.
+     *
+     * @param resource the resource to add to the tree
+     * @return true if the tree was modified, false if it was left unchanged
+     */
     @Override
     public boolean add(final Resource resource) {
         if (getNode(resource).isEmpty()) {
+            // If this resource does not exist in the tree, add it
             if (resource instanceof ChildResource) {
+                // Resource is not a a new root node
                 ParentResource parent = ((ChildResource) resource).getParent();
-                add(parent);
-                getNode(parent)
-                    .ifPresent(node -> node
-                        .add(create((ParentNode) node, resource)));
+                // Add any missing parents (recursively)
+                this.add(parent);
+                // Add this node as a child of its parent
+                return this.getNode(parent)
+                    .map(node -> node.add(ResourceTree.createNode((ParentNode) node, resource)))
+                    .orElseThrow(() -> new IllegalStateException("Failed to find parent node after adding it to the tree"));
             } else if (resource instanceof ParentResource && root == null) {
-                root = (RootResourceNode) create(null, resource);
+                // Resource is a new root node
+                root = (RootResourceNode) createNode(null, resource);
+                return true;
+            } else {
+                // Resource requires a new root node, but one already exists
+                throw new IllegalStateException("Adding resource required a new root node, but one already exists");
             }
-            return true;
+        } else {
+            // If the resource already exists, we're done
+            return false;
         }
-        return false;
     }
 
     @Override

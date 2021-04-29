@@ -81,6 +81,12 @@ public class ResourceTreeClient {
         this.session = session;
     }
 
+    /**
+     * Strip the scheme from a URI.
+     *
+     * @param uri the uri to remove the scheme from
+     * @return a scheme-less URI
+     */
     protected static URI stripScheme(final URI uri) {
         return URI.create(uri.getSchemeSpecificPart());
     }
@@ -93,6 +99,12 @@ public class ResourceTreeClient {
         return resource.id(stripScheme(resource.getId()));
     }
 
+    /**
+     * Re-apply a 'file:' scheme to a URI.
+     *
+     * @param path the URI-compliant string to add/change the scheme for
+     * @return a URI-compliant string with a 'file:' scheme
+     */
     protected static String reapplyScheme(final String path) {
         return "file:" + URI.create(path).getSchemeSpecificPart();
     }
@@ -101,10 +113,22 @@ public class ResourceTreeClient {
         return resource.id(reapplyScheme(resource.getId()));
     }
 
+    /**
+     * Substitute a data-service address using a env map of connection-detail
+     * service names to their substitutions.
+     * If a serviceName is not found in the map, it is unchanged.
+     *
+     * @param env         the map of data-service names to substitutions
+     * @param serviceName the service-name to lookup in the map
+     * @return the substitution for this service-name
+     */
     protected String substDataServiceAddress(final Map<String, String> env, final String serviceName) {
         return env.getOrDefault(serviceName, serviceName);
     }
 
+    // While unused, this may be needed depending on the setup of the cluster ingress
+    // It may be alleviated by further development of the client-java module
+    @SuppressWarnings("unused")
     protected UnaryOperator<Resource> substDataServiceAddress(final Map<String, String> env) {
         return (Resource resource) -> {
             if (resource instanceof LeafResource) {

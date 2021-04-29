@@ -21,6 +21,11 @@ import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+/**
+ * Node of a {@link ResourceTree}, where each node is a collection of its children.
+ *
+ * @param <T> the type of an object contained within the node
+ */
 public interface TreeNode<T> extends Collection<TreeNode<T>> {
     String getId();
 

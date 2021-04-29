@@ -22,6 +22,13 @@ import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+/**
+ * Node of a tree which is a parent, therefore has children.
+ * At this point, we can implement some defaults for the node as a collection of its children.
+ * This is analogous to a {@link uk.gov.gchq.palisade.resource.ParentResource}
+ *
+ * @param <T> the type of elements in the tree
+ */
 @SuppressWarnings({"NullableProblems", "unchecked", "rawtypes"})
 public interface ParentNode<T> extends TreeNode<T> {
     Collection<ChildNode<T>> getChildren();
@@ -60,8 +67,8 @@ public interface ParentNode<T> extends TreeNode<T> {
     }
 
     @Override
-    default <T> T[] toArray(final T[] ts) {
-        return (T[]) toArray();
+    default <S> S[] toArray(final S[] ts) {
+        return (S[]) toArray();
     }
 
     @Override

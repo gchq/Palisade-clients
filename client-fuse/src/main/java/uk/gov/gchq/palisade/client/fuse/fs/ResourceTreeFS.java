@@ -214,12 +214,13 @@ public class ResourceTreeFS extends FuseStubFS {
     /**
      * Get an extended attribute by name on a file.
      *
-     * @param path
-     * @param name
-     * @param value
-     * @param size
-     * @return
+     * @param path  the path to a node in the tree to read extended attributes for
+     * @param name  the name of a single attribute on the node
+     * @param value the native buffer to fill with the attribute's value
+     * @param size  space available in the buffer
+     * @return an {@link ErrorCodes} error-code
      * @see <a href="https://man7.org/linux/man-pages/man2/getxattr.2.html"/>
+     * @implNote only file nodes (leaf resources) have attributes
      */
     @Override
     public int getxattr(final String path, final String name, final Pointer value, final long size) {
@@ -239,11 +240,13 @@ public class ResourceTreeFS extends FuseStubFS {
     /**
      * Get all extended attribute names on a file.
      *
-     * @param path
-     * @param list
-     * @param size
-     * @return
+     * @param path the path to a node in the tree to read extended attributes for
+     * @param list the native buffer to fill with all attributes' values, formatted
+     *             as concat'ed null-terminated strings
+     * @param size space available in the buffer
+     * @return an {@link ErrorCodes} error-code
      * @see <a href="https://man7.org/linux/man-pages/man2/listxattr.2.html"/>
+     * @implNote only file nodes (leaf resources) have attributes
      */
     @Override
     public int listxattr(final String path, final Pointer list, final long size) {
@@ -259,4 +262,3 @@ public class ResourceTreeFS extends FuseStubFS {
         }
     }
 }
-

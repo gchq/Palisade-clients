@@ -16,6 +16,12 @@
 
 package uk.gov.gchq.palisade.client.fuse.tree;
 
+/**
+ * Node of a tree which has a parent.
+ * This is analogous to a {@link uk.gov.gchq.palisade.resource.ChildResource}
+ *
+ * @param <T> the type of elements in the tree
+ */
 public interface ChildNode<T> extends TreeNode<T> {
     ParentNode<T> getParent();
 }
