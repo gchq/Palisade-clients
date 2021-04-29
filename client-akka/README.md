@@ -16,7 +16,7 @@ limitations under the License.
 
 # Palisade Akka Client
 
-The Akka Palisade Client API provides access to a Palisade cluster and exposes an interface using both java standard-lib types and Akka types.
+The Akka Palisade Client API provides access to a Palisade cluster and exposes an interface using both Java standard-lib types and Akka types.
 This exists alongside the [Java Client](../client-java) as both a demonstration of a different implementation, and to provide better compatibility with some Palisade internals, most of which make use of Akka.
 
 ## API Design
