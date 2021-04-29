@@ -51,10 +51,10 @@ public class CustomPromptProvider implements PromptProvider {
      * Get the prompt to present for the shell. The format will be:
      * [user:no-one@][host:disconnected][#token:]  eg.
      * <ul>
-     *   <li> no-one@disconnected>
-     *   <li> no-one@palisade.cluster>
-     *   <li> Alice@palisade.cluster>
-     *   <li> Alice@palisade.cluster#some-long-token>
+     *   <li> no-one@disconnected
+     *   <li> no-one@palisade.cluster
+     *   <li> Alice@palisade.cluster
+     *   <li> Alice@palisade.cluster#some-long-token
      * </ul>
      *
      * @return a coloured string for the prompt-line
