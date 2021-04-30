@@ -156,7 +156,7 @@ public class ResourceTree implements Collection<Resource> {
         }
     }
 
-    /* Collections API */
+    /* Implementations for Collection interface */
 
     @Override
     public int size() {

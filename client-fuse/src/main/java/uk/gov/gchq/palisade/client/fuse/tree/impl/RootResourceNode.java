@@ -68,7 +68,7 @@ public class RootResourceNode implements ParentNode<Resource> {
         return resource;
     }
 
-    // Collection
+    /* Implementations for Collection interface */
 
     @Override
     public int size() {

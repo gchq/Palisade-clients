@@ -57,7 +57,9 @@ class ClientShellTest {
         // When
         var currentSession = shell.getSessionState();
         // Then
-        assertThat(currentSession).isEqualTo(mockSession);
+        assertThat(currentSession)
+            .as("Get session state should return set session state")
+            .isEqualTo(mockSession);
     }
 
     @Test
@@ -68,7 +70,9 @@ class ClientShellTest {
         // When
         var currentToken = shell.getTokenState();
         // Then
-        assertThat(currentToken).isEqualTo(mockToken);
+        assertThat(currentToken)
+            .as("Get token state should return set token state")
+            .isEqualTo(mockToken);
     }
 
     @Test
@@ -79,14 +83,18 @@ class ClientShellTest {
         // When
         var availability = shell.openSession();
         // Then
-        assertThat(availability.isAvailable()).isTrue();
+        assertThat(availability.isAvailable())
+            .as("Session should be available if there is a set session state")
+            .isTrue();
 
         // Given
         shell.sessionState.set(null);
         // When
         availability = shell.openSession();
         // Then
-        assertThat(availability.isAvailable()).isFalse();
+        assertThat(availability.isAvailable())
+            .as("Session should not be available if there is not a set session state")
+            .isFalse();
     }
 
     @Test
@@ -95,22 +103,30 @@ class ClientShellTest {
         var mockSession = Mockito.mock(DefaultSession.class);
         var mockUrl = "mock://url";
         var unacceptableUrl = "unacceptable://url";
-        Mockito.when(client.acceptsURL(unacceptableUrl)).thenReturn(false);
-        Mockito.when(client.acceptsURL(mockUrl)).thenReturn(true);
-        Mockito.when(client.connect(Mockito.anyString())).thenReturn(mockSession);
+        Mockito.when(client.acceptsURL(unacceptableUrl))
+            .thenReturn(false);
+        Mockito.when(client.acceptsURL(mockUrl))
+            .thenReturn(true);
+        Mockito.when(client.connect(Mockito.anyString()))
+            .thenReturn(mockSession);
 
         // When
         var response = shell.connect(mockUrl);
         // Then
-        assertThat(response).isEqualTo("Connected to " + mockUrl);
+        assertThat(response)
+            .as("Response from connect should match url used to connect if successful")
+            .isEqualTo("Connected to " + mockUrl);
 
         // When
         var currentSession = shell.getSessionState();
         // Then
-        assertThat(currentSession).isEqualTo(mockSession);
+        assertThat(currentSession)
+            .as("Session state should equal the session returned by the client on connect")
+            .isEqualTo(mockSession);
 
         // When/Then
         assertThatIllegalArgumentException()
+            .as("Illegal client URIs should throw an appropriate exception")
             .isThrownBy(() -> shell.connect(unacceptableUrl))
             .withMessage("Client does not accept url: " + unacceptableUrl);
     }
@@ -123,20 +139,30 @@ class ClientShellTest {
         var mockQueryResponse = Mockito.mock(DefaultQueryResponse.class);
         var mockPalResponse = Mockito.mock(PalisadeResponse.class);
         var mockToken = "mockToken";
-        Mockito.when(client.acceptsURL(Mockito.anyString())).thenReturn(true);
-        Mockito.when(client.connect(Mockito.anyString())).thenReturn(mockSession);
-        Mockito.when(mockSession.createQuery(Mockito.anyString(), Mockito.anyMap())).thenReturn(mockQuery);
-        Mockito.when(mockQuery.execute()).thenReturn(CompletableFuture.completedFuture(mockQueryResponse));
-        Mockito.when(mockQueryResponse.getPalisadeResponse()).thenReturn(mockPalResponse);
-        Mockito.when(mockPalResponse.getToken()).thenReturn(mockToken);
+        Mockito.when(client.acceptsURL(Mockito.anyString()))
+            .thenReturn(true);
+        Mockito.when(client.connect(Mockito.anyString()))
+            .thenReturn(mockSession);
+        Mockito.when(mockSession.createQuery(Mockito.anyString(), Mockito.anyMap()))
+            .thenReturn(mockQuery);
+        Mockito.when(mockQuery.execute())
+            .thenReturn(CompletableFuture.completedFuture(mockQueryResponse));
+        Mockito.when(mockQueryResponse.getPalisadeResponse())
+            .thenReturn(mockPalResponse);
+        Mockito.when(mockPalResponse.getToken())
+            .thenReturn(mockToken);
         shell.sessionState.set(mockSession);
 
         // When
         var response = shell.register(new String[]{"ctxKey=val"}, "resourceId");
         // Then
-        assertThat(response).isEqualTo(mockToken);
+        assertThat(response)
+            .as("Registering a request should return the token for that request")
+            .isEqualTo(mockToken);
         // Then
-        assertThat(shell.registeredQueries).contains(Map.entry(mockToken, mockQueryResponse));
+        assertThat(shell.registeredQueries)
+            .as("Registering a request should add the response to the query map")
+            .contains(Map.entry(mockToken, mockQueryResponse));
     }
 
     @Test
@@ -147,26 +173,34 @@ class ClientShellTest {
         var mockQueryItem = Mockito.mock(DefaultQueryItem.class);
         var mockResource = Mockito.mock(LeafResource.class);
         var mockResourceId = "mockResourceId";
-        Mockito.when(mockQueryItem.asResource()).thenReturn(mockResource);
-        Mockito.when(mockResource.getId()).thenReturn(mockResourceId);
+        Mockito.when(mockQueryItem.asResource())
+            .thenReturn(mockResource);
+        Mockito.when(mockResource.getId())
+            .thenReturn(mockResourceId);
         shell = new ClientShell(client, Map.of(mockToken, mockQueryResponse), Map.of(mockToken, List.of(mockQueryItem)));
 
         // When
         var response = shell.list(mockToken);
         // Then
-        assertThat(response).isEqualTo(mockResourceId);
+        assertThat(response)
+            .as("Listing on a token should return all resources available for that request")
+            .isEqualTo(mockResourceId);
 
         // When
         shell.tokenState.set(mockToken);
         response = shell.list(null);
         // Then
-        assertThat(response).isEqualTo(mockResourceId);
+        assertThat(response)
+            .as("Listing with a token state should return all resources available for that request")
+            .isEqualTo(mockResourceId);
 
         // When
         shell.tokenState.set(null);
         response = shell.list(null);
         // Then
-        assertThat(response).isEqualTo(mockToken);
+        assertThat(response)
+            .as("Listing with neither a token arg or token state should return all registered tokens")
+            .isEqualTo(mockToken);
     }
 
     @Test
@@ -180,15 +214,28 @@ class ClientShellTest {
         // When
         var response = shell.select(mockToken);
         // Then
-        assertThat(response).isEqualTo("Selected " + mockToken);
+        assertThat(response)
+            .as("Selecting a token should report that the requested token was selected")
+            .isEqualTo("Selected " + mockToken);
+        // Then
+        assertThat(shell.tokenState.get())
+            .as("Selecting a token should set the token state to the selected token")
+            .isEqualTo(mockToken);
 
         // When
         response = shell.select("..");
         // Then
-        assertThat(response).isEqualTo("Deselected token");
+        assertThat(response)
+            .as("Deselecting a token should report that the requested token was deselected")
+            .isEqualTo("Deselected token");
+        // Then
+        assertThat(shell.tokenState.get())
+            .as("Deselecting a token should set the token state to null")
+            .isNull();
 
         // When/Then
         assertThatIllegalArgumentException()
+            .as("Selecting a token that doesn't exist should throw an error")
             .isThrownBy(() -> shell.select(nonExistentToken))
             .withMessage("No such registered token: " + nonExistentToken);
     }
@@ -205,10 +252,14 @@ class ClientShellTest {
         var mockResourceId = "mockResourceId";
         var nonExistentResourceId = "NON_EXISTENT_RESOURCE";
         var mockData = "mockData";
-        Mockito.when(mockQueryResponse.stream()).thenReturn(Subscriber::onComplete);
-        Mockito.when(mockQueryItem.asResource()).thenReturn(mockResource);
-        Mockito.when(mockResource.getId()).thenReturn(mockResourceId);
-        Mockito.when(mockSession.fetch(mockQueryItem)).thenReturn(mockDownload);
+        Mockito.when(mockQueryResponse.stream())
+            .thenReturn(Subscriber::onComplete);
+        Mockito.when(mockQueryItem.asResource())
+            .thenReturn(mockResource);
+        Mockito.when(mockResource.getId())
+            .thenReturn(mockResourceId);
+        Mockito.when(mockSession.fetch(mockQueryItem))
+            .thenReturn(mockDownload);
         Mockito.when(mockDownload.getInputStream()).thenAnswer(invocation -> new ByteArrayInputStream(mockData.getBytes()));
         shell = new ClientShell(client, Map.of(mockToken, mockQueryResponse), Map.of(mockToken, List.of(mockQueryItem)));
         shell.sessionState.set(mockSession);
@@ -216,22 +267,27 @@ class ClientShellTest {
         // When
         var response = shell.read(mockResourceId, mockToken);
         // Then
-        assertThat(response).isEqualTo(mockData);
+        assertThat(response)
+            .isEqualTo(mockData);
 
         // When
         shell.tokenState.set(mockToken);
         response = shell.read(mockResourceId, null);
         // Then
-        assertThat(response).isEqualTo(mockData);
+        assertThat(response)
+            .as("Reading a resource should return its data")
+            .isEqualTo(mockData);
 
         // When/Then
         shell.tokenState.set(null);
         assertThatIllegalArgumentException()
+            .as("Resources can only be read with a selected token (otherwise no token to send to the Data Service)")
             .isThrownBy(() -> shell.read(mockResourceId, null))
             .withMessage("No token selected");
 
         // When/Then
         assertThatIllegalArgumentException()
+            .as("Reading a resource that doesn't exist should throw an exception")
             .isThrownBy(() -> shell.read(nonExistentResourceId, mockToken))
             .withMessage("No such received resource: " + nonExistentResourceId);
     }

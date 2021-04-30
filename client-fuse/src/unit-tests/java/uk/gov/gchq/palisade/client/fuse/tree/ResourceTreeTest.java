@@ -57,11 +57,13 @@ class ResourceTreeTest {
         tree.add(file1);
 
         assertThat(tree.stream().collect(Collectors.toSet()))
+            .as("Tree stream should contain all (three) elements added to the tree")
             .isEqualTo(Set.of(root, some, file1));
 
         tree.add(file2);
 
         assertThat(tree.stream().collect(Collectors.toSet()))
+            .as("Tree stream should contain all (four) elements added to the tree")
             .isEqualTo(Set.of(root, some, file1, file2));
     }
 }

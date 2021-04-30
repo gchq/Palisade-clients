@@ -77,7 +77,7 @@ public class LeafResourceNode implements ChildNode<Resource> {
         return Stream.of(this.get());
     }
 
-    // Collection
+    /* Implementations for Collection interface */
 
     @Override
     public int size() {

@@ -55,7 +55,7 @@ public class ResourceTreeClient {
         private final String token;
 
         /**
-         * Construct a new  ResourceTree and keep track of the given token.
+         * Construct a new ResourceTree and keep track of the given token.
          *
          * @param token the response from the Palisade Service used to identify this
          *              request with the Data Service.
@@ -114,11 +114,11 @@ public class ResourceTreeClient {
     }
 
     /**
-     * Substitute a data-service address using a env map of connection-detail
+     * Substitute a Data Service address using a env map of connection-detail
      * service names to their substitutions.
      * If a serviceName is not found in the map, it is unchanged.
      *
-     * @param env         the map of data-service names to substitutions
+     * @param env         the map of Data Service names to substitutions
      * @param serviceName the service-name to lookup in the map
      * @return the substitution for this service-name
      */
@@ -139,6 +139,14 @@ public class ResourceTreeClient {
         };
     }
 
+    /**
+     * Apply a formatting function (unary operator) to a resource and each of its parents recursively.
+     *
+     * @param resource  the resource to apply the formatter function to (it will also apply to all parents)
+     * @param formatter some function that will edit each of the resources, eg. adding a prefix to the id
+     * @param <T> the type of the resource
+     * @return the resource after applying the formatting function to it and its parents
+     */
     protected <T extends Resource> T formatResource(final T resource, final UnaryOperator<Resource> formatter) {
         if (resource instanceof ChildResource) {
             ((ChildResource) resource).parent(formatResource(((ChildResource) resource).getParent(), formatter));

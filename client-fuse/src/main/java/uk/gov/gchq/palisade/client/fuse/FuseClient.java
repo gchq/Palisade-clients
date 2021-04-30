@@ -64,7 +64,8 @@ public class FuseClient {
     /**
      * Run a simple CLI application for this client, taking the clientUri, resourceId and mountDir from command-line args
      *
-     * @param args command-line arguments, expected to contain the application name and three passed arguments
+     * @param args Command-line arguments, expected to contain the application name and three-or-more passed arguments.
+     *             The args list should be ordered [this-jar-name, client-uri-config, resource-id, local-mount-point, context-map...]
      *             e.g. [client-fuse.jar, pal://cluster/?userid=Alice, file:/data/local-data-store/, /mnt/palisade, purpose=SALARY]
      */
     public static void main(final String... args) {
@@ -94,7 +95,7 @@ public class FuseClient {
     }
 
     /**
-     * Register a request with palisade using a configured client.
+     * Register a request with Palisade using a configured client.
      * Mount the fuse directory and block until application exit.
      * Attempt to gracefully unmount on application exit.
      *

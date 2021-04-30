@@ -79,7 +79,9 @@ public class ResourceTreeFS extends FuseStubFS {
     }
 
     private static int getattr(final TreeNode<Resource> node, final FuseContext ctx, final FileStat stat) {
-        final int readOnly = FileStat.S_IRUSR | FileStat.S_IRGRP; // ug+r
+        // Mark the file as read-only to the owning user and group, no access to others
+        // Same as "chmod ug=r o=", "chmod 440", or an "ls" permissions line of "r--r-----"
+        final int readOnly = FileStat.S_IRUSR | FileStat.S_IRGRP;
         if (node instanceof ParentNode) {
             // Directory, read-only
             stat.st_mode.set(FileStat.S_IFDIR | readOnly);

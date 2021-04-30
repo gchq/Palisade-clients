@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.java.internal.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.client.java.util.Util;
 
 import java.net.URI;
@@ -51,7 +52,7 @@ public class Configuration {
     private static final String TOKEN_PARAM = "%25t"; // % is percent-encoded to %25
     private static final int KV_PAIR_LENGTH = 2;
 
-    // Configurable
+    // Keys for configurable properties
     /**
      * The userId for connecting to the palisade services, will be used for all requests.
      * <p>
@@ -80,7 +81,7 @@ public class Configuration {
      */
     public static final String POLL_SECONDS = "poll";
 
-    // Allowed user-configurable properties
+    // Allowed user-configurable properties and readers for them (from String to T)
     protected static final Map<String, StringProperty<?>> WHITELIST_PROPERTIES = Map.of(
         USER_ID, String::new,
         SSL_ENABLED, Boolean::valueOf,
@@ -88,7 +89,7 @@ public class Configuration {
         POLL_SECONDS, Long::valueOf
     );
 
-    // Dafaults
+    // Static keys which are not permitted to be configurable
     /**
      * Relative path from cluster root to palisade-service request endpoint.
      * <p>
@@ -107,7 +108,14 @@ public class Configuration {
      * Static, default '/read/chunked'
      */
     public static final String DATA_PATH = "data.path";
+    /**
+     * Map from service-names to URIs
+     * <p>
+     * Static, default empty map
+     */
     public static final String DATA_SERVICE_MAP = "data.service-map";
+
+    // Defaults for above static and configurable keys
     protected static final Map<String, Object> DEFAULT_PROPERTIES = Map.of(
         // Static
         PALISADE_PATH, "/palisade/api/registerDataRequest",
@@ -119,7 +127,7 @@ public class Configuration {
         POLL_SECONDS, 3600L
     );
 
-    // Required and derived
+    // Required and derived keys for connection properties
     /**
      * The original URI Spec string passed to the configuration class.
      * <p>
@@ -138,6 +146,7 @@ public class Configuration {
      * Derived, example 'ws://my.cluster:1234/ingress/filteredResource/resource/%t'
      */
     public static final String FILTERED_RESOURCE_URI = "filtered-resource.uri";
+
 
     private final Map<String, Object> properties = new TreeMap<>();
 
@@ -195,7 +204,7 @@ public class Configuration {
         var palisadeScheme = "http";
         var filteredResourceScheme = "ws";
         var dataScheme = "http";
-        // Determine SSL config
+        // Determine SSL config for URI schemes
         if (config.<Boolean>get(SSL_ENABLED).equals(Boolean.TRUE)) {
             palisadeScheme = "https";
             filteredResourceScheme = "wss";
@@ -214,6 +223,7 @@ public class Configuration {
             DATA_SERVICE_MAP, Map.of("data-service", defaultDataUri)
         ));
 
+        // Log properties map for debugging
         LOGGER.debug("Using spec {} built config:", spec);
         config.properties.forEach((key, value) -> LOGGER.debug("{} = {}", key, value));
 
@@ -255,6 +265,7 @@ public class Configuration {
     }
 
     @Override
+    @Generated
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -267,11 +278,13 @@ public class Configuration {
     }
 
     @Override
+    @Generated
     public int hashCode() {
         return Objects.hash(properties);
     }
 
     @Override
+    @Generated
     public String toString() {
         return properties.toString();
     }
