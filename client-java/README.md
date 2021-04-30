@@ -28,13 +28,19 @@ Of course there are differences. One of the big differences is that Palisade cli
 
 The URL follows the JDBC specification of not exposing the underlying communication protocol. To this end the scheme is set as `pal:[subname]`.
 
-If you are familiar with the JDBC url, then the Palisade URL should be familiar. See the examples below:
+If you are familiar with the JDBC url, then the Palisade URL should be familiar.
+See the examples below:
+```
+Cluster is 'my.cluster', userId is 'alice'
+pal://my.cluster?userid=alice
 
+Cluster is 'localhost:8080', requires authentication, userId is 'alice'
+pal://eve:password@localhost:8080/cluster?userid=alice
+
+Cluster is 'localhost:8080/cluster', userId is 'alice', use an ssl connection, use an http2 connection, maximum 2hrs between server responses
+pal://localhost:8080/cluster?userid=alice&ssl=true&http2=true&poll=7200
 ```
-pal://eve@localhost/cluster?userid=alive
-pal://localhost/cluster?userid=alive
-pal://localhost:1234/cluster?userid=alice&wsport=4321
-```
+
 
 Note that any user passed as part of the authority portion of the URL (e.g. "eve" in the above example) will simply be copied to the create Palisade Service and Filtered Resource Service URIs. This use is not the `user_id` that is passed as part of the
 REST call to the Palisade Service. The user id is passed via a property (`service.userid`) or as a query parameter (userid).
