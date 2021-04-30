@@ -23,6 +23,11 @@ import java.io.IOException;
  * This is usually done in order to throw inside a lambda.
  */
 public class RuntimeIOException extends RuntimeException {
+    /**
+     * Constructor for a new expection
+     * @param message a message describing what might have caused the exception
+     * @param cause   wrap the original {@link IOException} thrown
+     */
     public RuntimeIOException(final String message, final IOException cause) {
         super(message, cause);
     }
