@@ -268,6 +268,7 @@ class ClientShellTest {
         var response = shell.read(mockResourceId, mockToken);
         // Then
         assertThat(response)
+            .as("Reading a resource should return its data")
             .isEqualTo(mockData);
 
         // When
@@ -275,7 +276,7 @@ class ClientShellTest {
         response = shell.read(mockResourceId, null);
         // Then
         assertThat(response)
-            .as("Reading a resource should return its data")
+            .as("Reading a resource without a token should use the selected token, returning the same data")
             .isEqualTo(mockData);
 
         // When/Then
