@@ -119,11 +119,11 @@ public class AkkaClient implements Client {
 
         // Ser/Des for messages to/from the websocket
         Flow<Message, Message, Pair<Sink<WebSocketMessage, NotUsed>, Source<WebSocketMessage, NotUsed>>> clientFlow = Flow.<Message>create()
-                .map(this::readWsMessage)
+                .map(msg -> AkkaClient.readWsMessage(msg, materializer))
                 // Expose source and sink to this stage in materialization
                 .viaMat(exposeSinkAndSource, Keep.right())
                 // Take until COMPLETE message is seen
-                .takeWhile(wsMessage -> !wsMessage.getType().equals(MessageType.COMPLETE))
+                .takeWhile(wsMessage -> wsMessage.getType() != MessageType.COMPLETE)
                 // Handle how to 'echo back' a message
                 .map((WebSocketMessage wsMessage) -> {
                     switch (wsMessage.getType()) {
@@ -134,7 +134,7 @@ public class AkkaClient implements Client {
                             return wsMessage;
                     }
                 })
-                .map(this::writeWsMessage);
+                .map(AkkaClient::writeWsMessage);
 
         // Make the request using the ser/des flow linked to the oscillator
         Pair<CompletionStage<WebSocketUpgradeResponse>, Pair<Sink<WebSocketMessage, NotUsed>, Source<WebSocketMessage, NotUsed>>> wsResponse = http.singleWebSocketRequest(
@@ -152,9 +152,9 @@ public class AkkaClient implements Client {
                 // Return the connected Source
                 .thenApply(ignored -> downstreamSource))
                 // Take until COMPLETE message is seen
-                .takeWhile(wsMessage -> !wsMessage.getType().equals(MessageType.COMPLETE))
+                .takeWhile(wsMessage -> wsMessage.getType() != MessageType.COMPLETE)
                 // Extract LeafResource from message object
-                .filter(wsMessage -> wsMessage.getType().equals(MessageType.RESOURCE))
+                .filter(wsMessage -> wsMessage.getType() == MessageType.RESOURCE)
                 .map(msg -> msg.getBodyObject(LeafResource.class));
     }
 
@@ -214,7 +214,7 @@ public class AkkaClient implements Client {
         return deserialize(builder.toString(), PalisadeResponse.class);
     }
 
-    private WebSocketMessage readWsMessage(final Message message) {
+    private static WebSocketMessage readWsMessage(final Message message, final Materializer materializer) {
         // Akka will sometimes convert a StrictMessage to a StreamedMessage, so we have to handle both cases here
         StringBuilder builder = message.asTextMessage().getStreamedText()
                 .runFold(new StringBuilder(), StringBuilder::append, materializer)
@@ -222,7 +222,7 @@ public class AkkaClient implements Client {
         return deserialize(builder.toString(), WebSocketMessage.class);
     }
 
-    private Message writeWsMessage(final WebSocketMessage message) {
+    private static Message writeWsMessage(final WebSocketMessage message) {
         return new Strict(serialize(message));
     }
 
