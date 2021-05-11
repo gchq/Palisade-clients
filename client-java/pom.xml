@@ -35,7 +35,6 @@
     <!--  *********** Artifact ID ***********    -->
 
     <properties>
-
         <jdk.version>11</jdk.version>
         <release.version>11</release.version>
 
@@ -202,9 +201,6 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.yaml</include>
-                </includes>
             </resource>
         </resources>
         <testResources>
@@ -220,31 +216,26 @@
         </testResources>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>flatten</goal>
                         </goals>
-                        <configuration>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com</pattern>
-                                    <shadedPattern>shade.com</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>javax</pattern>
-                                    <shadedPattern>shade.javax</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org</pattern>
-                                    <shadedPattern>shade.org</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -285,50 +276,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.1</version>
-                <executions>
-                    <execution>
-                        <id>component-tests</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <skipITs>${component-test.skip}</skipITs>
-                            <includes>
-                                <include>**/test/component/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>contract-tests</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <skipITs>${contract-test.skip}</skipITs>
-                            <includes>
-                                <include>**/test/contract/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/test/component/**</exclude>
-                        <exclude>**/test/contract/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>
