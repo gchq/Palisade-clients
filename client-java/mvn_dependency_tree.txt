@@ -8,10 +8,10 @@ uk.gov.gchq.palisade:client-java:jar:0.5.0-SNAPSHOT
 |     +- org.apache.commons:commons-compress:jar:1.8.1:compile
 |     \- org.tukaani:xz:jar:1.5:compile
 +- org.slf4j:slf4j-api:jar:1.7.26:compile
-+- com.fasterxml.jackson.core:jackson-databind:jar:2.10.0:compile
++- com.fasterxml.jackson.core:jackson-databind:jar:2.11.0:compile
 |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.11.0:compile
 |  \- com.fasterxml.jackson.core:jackson-core:jar:2.11.0:compile
-+- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.10.0:compile
++- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.11.0:compile
 +- io.reactivex.rxjava3:rxjava:jar:3.0.8:compile
 |  \- org.reactivestreams:reactive-streams:jar:1.0.3:compile
 +- org.immutables:value:jar:2.8.2:provided
