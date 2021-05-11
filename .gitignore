@@ -28,6 +28,7 @@ node_modules/
 .project/
 .settings/
 .terraform/
+*.flattened-pom.xml
 terraform.tfvars
 terraform.tfstate
 terraform.tfstate.backup
