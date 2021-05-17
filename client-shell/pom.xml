@@ -27,10 +27,29 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <developers>
+        <developer>
+            <name>PalisadeDevelopers</name>
+            <organization>GCHQ</organization>
+            <organizationUrl>https://github.com/gchq</organizationUrl>
+        </developer>
+    </developers>
+
     <!--  *********** Artifact ID ***********    -->
     <artifactId>client-shell</artifactId>
     <url>https://github.com/gchq/Palisade-clients/tree/develop/client-shell</url>
+    <name>GCHQ Palisade - Spring Shell Client</name>
+    <description>
+        The Palisade Shell provides a interactive CLI REPL for access to a cluster and its resources.
+    </description>
     <!--  *********** Artifact ID ***********    -->
+
+    <scm>
+        <url>${scm.url}</url>
+        <connection>${scm.connection}</connection>
+        <developerConnection>${scm.developer.connection}</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <!-- Dependency versions -->
