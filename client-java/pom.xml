@@ -27,42 +27,53 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <developers>
+        <developer>
+            <name>PalisadeDevelopers</name>
+            <organization>GCHQ</organization>
+            <organizationUrl>https://github.com/gchq</organizationUrl>
+        </developer>
+    </developers>
+
     <!--  *********** Artifact ID ***********    -->
     <artifactId>client-java</artifactId>
-    <name>client-java</name>
-    <description>Java standalone client</description>
     <url>https://github.com/gchq/Palisade-clients/tree/develop/client-java</url>
+    <name>GCHQ Palisade - Java Client</name>
+    <description>
+        The Java Palisade Client API provides access to a Palisade deployment, allowing querying and reading of resources.
+    </description>
     <!--  *********** Artifact ID ***********    -->
+
+    <scm>
+        <url>${scm.url}</url>
+        <connection>${scm.connection}</connection>
+        <developerConnection>${scm.developer.connection}</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <jdk.version>11</jdk.version>
         <release.version>11</release.version>
 
         <!-- Runtime Dependency versions -->
-
         <jackson.version>2.11.0</jackson.version>
         <rxjava.version>3.0.8</rxjava.version>
         <slf4j.version>1.7.26</slf4j.version>
 
         <!-- Provided dependency versions -->
-
         <immutables.version>2.8.2</immutables.version>
 
         <!-- Test dependency versions -->
-
         <micronaut.version>2.3.2</micronaut.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.platform.version>1.7.0</junit.platform.version>
         <assertj.version>3.19.0</assertj.version>
         <logback.version>1.2.3</logback.version>
         <mockito.version>3.7.7</mockito.version>
-
     </properties>
 
     <dependencies>
-
         <!-- RUNTIME -->
-
         <dependency>
             <!-- Common types (User, Resource, Context) -->
             <groupId>uk.gov.gchq.palisade</groupId>
@@ -91,7 +102,6 @@
         </dependency>
 
         <!-- PROVIDED -->
-
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>
@@ -100,7 +110,6 @@
         </dependency>
 
         <!-- TEST -->
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
