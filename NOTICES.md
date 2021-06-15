@@ -17,7 +17,7 @@ List of third-party dependencies grouped by their license type
 * spring-boot-starter-aop ([org.springframework.boot:spring-boot-starter-aop:2.3.1.RELEASE](https://spring.io/projects/spring-boot))
 * spring-boot-starter-test ([org.springframework.boot:spring-boot-starter-test:2.3.1.RELEASE](https://spring.io/projects/spring-boot))
 * Spring Shell Starter ([org.springframework.shell:spring-shell-starter:2.0.0.RELEASE](http://projects.spring.io/spring-boot/spring-shell-parent/spring-shell-starter/))
-* client-java ([uk.gov.gchq.palisade:client-java:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/client-java))
+* GCHQ Palisade - Java Client ([uk.gov.gchq.palisade:client-java:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-clients/tree/develop/client-java))
 * GCHQ Palisade Common Library ([uk.gov.gchq.palisade:common:0.5.0-SNAPSHOT](https://github.com/gchq/Palisade-common))
 
 ### [Eclipse Public License 1.0](./licenses/eclipse_public_license_1.0.html):
