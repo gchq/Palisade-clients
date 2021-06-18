@@ -38,7 +38,7 @@
     <!--  *********** Artifact ID ***********    -->
     <artifactId>client-fuse</artifactId>
     <url>https://github.com/gchq/Palisade-clients/tree/develop/client-fuse</url>
-    <name>GCHQ Palisade - Attribute-Masking Service</name>
+    <name>GCHQ Palisade - FUSE FS Client</name>
     <description>
         The Fuse Palisade Client creates a software-controlled filesystem mount to represent the returned resources and data from a query.
         Returned resources, data and metadata are all presented as a FUSE mounted local directory.

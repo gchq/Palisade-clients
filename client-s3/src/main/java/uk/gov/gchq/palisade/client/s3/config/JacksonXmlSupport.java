@@ -25,15 +25,16 @@ import akka.http.javadsl.unmarshalling.Unmarshaller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.codehaus.jackson.map.util.ISO8601DateFormat;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 public class JacksonXmlSupport {
-    private static final ObjectMapper DEFAULT_XML_MAPPER =
-            new XmlMapper().enable(SerializationFeature.WRAP_ROOT_VALUE);
     private static final List<MediaType> XML_MEDIA_TYPES = Arrays.asList(MediaTypes.APPLICATION_XML, MediaTypes.TEXT_XML);
+    private static final ObjectMapper DEFAULT_XML_MAPPER = new XmlMapper()
+            .enable(SerializationFeature.WRAP_ROOT_VALUE);
 
     public static <T> Marshaller<T, RequestEntity> marshaller() {
         return Marshaller.wrapEntity(

@@ -21,3 +21,10 @@ CREATE TABLE IF NOT EXISTS resources
     `parent_id`   VARCHAR(255),
     `resource`    VARCHAR
 );
+
+CREATE TABLE IF NOT EXISTS content_lengths
+(
+    `id`             INTEGER PRIMARY KEY AUTO_INCREMENT,
+    `resource_id`    VARCHAR(255) UNIQUE NOT NULL,
+    `content_length` BIGINT
+);

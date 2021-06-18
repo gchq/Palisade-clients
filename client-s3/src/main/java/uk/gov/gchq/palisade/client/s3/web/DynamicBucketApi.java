@@ -18,38 +18,53 @@ package uk.gov.gchq.palisade.client.s3.web;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.http.javadsl.model.DateTime;
+import akka.http.javadsl.model.HttpEntities;
+import akka.http.javadsl.model.HttpHeader;
+import akka.http.javadsl.model.HttpMethods;
 import akka.http.javadsl.model.HttpResponse;
 import akka.http.javadsl.model.StatusCodes;
+import akka.http.javadsl.model.headers.AccessControlAllowMethods;
+import akka.http.javadsl.model.headers.LastModified;
+import akka.http.javadsl.model.headers.RawHeader;
 import akka.http.javadsl.server.Directives;
 import akka.http.javadsl.server.Route;
+import akka.stream.Graph;
 import akka.stream.Materializer;
-import akka.stream.javadsl.BroadcastHub;
-import akka.stream.javadsl.Keep;
+import akka.stream.SourceShape;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import akka.util.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.akka.AkkaClient;
 import uk.gov.gchq.palisade.client.s3.config.JacksonXmlSupport;
-import uk.gov.gchq.palisade.client.s3.domain.ListBucketResponse;
+import uk.gov.gchq.palisade.client.s3.domain.CanonicalUser;
 import uk.gov.gchq.palisade.client.s3.domain.ListBucketResult;
 import uk.gov.gchq.palisade.client.s3.domain.ListEntry;
+import uk.gov.gchq.palisade.client.s3.domain.StorageClass;
 import uk.gov.gchq.palisade.client.s3.repository.PersistenceLayer;
 import uk.gov.gchq.palisade.client.s3.web.S3ServerApi.AwaitingStatus;
 import uk.gov.gchq.palisade.resource.LeafResource;
 
+import java.time.Instant;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DynamicBucketApi implements RouteSupplier {
     private static final Logger LOGGER = LoggerFactory.getLogger(DynamicBucketApi.class);
+    private static final int PARALLELISM = 1;
+
+    protected final Date bucketCreationTime = Date.from(Instant.now());
 
     protected AkkaClient client;
     protected Materializer materialiser;
@@ -94,7 +109,7 @@ public class DynamicBucketApi implements RouteSupplier {
 
     @Override
     public Route route() {
-        Stream<RouteSupplier> routers = Stream.of(new ListObjectsV2(), new GetObject(), new HeadBucket(), new HeadObject());
+        Stream<RouteSupplier> routers = Stream.of(new ListObjectsV2(), new GetObject(), new HeadObject(), new HeadBucket());
 
         return routers
                 .map(RouteSupplier::route)
@@ -103,188 +118,232 @@ public class DynamicBucketApi implements RouteSupplier {
     }
 
     public class ListObjectsV2 implements RouteSupplier {
-        protected Map<String, Source<LeafResource, NotUsed>> inFlightContinuations = new ConcurrentHashMap<>();
-
-        /**
-         * <pre>
-         * Request Syntax
-         * GET /?list-type=2
-         *     &continuation-token=ContinuationToken
-         *     &delimiter=Delimiter
-         *     &encoding-type=EncodingType
-         *     &fetch-owner=FetchOwner
-         *     &max-keys=MaxKeys
-         *     &prefix=Prefix
-         *     &start-after=StartAfter
-         * HTTP/1.1
-         * Host: Bucket.s3.amazonaws.com
-         * <p>
-         * Response Syntax
-         * HTTP/1.1 200 OK
-         * Content-Length: ContentLength
-         * Content-Type: application/xml
-         * Connection: close
-         * Body: <ListBucketResult/>
-         * </pre>
-         *
-         * @return
-         */
         public Route route() {
             Route listObjects = Directives.extract(ctx -> ctx.getRequest().getUri().query().get("continuation-token"), continuationToken ->
-                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("max-keys").map(Integer::valueOf).orElse(1_000), maxKeys ->
-                            Directives.extract(ctx -> ctx.getRequest().getUri().query().get("prefix"), prefix -> {
-                                LOGGER.info("ListBucketV2 for continuationToken={} maxKeys={}, prefix={}", continuationToken, maxKeys, prefix);
+                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("delimiter").orElse("/"), delimiter ->
+                            Directives.extract(ctx -> ctx.getRequest().getUri().query().get("max-keys").map(Integer::valueOf).orElse(1_000), maxKeys ->
+                                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("prefix"), prefix -> {
+                                        var pathPrefix = prefix.map(p -> resourceId + p);
+                                        LOGGER.info("ListBucketV2 for continuationToken={} maxKeys={}, pathPrefix={}", continuationToken, maxKeys, pathPrefix);
 
-                                // Get stream of resources, using continuation or prefix
-                                var resourceStream = continuationToken.map(inFlightContinuations::get)
-                                        .orElse(prefix.map(persistenceLayer::getResourcesByPrefix)
-                                                .orElseGet(persistenceLayer::getResources))
-                                        .toMat(BroadcastHub.of(LeafResource.class), Keep.right());
+                                        // Get stream of resources, using continuation or prefix
+                                        var resourceStream = pathPrefix.map(persistenceLayer::getResourcesByPrefix)
+                                                .orElseGet(persistenceLayer::getResources)
+                                                // Drop resources until we've dropped the last-returned continuation-token
+                                                .dropWhile(resource -> continuationToken.map(last -> !resource.getId().equals(last)).orElse(false));
 
-                                // Split into 'this page' and 'next pages'
-                                var takenKeys = resourceStream.run(materialiser).take(maxKeys);
-                                var nextContinuation = resourceStream.run(materialiser).drop(maxKeys);
+                                        // Split into 'this page' and 'next pages'
+                                        var takenKeys = resourceStream.take(maxKeys);
 
-                                // Construct result container object
-                                var result = new ListBucketResult();
+                                        // Construct result container object
+                                        var result = new ListBucketResult();
+                                        result.setName(token.join());
+                                        result.setDelimiter(delimiter);
+                                        result.setMaxKeys(maxKeys);
 
-                                // Add all elements for this page
-                                var done = takenKeys.runWith(Sink.foreach(resource -> {
-                                    var entry = new ListEntry();
-                                    entry.setKey(resource.getId());
-                                    result.getContents().add(entry);
-                                }), materialiser);
+                                        // Add all elements for this page
+                                        CompletionStage<Done> done = takenKeys.runWith(Sink.foreachAsync(PARALLELISM,
+                                                (LeafResource resource) -> getListEntryForResource(resource)
+                                                        .thenAccept(entry -> result.getContents().add(entry))),
+                                                materialiser);
 
-                                done.toCompletableFuture().join();
-                                // Update for next continuation token
-                                continuationToken.ifPresent(inFlightContinuations::remove);
-                                if (result.getContents().size() == maxKeys) {
-                                    var nextContinuationToken = UUID.randomUUID().toString();
-                                    inFlightContinuations.put(nextContinuationToken, nextContinuation);
-                                    result.setIsTruncated(true);
-                                    result.setNextMarker(nextContinuationToken);
-                                } else {
-                                    result.setIsTruncated(false);
-                                }
+                                        // Wait until all elements have been added
+                                        done.toCompletableFuture().join();
 
-                                // Populate other fields where relevant
-                                prefix.ifPresent(result::setPrefix);
-                                continuationToken.ifPresent(result::setMarker);
-                                result.setMaxKeys(maxKeys);
+                                        // Update for next continuation token
+                                        if (result.getContents().size() == maxKeys) {
+                                            result.setIsTruncated(true);
+                                            // Use the last resource-id as next continuation-token (so we can just dropWhile)
+                                            result.setNextContinuationToken(result.getContents().get(maxKeys - 1).getKey());
+                                            LOGGER.info("Result required truncation, returning {} elements and set continuation-token {}", maxKeys, result.getNextContinuationToken());
+                                        } else {
+                                            result.setIsTruncated(false);
+                                        }
 
-                                // Return object
-                                ListBucketResponse response = new ListBucketResponse();
-                                response.setListBucketResponse(result);
-                                return Directives.<ListBucketResponse>complete(StatusCodes.OK, response, JacksonXmlSupport.<ListBucketResponse>marshaller());
-                            })));
+                                        // Populate other fields where relevant
+                                        prefix.ifPresent(result::setPrefix);
+                                        continuationToken.ifPresent(result::setContinuationToken);
+                                        result.setKeyCount(result.getContents().size());
+
+                                        LOGGER.info("Returning result {}", result);
+                                        return Directives.<ListBucketResult>complete(StatusCodes.OK, result, JacksonXmlSupport.<ListBucketResult>marshaller());
+                                    }))));
             return Directives.get(() -> Directives.pathEndOrSingleSlash(() -> listObjects));
         }
     }
 
     public class GetObject implements RouteSupplier {
-        /**
-         * <pre>
-         * Request Syntax
-         * GET /Key+?partNumber=PartNumber
-         *     &response-cache-control=ResponseCacheControl
-         *     &response-content-disposition=ResponseContentDisposition
-         *     &sesponse-content-encoding=ResponseContentEncoding
-         *     &response-content-language=ResponseContentLanguage
-         *     &response-content-type=ResponseContentType
-         *     &response-expires=ResponseExpires
-         *     &versionId=VersionId
-         * HTTP/1.1
-         * Host: Bucket.s3.amazonaws.com
-         * <p>
-         * Response Syntax
-         * HTTP/1.1 200
-         * accept-ranges: AcceptRanges
-         * Cache-Control: CacheControl
-         * Content-Disposition: ContentDisposition
-         * Content-Encoding: ContentEncoding
-         * Content-Language: ContentLanguage
-         * Content-Length: ContentLength
-         * Content-Range: ContentRange
-         * Content-Type: ContentType
-         * Body: data
-         * </pre>
-         *
-         * @return
-         */
         public Route route() {
-            Function<String, Route> getObject = key -> {
-                LOGGER.info("GetObject for key={}", key);
-                String resourceKey = resourceId + "/" + key;
-                CompletableFuture<Optional<LeafResource>> leafResource = persistenceLayer.getById(resourceKey)
-                        .runWith(Sink.headOption(), materialiser)
-                        .toCompletableFuture();
-                Source<HttpResponse, CompletionStage<NotUsed>> responseSource = Source.completionStageSource(token.thenCompose(tk -> leafResource.thenApply(foundLeaf -> foundLeaf
-                        .map(leaf -> client.readSource(tk, leaf).mapMaterializedValue(ignored -> NotUsed.notUsed()))
-                        .map(bss -> bss.map(bs -> HttpResponse.create().withStatus(StatusCodes.OK).withEntity(bs)))
-                        .orElse(Source.single(HttpResponse.create().withStatus(StatusCodes.NOT_FOUND))))));
-                return Directives.completeWithFuture(responseSource.runWith(Sink.head(), materialiser));
-            };
-            return Directives.get(() -> Directives.path(getObject));
+            Function<String, Route> getObject = key ->
+                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("partNumber").map(Integer::parseInt), partNumber -> {
+                        // Get the object (leafResource) if it exists
+                        var pathKey = resourceId + key;
+                        LOGGER.info("GetObject for pathKey={}", pathKey);
+                        Source<LeafResource, NotUsed> resourceStream = persistenceLayer.getById(pathKey);
+
+                        // If there was an object (leafResource) for this request, construct a response
+                        Source<HttpResponse, NotUsed> responseStream = resourceStream
+                                .mapAsync(PARALLELISM, leafResource -> upsertAndGetContentLength(leafResource)
+                                        .thenApply(contentLength -> HttpResponse.create()
+                                                .addHeaders(getDefaultHeadersForFoundResource(leafResource))
+                                                .addHeaders(extractUserMetadataHeaders(leafResource))
+                                                .withStatus(StatusCodes.OK)
+                                                // Return the object data as a chunked stream instead of strict
+                                                .withEntity(HttpEntities.create(
+                                                        LeafResourceContentType.create(leafResource),
+                                                        contentLength,
+                                                        client.readSource(token.join(), leafResource)))));
+
+                        // Concat a default, which after taking the head, will be used if there was no object (leafResource) found for the request
+                        Source<HttpResponse, NotUsed> resourceOrMissing = responseStream
+                                .<NotUsed>concat((Graph<SourceShape<HttpResponse>, NotUsed>) Source.single(HttpResponse.create()
+                                        .addHeaders(getDefaultHeadersForMissingResource())
+                                        .withStatus(StatusCodes.NOT_FOUND)));
+
+                        // Take (preferably) the response for an object that exists, else the 'object not found' default
+                        CompletableFuture<HttpResponse> futureResponse = resourceOrMissing.runWith(Sink.head(), materialiser)
+                                .toCompletableFuture();
+                        return Directives.completeWithFuture(futureResponse);
+                    });
+            return Directives.get(() -> restOfPath(getObject));
         }
     }
 
     public class HeadBucket implements RouteSupplier {
-        /**
-         * <pre>
-         * Request Syntax
-         * HEAD /
-         * HTTP/1.1
-         * Host: Bucket.s3.amazonaws.com
-         * <p>
-         * Response Syntax
-         * HTTP/1.1 200
-         * </pre>
-         *
-         * @return
-         */
         public Route route() {
-            Route headBucket = Directives.complete(StatusCodes.OK);
-            return Directives.head(() -> Directives.pathEndOrSingleSlash(() -> headBucket));
+            Supplier<Route> headBucket = () -> {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("HeadBucket for bucket={}", token.join());
+                }
+
+                return Directives.complete(HttpResponse.create()
+                        .addHeaders(List.of(
+                                LastModified.create(DateTime.create(bucketCreationTime.toInstant().toEpochMilli())),
+                                AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET)
+                        ))
+                        .withStatus(StatusCodes.OK));
+            };
+
+            return Directives.head(() -> Directives.pathEndOrSingleSlash(headBucket));
         }
     }
 
     public class HeadObject implements RouteSupplier {
-        /**
-         * <pre>
-         * Request Syntax
-         * HEAD /Key+?partNumber=PartNumber
-         *     &versionId=VersionId
-         * HTTP/1.1
-         * Host: Bucket.s3.amazonaws.com
-         * <p>
-         * Response Syntax
-         * HTTP/1.1 200
-         * accept-ranges: AcceptRanges
-         * Cache-Control: CacheControl
-         * Content-Disposition: ContentDisposition
-         * Content-Encoding: ContentEncoding
-         * Content-Language: ContentLanguage
-         * Content-Length: ContentLength
-         * Content-Type: application/xml
-         * </pre>
-         *
-         * @return an Akka route completing the request
-         */
         public Route route() {
             Function<String, Route> headObject = key -> {
-                LOGGER.info("HeadObject for key={}", key);
-                CompletableFuture<HttpResponse> status = persistenceLayer.existsById(key)
-                        .thenApply(exists -> {
-                            if (exists) {
-                                return StatusCodes.OK;
-                            } else {
-                                return StatusCodes.NOT_FOUND;
-                            }
+                // Get the object (leafResource) if it exists
+                var pathKey = resourceId + key;
+                LOGGER.info("HeadObject for pathKey={}", pathKey);
+                Source<LeafResource, NotUsed> resourceStream = persistenceLayer.getById(pathKey);
+
+                // If there was an object (leafResource) for this request, construct a response
+                Source<HttpResponse, NotUsed> responseStream = resourceStream
+                        .mapAsync(PARALLELISM, leafResource -> {
+                            LOGGER.info("Found resource {}", leafResource);
+                            return upsertAndGetContentLength(leafResource)
+                                    .thenApply(contentLength -> HttpResponse.create()
+                                            .addHeaders(getDefaultHeadersForFoundResource(leafResource))
+                                            .addHeaders(extractUserMetadataHeaders(leafResource))
+                                            .withStatus(StatusCodes.OK)
+                                            .withEntity(HttpEntities.create(
+                                                    LeafResourceContentType.create(leafResource),
+                                                    contentLength,
+                                                    Source.empty())));
                         })
-                        .thenApply(HttpResponse.create()::withStatus);
-                return Directives.completeWithFuture(status);
+
+                        // Concat a default, which after taking the head, will be used if there was no object (leafResource) found for the request
+                        .<NotUsed>concat((Graph<SourceShape<HttpResponse>, NotUsed>) Source.lazySingle(() -> {
+                            LOGGER.info("Did not find resource");
+                            return HttpResponse.create()
+                                    .addHeaders(getDefaultHeadersForMissingResource())
+                                    .withStatus(StatusCodes.NOT_FOUND);
+                        }));
+
+                // Take (preferably) the response for an object that exists, else the 'object not found' default
+                CompletableFuture<HttpResponse> futureResponse = responseStream.runWith(Sink.head(), materialiser)
+                        .toCompletableFuture();
+                return Directives.completeWithFuture(futureResponse);
             };
-            return Directives.head(() -> Directives.path(headObject));
+            return Directives.head(() -> restOfPath(headObject));
         }
+    }
+
+    private CompletableFuture<Long> upsertAndGetContentLength(final LeafResource leafResource) {
+        return persistenceLayer.getContentLength(leafResource)
+                .thenCompose(maybeLength -> maybeLength
+                        .map(length -> {
+                            LOGGER.info("Got content-length {} for resource {}", length, leafResource);
+                            return CompletableFuture.completedFuture(length);
+                        })
+                        .orElseGet(() -> {
+                            CompletableFuture<Long> contentLengthFuture = client.readSource(token.join(), leafResource)
+                                    .map(ByteString::length)
+                                    .map(Long::valueOf)
+                                    .runWith(Sink.fold(0L, Long::sum), materialiser)
+                                    .toCompletableFuture();
+                            return contentLengthFuture
+                                    .thenApply((Long length) -> {
+                                        LOGGER.info("Calculated and upserting content-length {} for resource {}", length, leafResource);
+                                        return length;
+                                    })
+                                    .thenCompose(length -> persistenceLayer.putContentLength(leafResource, length));
+                        }));
+    }
+
+    protected CompletableFuture<ListEntry> getListEntryForResource(LeafResource resource) {
+        return upsertAndGetContentLength(resource).thenApply(contentLength -> {
+            var entry = new ListEntry();
+
+            // Set the key to the resourceId
+            entry.setKey(resource.getId().replaceFirst(resourceId, ""));
+            // Set the lastModified time to now (or whenever?)
+            entry.setLastModified(bucketCreationTime);
+            // The actual size is unknown because of rule application
+            // We have to read the resource to populate the field
+            entry.setSize(contentLength);
+            // We don't have a concept of storageClasses
+            entry.setStorageClass(StorageClass.UNKNOWN);
+            entry.seteTag(resource.getId());
+            // Set the owner to the user who registered the request
+            CanonicalUser owner = new CanonicalUser();
+            owner.setId(userId);
+            owner.setDisplayName(userId);
+            entry.setOwner(owner);
+
+            return entry;
+        });
+    }
+
+    private List<HttpHeader> getDefaultHeadersForFoundResource(final LeafResource leafResource) {
+        return List.of(
+                LastModified.create(DateTime.create(bucketCreationTime.toInstant().toEpochMilli())),
+                AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET),
+                RawHeader.create("etag", leafResource.getId())
+        );
+    }
+
+    private List<HttpHeader> getDefaultHeadersForMissingResource() {
+        return List.of(
+                LastModified.create(DateTime.create(bucketCreationTime.toInstant().toEpochMilli())),
+                AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET)
+        );
+    }
+
+    private static List<HttpHeader> extractUserMetadataHeaders(final LeafResource leafResource) {
+        return leafResource.getAttributes().entrySet().stream()
+                .map(entry -> RawHeader.create("x-amz-meta-" + entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    private static Route restOfPath(Function<String, Route> inner) {
+        return restOfPath0(inner, new LinkedList<>());
+    }
+
+    private static Route restOfPath0(Function<String, Route> inner, LinkedList<String> segments) {
+        return Directives.concat(Directives.pathEnd(() -> inner.apply(String.join("/", segments))),
+                Directives.pathPrefix(match -> {
+                    segments.addLast(match);
+                    return restOfPath0(inner, segments);
+                }));
     }
 }

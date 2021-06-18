@@ -56,6 +56,7 @@
         <scala.version>2.13</scala.version>
         <akka.version>2.6.10</akka.version>
         <akka.http.version>10.2.1</akka.http.version>
+        <jackson.version>2.11.0</jackson.version>
     </properties>
 
     <dependencies>
@@ -92,8 +93,15 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.10.5</version>
+            <version>${jackson.version}</version>
         </dependency>
+        <dependency>
+            <!-- Jackson Dependency -->
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
         <!--
         ~ Spring
         -->
@@ -166,6 +174,21 @@
                                     <directory>${basedir}/src/contract-tests/resources</directory>
                                 </resource>
                             </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <layout>ZIP</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <configuration>
+                            <classifier>exec</classifier>
                         </configuration>
                     </execution>
                 </executions>

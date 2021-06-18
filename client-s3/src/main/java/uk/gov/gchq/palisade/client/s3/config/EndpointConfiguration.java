@@ -24,6 +24,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import uk.gov.gchq.palisade.client.akka.AkkaClient;
+import uk.gov.gchq.palisade.client.akka.AkkaClient.SSLMode;
+import uk.gov.gchq.palisade.client.s3.repository.ContentLengthRepository;
 import uk.gov.gchq.palisade.client.s3.repository.PersistenceLayer;
 import uk.gov.gchq.palisade.client.s3.repository.ResourceRepository;
 import uk.gov.gchq.palisade.client.s3.web.AkkaHttpServer;
@@ -32,6 +34,7 @@ import uk.gov.gchq.palisade.client.s3.web.S3ServerApi;
 
 import java.net.InetAddress;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 @Configuration
@@ -54,13 +57,14 @@ public class EndpointConfiguration {
     }
 
     @Bean
-    PersistenceLayer persistenceLayer(final ResourceRepository resourceRepository) {
-        return new PersistenceLayer(resourceRepository);
+    PersistenceLayer persistenceLayer(final ResourceRepository resourceRepository, final ContentLengthRepository contentLengthRepository) {
+        return new PersistenceLayer(resourceRepository, contentLengthRepository);
     }
 
     @Bean
     AkkaClient akkaClient(final ActorSystem actorSystem) {
-        return new AkkaClient("192.168.49.2:30249/palisade", "192.168.49.2:30249/filteredResource", actorSystem);
+        return new AkkaClient("192.168.49.2:31097/palisade", "192.168.49.2:31097/filteredResource",
+                Map.of("data-service", "192.168.49.2:31097/data"), actorSystem, SSLMode.NONE);
     }
 
     @Bean

@@ -32,32 +32,31 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
 
     Mono<Boolean> existsById(String id);
 
-    Mono<ResourceEntity> getById(String id);
+    Mono<ResourceEntity> getByResourceId(String id);
 
-    Flux<ResourceEntity> findAllByIdStartingWith(String prefix);
+    Flux<ResourceEntity> findAllByResourceIdStartingWith(String prefix);
 
 
     default CompletableFuture<Boolean> futureExistsById(String id) {
         return existsById(id).toFuture();
     }
 
-    default Source<ResourceEntity, NotUsed> streamGetById(String id) {
-        return Source.fromPublisher(this.getById(id));
+    default Source<ResourceEntity, NotUsed> streamGetByResourceId(String id) {
+        return Source.fromPublisher(this.getByResourceId(id));
     }
 
     default Source<ResourceEntity, NotUsed> streamFindAll() {
         return Source.fromPublisher(this.findAll());
     }
 
-    default Source<ResourceEntity, NotUsed> streamFindAllByIdStartingWith(String prefix) {
-        return Source.fromPublisher(this.findAllByIdStartingWith(prefix));
+    default Source<ResourceEntity, NotUsed> streamFindAllByResourceIdStartingWith(String prefix) {
+        return Source.fromPublisher(this.findAllByResourceIdStartingWith(prefix));
     }
 
     default Sink<ResourceEntity, CompletionStage<Done>> streamSaveAll() {
-        return Sink.foreachAsync(PARALLELISM, entity ->
-                this.save(entity)
-                        .toFuture()
-                        // Downcast to Void
-                        .thenApply(x -> null));
+        return Sink.foreachAsync(PARALLELISM, entity -> this.save(entity)
+                .toFuture()
+                // Downcast to Void
+                .thenApply(x -> null));
     }
 }
