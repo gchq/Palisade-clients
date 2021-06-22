@@ -63,8 +63,8 @@ public class EndpointConfiguration {
 
     @Bean
     AkkaClient akkaClient(final ActorSystem actorSystem) {
-        return new AkkaClient("192.168.49.2:31097/palisade", "192.168.49.2:31097/filteredResource",
-                Map.of("data-service", "192.168.49.2:31097/data"), actorSystem, SSLMode.NONE);
+        return new AkkaClient("192.168.49.2:31069/palisade", "192.168.49.2:31069/filteredResource",
+                Map.of("data-service", "192.168.49.2:31069/data"), actorSystem, SSLMode.NONE);
     }
 
     @Bean

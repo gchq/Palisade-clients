@@ -90,7 +90,9 @@ public class AkkaClient implements Client {
      *
      * @param palisadeUrl         the location of the Palisade Service
      * @param filteredResourceUrl the location of the Filtered Resource Service
+     * @param dataUrlMap          lookup map from the names of Data Services to their locations
      * @param actorSystem         the akka Actor System bean
+     * @param sslMode             whether the client should connect using SSL or not
      */
     public AkkaClient(final String palisadeUrl, final String filteredResourceUrl, final Map<String, String> dataUrlMap, final ActorSystem actorSystem, final SSLMode sslMode) {
         this.palisadeUrl = palisadeUrl;

@@ -18,7 +18,6 @@ package uk.gov.gchq.palisade.client.s3.repository;
 
 import akka.Done;
 import akka.NotUsed;
-import akka.japi.Pair;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;

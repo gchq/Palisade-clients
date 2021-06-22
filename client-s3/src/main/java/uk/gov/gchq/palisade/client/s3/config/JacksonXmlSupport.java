@@ -25,7 +25,6 @@ import akka.http.javadsl.unmarshalling.Unmarshaller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import org.codehaus.jackson.map.util.ISO8601DateFormat;
 
 import java.io.IOException;
 import java.util.Arrays;

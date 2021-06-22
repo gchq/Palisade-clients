@@ -3,7 +3,7 @@ List of third-party dependencies grouped by their license type
 ### [Apache Software License 2.0](./licenses/apache_software_license_2.0.txt):
 * Jackson-annotations ([com.fasterxml.jackson.core:jackson-annotations:2.11.0](http://github.com/FasterXML/jackson))
 * jackson-databind ([com.fasterxml.jackson.core:jackson-databind:2.11.0](http://github.com/FasterXML/jackson))
-* Jackson-dataformat-XML ([com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.5](https://github.com/FasterXML/jackson-dataformat-xml))
+* Jackson-dataformat-XML ([com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.0](https://github.com/FasterXML/jackson-dataformat-xml))
 * Jackson datatype: jdk8 ([com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.0](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jdk8))
 * akka-http-jackson ([com.typesafe.akka:akka-http-jackson_2.13:10.2.1](https://akka.io))
 * akka-http ([com.typesafe.akka:akka-http_2.13:10.2.1](https://akka.io))

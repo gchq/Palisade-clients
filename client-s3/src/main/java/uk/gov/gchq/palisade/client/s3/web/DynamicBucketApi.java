@@ -31,6 +31,7 @@ import akka.http.javadsl.server.Directives;
 import akka.http.javadsl.server.Route;
 import akka.stream.Graph;
 import akka.stream.Materializer;
+import akka.stream.OverflowStrategy;
 import akka.stream.SourceShape;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
@@ -48,11 +49,16 @@ import uk.gov.gchq.palisade.client.s3.repository.PersistenceLayer;
 import uk.gov.gchq.palisade.client.s3.web.S3ServerApi.AwaitingStatus;
 import uk.gov.gchq.palisade.resource.LeafResource;
 
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -175,34 +181,34 @@ public class DynamicBucketApi implements RouteSupplier {
     public class GetObject implements RouteSupplier {
         public Route route() {
             Function<String, Route> getObject = key ->
-                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("partNumber").map(Integer::parseInt), partNumber -> {
+                    Directives.withRangeSupport(() -> {
                         // Get the object (leafResource) if it exists
                         var pathKey = resourceId + key;
                         LOGGER.info("GetObject for pathKey={}", pathKey);
                         Source<LeafResource, NotUsed> resourceStream = persistenceLayer.getById(pathKey);
 
                         // If there was an object (leafResource) for this request, construct a response
-                        Source<HttpResponse, NotUsed> responseStream = resourceStream
-                                .mapAsync(PARALLELISM, leafResource -> upsertAndGetContentLength(leafResource)
-                                        .thenApply(contentLength -> HttpResponse.create()
-                                                .addHeaders(getDefaultHeadersForFoundResource(leafResource))
-                                                .addHeaders(extractUserMetadataHeaders(leafResource))
-                                                .withStatus(StatusCodes.OK)
-                                                // Return the object data as a chunked stream instead of strict
-                                                .withEntity(HttpEntities.create(
-                                                        LeafResourceContentType.create(leafResource),
-                                                        contentLength,
-                                                        client.readSource(token.join(), leafResource)))));
+                        CompletionStage<Optional<HttpResponse>> responseStream = resourceStream
+                                .mapAsync(PARALLELISM, leafResource -> {
+                                    var data = client.readSource(token.join(), leafResource).buffer(65536, OverflowStrategy.backpressure());
+                                    return upsertAndGetContentLength(leafResource)
+                                            .thenApply(contentLength -> HttpResponse.create()
+                                                    .addHeaders(getDefaultHeadersForFoundResource(leafResource))
+                                                    .addHeaders(extractUserMetadataHeaders(leafResource))
+                                                    .withStatus(StatusCodes.OK)
+                                                    // Return the object data as a chunked stream instead of strict
+                                                    .withEntity(HttpEntities.create(
+                                                            LeafResourceContentType.create(leafResource),
+                                                            contentLength,
+                                                            data)));
+                                })
+                                .runWith(Sink.headOption(), materialiser);
 
-                        // Concat a default, which after taking the head, will be used if there was no object (leafResource) found for the request
-                        Source<HttpResponse, NotUsed> resourceOrMissing = responseStream
-                                .<NotUsed>concat((Graph<SourceShape<HttpResponse>, NotUsed>) Source.single(HttpResponse.create()
+                        // Take the response for an object that exists, else create an 'object not found' default
+                        CompletableFuture<HttpResponse> futureResponse = responseStream.toCompletableFuture()
+                                .thenApply(maybeResponse -> maybeResponse.orElseGet(() -> HttpResponse.create()
                                         .addHeaders(getDefaultHeadersForMissingResource())
                                         .withStatus(StatusCodes.NOT_FOUND)));
-
-                        // Take (preferably) the response for an object that exists, else the 'object not found' default
-                        CompletableFuture<HttpResponse> futureResponse = resourceOrMissing.runWith(Sink.head(), materialiser)
-                                .toCompletableFuture();
                         return Directives.completeWithFuture(futureResponse);
                     });
             return Directives.get(() -> restOfPath(getObject));
@@ -230,40 +236,41 @@ public class DynamicBucketApi implements RouteSupplier {
 
     public class HeadObject implements RouteSupplier {
         public Route route() {
-            Function<String, Route> headObject = key -> {
-                // Get the object (leafResource) if it exists
-                var pathKey = resourceId + key;
-                LOGGER.info("HeadObject for pathKey={}", pathKey);
-                Source<LeafResource, NotUsed> resourceStream = persistenceLayer.getById(pathKey);
+            Function<String, Route> headObject = key ->
+                    Directives.withRangeSupport(() -> {
+                        // Get the object (leafResource) if it exists
+                        var pathKey = resourceId + key;
+                        LOGGER.info("HeadObject for pathKey={}", pathKey);
+                        Source<LeafResource, NotUsed> resourceStream = persistenceLayer.getById(pathKey);
 
-                // If there was an object (leafResource) for this request, construct a response
-                Source<HttpResponse, NotUsed> responseStream = resourceStream
-                        .mapAsync(PARALLELISM, leafResource -> {
-                            LOGGER.info("Found resource {}", leafResource);
-                            return upsertAndGetContentLength(leafResource)
-                                    .thenApply(contentLength -> HttpResponse.create()
-                                            .addHeaders(getDefaultHeadersForFoundResource(leafResource))
-                                            .addHeaders(extractUserMetadataHeaders(leafResource))
-                                            .withStatus(StatusCodes.OK)
-                                            .withEntity(HttpEntities.create(
-                                                    LeafResourceContentType.create(leafResource),
-                                                    contentLength,
-                                                    Source.empty())));
-                        })
+                        // If there was an object (leafResource) for this request, construct a response
+                        Source<HttpResponse, NotUsed> responseStream = resourceStream
+                                .mapAsync(PARALLELISM, leafResource -> {
+                                    LOGGER.info("Found resource {}", leafResource);
+                                    return upsertAndGetContentLength(leafResource)
+                                            .thenApply(contentLength -> HttpResponse.create()
+                                                    .addHeaders(getDefaultHeadersForFoundResource(leafResource))
+                                                    .addHeaders(extractUserMetadataHeaders(leafResource))
+                                                    .withStatus(StatusCodes.OK)
+                                                    .withEntity(HttpEntities.create(
+                                                            LeafResourceContentType.create(leafResource),
+                                                            contentLength,
+                                                            Source.empty())));
+                                })
 
-                        // Concat a default, which after taking the head, will be used if there was no object (leafResource) found for the request
-                        .<NotUsed>concat((Graph<SourceShape<HttpResponse>, NotUsed>) Source.lazySingle(() -> {
-                            LOGGER.info("Did not find resource");
-                            return HttpResponse.create()
-                                    .addHeaders(getDefaultHeadersForMissingResource())
-                                    .withStatus(StatusCodes.NOT_FOUND);
-                        }));
+                                // Concat a default, which after taking the head, will be used if there was no object (leafResource) found for the request
+                                .<NotUsed>concat((Graph<SourceShape<HttpResponse>, NotUsed>) Source.lazySingle(() -> {
+                                    LOGGER.info("Did not find resource");
+                                    return HttpResponse.create()
+                                            .addHeaders(getDefaultHeadersForMissingResource())
+                                            .withStatus(StatusCodes.NOT_FOUND);
+                                }));
 
-                // Take (preferably) the response for an object that exists, else the 'object not found' default
-                CompletableFuture<HttpResponse> futureResponse = responseStream.runWith(Sink.head(), materialiser)
-                        .toCompletableFuture();
-                return Directives.completeWithFuture(futureResponse);
-            };
+                        // Take (preferably) the response for an object that exists, else the 'object not found' default
+                        CompletableFuture<HttpResponse> futureResponse = responseStream.runWith(Sink.head(), materialiser)
+                                .toCompletableFuture();
+                        return Directives.completeWithFuture(futureResponse);
+                    });
             return Directives.head(() -> restOfPath(headObject));
         }
     }
@@ -290,7 +297,7 @@ public class DynamicBucketApi implements RouteSupplier {
                         }));
     }
 
-    protected CompletableFuture<ListEntry> getListEntryForResource(LeafResource resource) {
+    protected CompletableFuture<ListEntry> getListEntryForResource(final LeafResource resource) {
         return upsertAndGetContentLength(resource).thenApply(contentLength -> {
             var entry = new ListEntry();
 
@@ -315,17 +322,43 @@ public class DynamicBucketApi implements RouteSupplier {
     }
 
     private List<HttpHeader> getDefaultHeadersForFoundResource(final LeafResource leafResource) {
+        String eTag;
+        try {
+            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+
+            sha.update(token.join().getBytes());
+            sha.update(bucketCreationTime.toString().getBytes());
+            sha.update(leafResource.getId().getBytes());
+            eTag = new String(Base64.getEncoder().encode(sha.digest()), Charset.defaultCharset());
+        } catch (NoSuchAlgorithmException e) {
+            eTag = token.join() + bucketCreationTime.toString() + leafResource.getId();
+        }
+
+        String id2;
+        Instant headerTime = Instant.now();
+        try {
+            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+
+            sha.update(token.join().getBytes());
+            sha.update(bucketCreationTime.toString().getBytes());
+            sha.update(headerTime.toString().getBytes());
+            id2 = new String(Base64.getEncoder().encode(sha.digest()), Charset.defaultCharset());
+        } catch (NoSuchAlgorithmException e) {
+            id2 = token.join() + bucketCreationTime.toString() + headerTime.toString();
+        }
+
         return List.of(
+                // AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET),
                 LastModified.create(DateTime.create(bucketCreationTime.toInstant().toEpochMilli())),
-                AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET),
-                RawHeader.create("etag", leafResource.getId())
+                RawHeader.create("ETag", '"' + eTag + '"'),
+                RawHeader.create("x-amz-id-2", id2)
         );
     }
 
     private List<HttpHeader> getDefaultHeadersForMissingResource() {
         return List.of(
-                LastModified.create(DateTime.create(bucketCreationTime.toInstant().toEpochMilli())),
-                AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET)
+                // AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET),
+                LastModified.create(DateTime.create(bucketCreationTime.toInstant().toEpochMilli()))
         );
     }
 
@@ -335,11 +368,11 @@ public class DynamicBucketApi implements RouteSupplier {
                 .collect(Collectors.toList());
     }
 
-    private static Route restOfPath(Function<String, Route> inner) {
+    private static Route restOfPath(final Function<String, Route> inner) {
         return restOfPath0(inner, new LinkedList<>());
     }
 
-    private static Route restOfPath0(Function<String, Route> inner, LinkedList<String> segments) {
+    private static Route restOfPath0(final Function<String, Route> inner, final LinkedList<String> segments) {
         return Directives.concat(Directives.pathEnd(() -> inner.apply(String.join("/", segments))),
                 Directives.pathPrefix(match -> {
                     segments.addLast(match);

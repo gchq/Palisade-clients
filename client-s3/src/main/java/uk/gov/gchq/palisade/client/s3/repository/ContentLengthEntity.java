@@ -68,7 +68,8 @@ public class ContentLengthEntity implements Serializable, Persistable<String> {
      * Constructor used for the Database that takes a Resource and extracts the values
      * Used for inserting objects into the backing store
      *
-     * @param resource specified to insert into the backing store
+     * @param resource      specified to insert into the backing store
+     * @param contentLength predicted length of this remote datafile
      */
     public ContentLengthEntity(final Resource resource, final Long contentLength) {
         this(

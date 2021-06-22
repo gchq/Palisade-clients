@@ -19,7 +19,6 @@ package uk.gov.gchq.palisade.client.s3.config;
 import io.r2dbc.spi.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -30,7 +29,6 @@ import org.springframework.data.r2dbc.connectionfactory.init.ResourceDatabasePop
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.lang.NonNull;
-
 
 import uk.gov.gchq.palisade.client.s3.repository.ResourceConverter;
 
