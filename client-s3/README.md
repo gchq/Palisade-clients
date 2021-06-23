@@ -53,7 +53,7 @@ spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", "accesskey")
 spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", "secretkey")
 // spark.read.format("avro").load("s3a://" + token + "/with-policy/employee_small.avro").show()
 val nonrecursive = scala.io.Source.fromFile("/schema/nonrecursive.json").mkString
-spark.read.format("avro").option("avroSchema", nonrecursive).load("s3a://" + token + "/data/employee_file0.avro").show()
+spark.read.format("avro").option("avroSchema", nonrecursive).option("mode", "FAILFAST").load("s3a://" + token + "/data/employee_file0.avro").show()
 ```
 
 The client currently requires hard-coding the Palisade services URLs in the `EndpointConfiguration`.

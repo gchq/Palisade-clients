@@ -29,7 +29,7 @@ class LeafResourceContentType {
     public static MediaType.Binary mediaType(final String mediaTypeStr) {
         String[] parts = mediaTypeStr.split("/");
         if (parts.length != 2) {
-            throw new IllegalArgumentException("Parts for format '" + mediaTypeStr + "' was greater than two: " + Arrays.toString(parts));
+            throw new IllegalArgumentException("Parts for format '" + mediaTypeStr + "' was now two: " + Arrays.toString(parts));
         }
         String mainType = parts[0];
         String subType = parts[1];
