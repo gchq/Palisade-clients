@@ -13,10 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --->
+# <img src="../logos/logo.svg" width="180">
+
+## A Tool for Complex and Scalable Data Access Policy Enforcement
 
 # Palisade Shell
 
-The Palisade Shell provides a interactive CLI REPL for access to a cluster and its resources.
+The Palisade Shell provides an interactive CLI REPL for access to a cluster and its resources.
 Due to the interactive nature of the shell, it is recommended to get familiar with the example setup from [Palisade examples](https://github.com/gchq/Palisade-examples/), and the [example-library](https://github.com/gchq/Palisade-examples/tree/develop/example-library) in particular.
 
 > :information_source:

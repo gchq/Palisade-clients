@@ -18,16 +18,21 @@
 
 # <img src="logos/logo.svg" width="180">
 
-### Scalable Data Access Policy Management and Enforcement
+## A Tool for Complex and Scalable Data Access Policy Enforcement
 
-## Status
-<span style="color:red">
-This is not the main Palisade Repository, this is the Repository for Palisade Common. For more information, please visit Palisade
-</span>
+# Palisade Clients
 
-## Documentation
+## Client Implementations
 
-The documentation for the latest release can be found [here](https://gchq.github.io/Palisade).
+The job of the client code is to send the request for data into Palisade and to interpret the result as required for the data processing technology it is written for.
+The responsibility for implementations of the client code is to provide users with a way to request data from Palisade in a way that the user has to make minimal changes to how they would normally use that processing technology.
+Implementations of this component will usually require deep understanding of the data processing technology in order to best hook into that technology, without needing to fork the code for that technology.
+
+To find out more information on our technology specific clients, please see the following modules:
+* [Akka Client](client-akka/README.md)
+* [Fuse Client](client-fuse/README.md)
+* [Java Client](client-java/README.md)
+* [Shell Client](client-shell/README.md)
 
 
 ### Prerequisites
@@ -43,14 +48,22 @@ We do not currently support Windows as a build environment, If you are running o
 
 ## Getting started
 
-To get started, clone the Palisade Common repo: 
+To get started, clone the Palisade Clients repository: 
 
 ```bash
 git clone https://github.com/gchq/Palisade-clients.git
 cd Palisade-clients
 ```
 
-You are then ready to build with Maven:
+You should see the following modules:
+```bash
+>> ls
+ drwxrwxrwx client-akka
+ drwxrwxrwx client-fuse
+ drwxrwxrwx client-java
+ drwxrwxrwx client-shell
+```
+Now you can finally build the repository by running: 
 ```bash
 mvn install
 ```
@@ -60,20 +73,10 @@ mvn install
 
 Palisade-clients is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0) and is covered by [Crown Copyright](https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/copyright-and-re-use/crown-copyright/).
 
-
 ## Contributing
 We welcome contributions to the project. Detailed information on our ways of working can be found [here](https://gchq.github.io/Palisade/doc/other/ways_of_working.html).
 
-
 ## FAQ
 
-What versions of Java are supported? We are currently using Java 11.
-
-
-# Client Implementations
-
-The job of the client code is to send the request for data into Palisade and to interpret the result as required for the data processing technology it is written for.
-The responsibility for implementations of the client code is to provide users with a way to request data from Palisade in a way that the user has to make minimal changes to how they would normally use that processing technology.
-Implementations of this component will usually require deep understanding of the data processing technology in order to best hook into that technology, without needing to fork the code for that technology.
-
-To find out more information on the Java Client, visit the modules [README.](client-java/README.md)
+Q: What versions of Java are supported?  
+A: We are currently using Java 11.
