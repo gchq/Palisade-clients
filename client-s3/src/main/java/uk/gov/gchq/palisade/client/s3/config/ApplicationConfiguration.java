@@ -32,8 +32,8 @@ import uk.gov.gchq.palisade.client.s3.repository.ContentLengthRepository;
 import uk.gov.gchq.palisade.client.s3.repository.PersistenceLayer;
 import uk.gov.gchq.palisade.client.s3.repository.ResourceRepository;
 import uk.gov.gchq.palisade.client.s3.web.AkkaHttpServer;
-import uk.gov.gchq.palisade.client.s3.web.RouteSupplier;
 import uk.gov.gchq.palisade.client.s3.web.DynamicS3ServerApi;
+import uk.gov.gchq.palisade.client.s3.web.RouteSupplier;
 
 import java.net.InetAddress;
 import java.util.Collection;
