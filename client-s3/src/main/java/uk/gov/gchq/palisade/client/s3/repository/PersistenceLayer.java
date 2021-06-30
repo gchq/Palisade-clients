@@ -39,6 +39,12 @@ public class PersistenceLayer {
     private final ResourceRepository resourceRepository;
     private final ContentLengthRepository contentLengthRepository;
 
+    /**
+     * Construct a new {@link PersistenceLayer} to manage the multiple repositories.
+     *
+     * @param resourceRepository      the repository holding the resource metadata
+     * @param contentLengthRepository the repository storing resource content-lengths only
+     */
     public PersistenceLayer(final ResourceRepository resourceRepository, final ContentLengthRepository contentLengthRepository) {
         this.resourceRepository = resourceRepository;
         this.contentLengthRepository = contentLengthRepository;

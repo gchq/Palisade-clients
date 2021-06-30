@@ -27,7 +27,7 @@ import uk.gov.gchq.palisade.resource.LeafResource;
 
 import java.util.Arrays;
 
-class LeafResourceContentType {
+final class LeafResourceContentType {
     private static final Logger LOGGER = LoggerFactory.getLogger(LeafResourceContentType.class);
 
     private LeafResourceContentType() {

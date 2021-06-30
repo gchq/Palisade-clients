@@ -34,7 +34,7 @@ import java.util.List;
  * Configure Jackson for XML serialisation and deserialisation.
  * S3 is built on XML for message request/response types, whereas Jackson defaults to JSON.
  */
-public class JacksonXmlSupport {
+public final class JacksonXmlSupport {
     private static final List<MediaType> XML_MEDIA_TYPES = Arrays.asList(MediaTypes.APPLICATION_XML, MediaTypes.TEXT_XML);
     private static final ObjectMapper DEFAULT_XML_MAPPER = new XmlMapper()
             .enable(SerializationFeature.WRAP_ROOT_VALUE);
