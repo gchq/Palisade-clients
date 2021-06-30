@@ -20,11 +20,14 @@ import akka.actor.ActorSystem;
 import akka.stream.Materializer;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.client.akka.AkkaClient;
 import uk.gov.gchq.palisade.client.akka.AkkaClient.SSLMode;
+import uk.gov.gchq.palisade.client.s3.config.EndpointConfiguration.ClientMap;
 import uk.gov.gchq.palisade.client.s3.repository.ContentLengthRepository;
 import uk.gov.gchq.palisade.client.s3.repository.PersistenceLayer;
 import uk.gov.gchq.palisade.client.s3.repository.ResourceRepository;
@@ -38,7 +41,29 @@ import java.util.Map;
 import java.util.Optional;
 
 @Configuration
+@EnableConfigurationProperties(ClientMap.class)
 public class EndpointConfiguration {
+
+    @ConfigurationProperties(prefix = "web")
+    static class ClientMap {
+        private Map<String, String> client;
+
+        @Generated
+        public Map<String, String> getClient() {
+            return client;
+        }
+
+        @Generated
+        public String getClient(final String key) {
+            return client.get(key);
+        }
+
+        @Generated
+        public void setClient(final Map<String, String> client) {
+            this.client = Optional.ofNullable(client)
+                    .orElseThrow(() -> new IllegalArgumentException("client cannot be null"));
+        }
+    }
 
     /**
      * The HTTP server will serve forever on the supplied {@code server.host} and {@code server.port}
@@ -62,9 +87,9 @@ public class EndpointConfiguration {
     }
 
     @Bean
-    AkkaClient akkaClient(final ActorSystem actorSystem) {
-        return new AkkaClient("192.168.49.2:31340/palisade", "192.168.49.2:31340/filteredResource",
-                Map.of("data-service", "192.168.49.2:31340/data"), actorSystem, SSLMode.NONE);
+    AkkaClient akkaClient(final ActorSystem actorSystem, final ClientMap clientMap) {
+        return new AkkaClient(clientMap.getClient("palisade-service"), clientMap.getClient("filtered-resource-service"),
+                Map.copyOf(clientMap.getClient()), actorSystem, SSLMode.NONE);
     }
 
     @Bean

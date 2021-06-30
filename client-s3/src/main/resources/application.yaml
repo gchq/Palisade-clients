@@ -34,3 +34,8 @@ spring:
 server:
   port: 8092
   address: "0.0.0.0"
+
+web.client:
+  palisade-service: ""
+  filtered-resource-service: ""
+  data-service: ""

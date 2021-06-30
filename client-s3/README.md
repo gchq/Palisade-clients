@@ -26,6 +26,11 @@
 
 Presents an S3-compliant API wrapping a Palisade deployment.
 
+## Configuration
+The client should be configured using the `palisade-service`, `filtered-resource-service` and (with any appropriate change for the actual service-name) `data-service` fields under the `web.client` yaml configuration property.
+Defaults can be found [here](src/main/resources/application.yaml).
+
+## Usage
 Given a Spark job running against AWS S3 as follows:
 ```
 spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "http://s3.eu-west-2.amazonaws.com/")
@@ -37,7 +42,8 @@ spark.read.format("avro").option("avroSchema", nonrecursive).load("s3a://palisad
 ```
 _Note that we use a modified non-recursive AVRO schema `/schema/nonrecursive.json` (this excludes the managers field) as recursive schema are not compatible with Spark SQL._
 
-Adapt the Spark job to run against the Palisade S3 client:
+Adapt the Spark job to run against the Palisade S3 client (ensure the client is running and correctly configured).
+This short snippet requires `curl`, but otherwise works wholly within `spark-shell` and the `s3` and `avro` libraries as the previous did:
 ```scala
 import sys.process._;
 // User 'Alice' wants 'file:/data/local-data-store/' directory for 'SALARY' purposes
@@ -53,7 +59,5 @@ spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", "accesskey")
 spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", "secretkey")
 // spark.read.format("avro").load("s3a://" + token + "/with-policy/employee_small.avro").show()
 val nonrecursive = scala.io.Source.fromFile("/schema/nonrecursive.json").mkString
-spark.read.format("avro").option("avroSchema", nonrecursive).option("mode", "FAILFAST").load("s3a://" + token + "/data/employee_file0.avro").show()
+spark.read.format("avro").option("avroSchema", nonrecursive).load("s3a://" + token + "/data/employee_file0.avro").show()
 ```
-
-The client currently requires hard-coding the Palisade services URLs in the `EndpointConfiguration`.
