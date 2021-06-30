@@ -16,6 +16,7 @@
 
 package uk.gov.gchq.palisade.client.s3.web;
 
+import akka.http.javadsl.marshallers.jackson.Jackson;
 import akka.http.javadsl.model.HttpResponse;
 import akka.http.javadsl.model.StatusCodes;
 import akka.http.javadsl.server.Directives;
@@ -32,22 +33,41 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class S3ServerApi implements RouteSupplier {
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3ServerApi.class);
+/**
+ * Main interface from REST into the s3-client server, allowing registering requests - /register.
+ * These requests return a token, which is used as the bucket-name - /request/{bucket-name}.
+ */
+public class DynamicS3ServerApi implements RouteSupplier {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamicS3ServerApi.class);
     protected AkkaClient client;
     protected Materializer materialiser;
     protected PersistenceLayer persistenceLayer;
 
-    protected Map<String, DynamicBucketApi> dynamicBuckets = new ConcurrentHashMap<>();
+    protected Map<String, S3BucketApi> dynamicBuckets = new ConcurrentHashMap<>();
 
+    /**
+     * The state of a registered bucket:
+     * {@link AwaitingStatus#TOKEN} if waiting for the token from the Palisade Service
+     * {@link AwaitingStatus#RESOURCES} if waiting for more resources from the Filtered-Resource Service
+     * {@link AwaitingStatus#PERSISTENCE} if waiting for the stream of returned resources to be saved to persistence
+     * {@link AwaitingStatus#DONE} once everything is done
+     */
     public enum AwaitingStatus {
+        UNKNOWN,
         TOKEN,
         RESOURCES,
         PERSISTENCE,
         DONE
     }
 
-    public S3ServerApi(final AkkaClient client, final Materializer materialiser, final PersistenceLayer persistenceLayer) {
+    /**
+     * Construct a new instance of the server.
+     *
+     * @param client           the configured AkkaClient to connect to Palisade
+     * @param materialiser     an Akka materialiser for running connected Sources and Sinks
+     * @param persistenceLayer persistence for the returned resource metadata from the Filtered-Resource Service (as well as Content-Length hints)
+     */
+    public DynamicS3ServerApi(final AkkaClient client, final Materializer materialiser, final PersistenceLayer persistenceLayer) {
         this.client = client;
         this.materialiser = materialiser;
         this.persistenceLayer = persistenceLayer;
@@ -58,7 +78,7 @@ public class S3ServerApi implements RouteSupplier {
         return Directives.concat(serverRequest(), bucketRequest());
     }
 
-    public Route serverRequest() {
+    private Route serverRequest() {
         return Directives.post(() ->
                 Directives.pathPrefix("register", () ->
                         Directives.extract(ctx -> ctx.getRequest().getUri().query().toMap(), context ->
@@ -66,25 +86,25 @@ public class S3ServerApi implements RouteSupplier {
                                         .thenApply(token -> HttpResponse.create().withStatus(StatusCodes.CREATED).withEntity(token))))));
     }
 
-    public Route bucketRequest() {
+    private Route bucketRequest() {
         return Directives.pathPrefix("request",
                 () -> Directives.pathPrefix(bucket -> Optional.ofNullable(dynamicBuckets.get(bucket))
                         .map(RouteSupplier::route)
-                        .orElse(Directives.complete(StatusCodes.NOT_FOUND))));
+                        .orElse(Directives.complete(StatusCodes.NOT_FOUND, dynamicBucketStatus(bucket), Jackson.marshaller()))));
     }
 
-    public CompletableFuture<String> registerDynamicBucket(final String userId, final String resourceId, final Map<String, String> context) {
+    private CompletableFuture<String> registerDynamicBucket(final String userId, final String resourceId, final Map<String, String> context) {
         LOGGER.info("Register dynamic bucket for {} {} {}", userId, resourceId, context);
-        var bucket = new DynamicBucketApi(client, materialiser, persistenceLayer, userId, resourceId, context);
-        return bucket.token.thenApply(token -> {
+        var bucket = new S3BucketApi(client, materialiser, persistenceLayer, userId, resourceId, context);
+        return bucket.token.thenApply((String token) -> {
             LOGGER.info("Registered bucket for token {}", token);
             dynamicBuckets.put(token, bucket);
             return token;
         });
     }
 
-    public AwaitingStatus dynamicBucketStatus(final String token) {
-        return dynamicBuckets.get(token).getStatus();
+    private AwaitingStatus dynamicBucketStatus(final String token) {
+        return Optional.ofNullable(dynamicBuckets.get(token)).map(S3BucketApi::getStatus).orElse(AwaitingStatus.UNKNOWN);
     }
 
 }

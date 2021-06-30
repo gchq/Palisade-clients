@@ -27,32 +27,80 @@ import reactor.core.publisher.Mono;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+/**
+ * Repository for storing/caching resources as they are returned from the Filtered-Resource Service.
+ */
 public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntity, String> {
     int PARALLELISM = 1;
 
+    /**
+     * Is there a resource matching the requested resourceId.
+     *
+     * @param id the resourceId to search for
+     * @return true if the resource exists, false otherwise
+     */
     Mono<Boolean> existsById(String id);
 
+    /**
+     * Get a resource matching the requested resourceId.
+     *
+     * @param id the resourceId to search for
+     * @return a {@link ResourceEntity} containing the resource if the resource exists
+     */
     Mono<ResourceEntity> getByResourceId(String id);
 
+    /**
+     * Find all resources stored where the id begins with the given prefix.
+     *
+     * @param prefix the prefix for resourceIds to search for
+     * @return all resources that matched the prefix
+     */
     Flux<ResourceEntity> findAllByResourceIdStartingWith(String prefix);
 
-
+    /**
+     * Is there a resource matching the requested resourceId.
+     *
+     * @param id the resourceId to search for
+     * @return true if the resource exists, false otherwise
+     */
     default CompletableFuture<Boolean> futureExistsById(String id) {
         return existsById(id).toFuture();
     }
 
+    /**
+     * Get a resource matching the requested resourceId.
+     *
+     * @param id the resourceId to search for
+     * @return a {@link ResourceEntity} containing the resource if the resource exists, {@link Source#empty()} otherwise
+     */
     default Source<ResourceEntity, NotUsed> streamGetByResourceId(String id) {
         return Source.fromPublisher(this.getByResourceId(id));
     }
 
+    /**
+     * Find all resources stored.
+     *
+     * @return all resources stored in persistence
+     */
     default Source<ResourceEntity, NotUsed> streamFindAll() {
         return Source.fromPublisher(this.findAll());
     }
 
+    /**
+     * Find all resources stored where the id begins with the given prefix.
+     *
+     * @param prefix the prefix for resourceIds to search for
+     * @return all resources that matched the prefix
+     */
     default Source<ResourceEntity, NotUsed> streamFindAllByResourceIdStartingWith(String prefix) {
         return Source.fromPublisher(this.findAllByResourceIdStartingWith(prefix));
     }
 
+    /**
+     * Get a {@link Sink} for writing resources to persistence.
+     *
+     * @return a {@link Sink} to be piped into to save resources to persistence
+     */
     default Sink<ResourceEntity, CompletionStage<Done>> streamSaveAll() {
         return Sink.foreachAsync(PARALLELISM, entity -> this.save(entity)
                 .toFuture()

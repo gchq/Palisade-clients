@@ -16,6 +16,9 @@
 
 package uk.gov.gchq.palisade.client.s3.domain;
 
+/**
+ * S3 model for the 'StorageClass' XML schema.
+ */
 public enum StorageClass {
 
     STANDARD,
@@ -23,10 +26,20 @@ public enum StorageClass {
     GLACIER,
     UNKNOWN;
 
+    /**
+     * Convert from Enum to String.
+     *
+     * @return a {@link String} representation of the {@link StorageClass}
+     */
     public String value() {
         return name();
     }
 
+    /**
+     * Convert from String to Enum.
+     *
+     * @return a {@link StorageClass}
+     */
     public static StorageClass fromValue(final String v) {
         return valueOf(v);
     }

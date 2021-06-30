@@ -26,9 +26,9 @@ import uk.gov.gchq.palisade.resource.ParentResource;
  * This includes, for any given persisted resource, its parent id, which will also be persisted.
  * Erase parent when storing JSON, it will be rebuilt using the repository.
  */
-// Must be abstract class, not interface, to be used as mixin
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
-@SuppressWarnings("java:S1610")
+// Must be abstract class, not interface, to be used as mixin
+@SuppressWarnings({"java:S1610", "java:S1694"})
 public abstract class AbstractOrphanedChildJsonMixin {
     /**
      * Ignore the parent field when serialising to JSON.

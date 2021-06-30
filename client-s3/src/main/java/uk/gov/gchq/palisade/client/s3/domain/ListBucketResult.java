@@ -26,6 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
+/**
+ * S3 model for the 'ListBucketResult' XML schema.
+ */
+// Schema specifies field 'isTruncated', not 'truncated'
+@SuppressWarnings("java:S2047")
 @JacksonXmlRootElement(localName = "ListBucketResult", namespace = "http://s3.amazonaws.com/doc/2006-03-01/")
 public class ListBucketResult {
 

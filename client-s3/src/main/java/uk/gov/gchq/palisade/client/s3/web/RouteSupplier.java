@@ -22,5 +22,10 @@ import akka.http.javadsl.server.Route;
  * Interface for supplying akka routes
  */
 public interface RouteSupplier {
+    /**
+     * Get a {@link Route} to bind to an akka-http server
+     *
+     * @return a new {@link Route}
+     */
     Route route();
 }

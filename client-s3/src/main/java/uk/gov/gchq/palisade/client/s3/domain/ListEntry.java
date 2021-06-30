@@ -24,6 +24,9 @@ import uk.gov.gchq.palisade.Generated;
 import java.util.Date;
 import java.util.StringJoiner;
 
+/**
+ * S3 model for the 'ListEntry' XML schema.
+ */
 public class ListEntry {
 
     @JsonProperty(value = "Key", required = true)
@@ -61,12 +64,12 @@ public class ListEntry {
     }
 
     @Generated
-    public String geteTag() {
+    public String getETag() {
         return eTag;
     }
 
     @Generated
-    public void seteTag(final String eTag) {
+    public void setETag(final String eTag) {
         this.eTag = eTag;
     }
 

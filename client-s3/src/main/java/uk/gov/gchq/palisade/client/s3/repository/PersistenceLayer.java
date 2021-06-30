@@ -31,6 +31,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+/**
+ * Handles both the {@link ResourceRepository} and {@link ContentLengthRepository}, providing metadata on available resources
+ */
 public class PersistenceLayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(PersistenceLayer.class);
     private final ResourceRepository resourceRepository;
@@ -41,28 +44,57 @@ public class PersistenceLayer {
         this.contentLengthRepository = contentLengthRepository;
     }
 
+    /**
+     * Get whether a resource exists for the given id.
+     *
+     * @param resourceId the resourceId to search for
+     * @return true if it exists, false otherwise
+     * @apiNote this may on future calls return true if/when the resource is returned by the Filtered-Resource Service
+     */
     public CompletableFuture<Boolean> existsById(final String resourceId) {
         return resourceRepository.futureExistsById(resourceId);
     }
 
+    /**
+     * Get a resource by its id.
+     *
+     * @param resourceId the resourceId to search for
+     * @return the {@link LeafResource}, or {@link Source#empty()} if it did not exist
+     */
     public Source<LeafResource, NotUsed> getById(final String resourceId) {
         return resourceRepository.streamGetByResourceId(resourceId)
                 .map(ResourceEntity::getResource)
                 .map(LeafResource.class::cast);
     }
 
+    /**
+     * Get all resources stored.
+     *
+     * @return a {@link Source} of all resources stored
+     */
     public Source<LeafResource, NotUsed> getResources() {
         return resourceRepository.streamFindAll()
                 .map(ResourceEntity::getResource)
                 .map(LeafResource.class::cast);
     }
 
+    /**
+     * Get all resources stored where the id matches some prefix.
+     *
+     * @param resourcePrefix the porefix for the id to search for
+     * @return a {@link Source} of all resources stored matching the prefix
+     */
     public Source<LeafResource, NotUsed> getResourcesByPrefix(final String resourcePrefix) {
         return resourceRepository.streamFindAllByResourceIdStartingWith(resourcePrefix)
                 .map(ResourceEntity::getResource)
                 .map(LeafResource.class::cast);
     }
 
+    /**
+     * Get a {@link Sink} for writing resources to persistence.
+     *
+     * @return a {@link Sink} to be piped into to save resources to persistence
+     */
     public Sink<LeafResource, CompletionStage<Done>> putResources() {
         return Flow.<LeafResource>create()
                 .map((LeafResource leafResource) -> {
@@ -73,14 +105,29 @@ public class PersistenceLayer {
                 .toMat(resourceRepository.streamSaveAll(), Keep.right());
     }
 
+    /**
+     * Get the content-length for a resource, if it can be found.
+     *
+     * @param resource the resource to get the content-length of
+     * @return the length, if it was found
+     */
+    // Only LeafResources have content, so only they have a content-length, do not use a Resource here
+    @SuppressWarnings("java:S3242")
     public CompletableFuture<Optional<Long>> getContentLength(final LeafResource resource) {
         return contentLengthRepository.futureGetByResourceId(resource.getId())
                 .thenApply(entity -> entity.map(ContentLengthEntity::getContentLength));
     }
 
+    /**
+     * Set the content-length for a resource.
+     *
+     * @param leafResource the resource to set the length for
+     * @param contentLength the length of the resource
+     * @return the stored length, once it has been saved successfully
+     */
     public CompletableFuture<Long> putContentLength(final LeafResource leafResource, final Long contentLength) {
         return contentLengthRepository.futureSave(new ContentLengthEntity(leafResource, contentLength))
-                .thenApply(entity -> {
+                .thenApply((ContentLengthEntity entity) -> {
                     LOGGER.info("Persisting content-length entity {}", entity);
                     return entity.getContentLength();
                 });

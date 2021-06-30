@@ -31,7 +31,6 @@ import akka.http.javadsl.server.Directives;
 import akka.http.javadsl.server.Route;
 import akka.stream.Graph;
 import akka.stream.Materializer;
-import akka.stream.OverflowStrategy;
 import akka.stream.SourceShape;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
@@ -46,7 +45,7 @@ import uk.gov.gchq.palisade.client.s3.domain.ListBucketResult;
 import uk.gov.gchq.palisade.client.s3.domain.ListEntry;
 import uk.gov.gchq.palisade.client.s3.domain.StorageClass;
 import uk.gov.gchq.palisade.client.s3.repository.PersistenceLayer;
-import uk.gov.gchq.palisade.client.s3.web.S3ServerApi.AwaitingStatus;
+import uk.gov.gchq.palisade.client.s3.web.DynamicS3ServerApi.AwaitingStatus;
 import uk.gov.gchq.palisade.resource.LeafResource;
 
 import java.nio.charset.Charset;
@@ -66,8 +65,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DynamicBucketApi implements RouteSupplier {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DynamicBucketApi.class);
+/**
+ * A {@link RouteSupplier} for the server which dynamically creates  a single S3-compliant bucket endpoint.
+ * These are created fom a userId, resourceId and context, which will be used later by the class
+ * for registering a request with Palisade.
+ */
+public class S3BucketApi implements RouteSupplier {
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketApi.class);
     private static final int PARALLELISM = 1;
 
     protected final Date bucketCreationTime = Date.from(Instant.now());
@@ -86,8 +90,18 @@ public class DynamicBucketApi implements RouteSupplier {
     protected CompletableFuture<Source<LeafResource, CompletionStage<NotUsed>>> resources;
     protected CompletableFuture<Done> persistence;
 
-    public DynamicBucketApi(final AkkaClient client, final Materializer materialiser, final PersistenceLayer persistenceLayer,
-                            final String userId, final String resourceId, final Map<String, String> context) {
+    /**
+     * Construct a new instance of the S3BucketAPI endpoint.
+     *
+     * @param client           the configured AkkaClient to connect to Palisade
+     * @param materialiser     an Akka materialiser for running connected Sources and Sinks
+     * @param persistenceLayer persistence for the returned resource metadata from the Filtered-Resource Service (as well as Content-Length hints)
+     * @param userId           the userId to register the request with
+     * @param resourceId       the resourceId that will be used as the root directory of the bucket, used for registering the request
+     * @param context          the context map of key-value pairs to register the request with
+     */
+    public S3BucketApi(final AkkaClient client, final Materializer materialiser, final PersistenceLayer persistenceLayer,
+                       final String userId, final String resourceId, final Map<String, String> context) {
         this.client = client;
         this.materialiser = materialiser;
         this.persistenceLayer = persistenceLayer;
@@ -101,6 +115,15 @@ public class DynamicBucketApi implements RouteSupplier {
         this.persistence = this.resources.thenCompose(stream -> stream.runWith(this.persistenceLayer.putResources(), this.materialiser));
     }
 
+    /**
+     * Get the state of this bucket, indicating what part of Palisade is being waited on before the result set is complete.
+     *
+     * @return an {@link AwaitingStatus}, indicating what part of Palisade is being waited on:
+     * {@link AwaitingStatus#TOKEN} if waiting for the token from the Palisade Service
+     * {@link AwaitingStatus#RESOURCES} if waiting for more resources from the Filtered-Resource Service
+     * {@link AwaitingStatus#PERSISTENCE} if waiting for the stream of returned resources to be saved to persistence
+     * {@link AwaitingStatus#DONE} once everything is done
+     */
     public AwaitingStatus getStatus() {
         if (!this.token.isDone()) {
             return AwaitingStatus.TOKEN;
@@ -123,12 +146,16 @@ public class DynamicBucketApi implements RouteSupplier {
                 .orElseThrow(() -> new IllegalArgumentException("No route suppliers found to create API server bindings."));
     }
 
+    /**
+     * Implementation of the S3 'ListObjectsV2' request.
+     */
     public class ListObjectsV2 implements RouteSupplier {
+        @Override
         public Route route() {
-            Route listObjects = Directives.extract(ctx -> ctx.getRequest().getUri().query().get("continuation-token"), continuationToken ->
-                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("delimiter").orElse("/"), delimiter ->
-                            Directives.extract(ctx -> ctx.getRequest().getUri().query().get("max-keys").map(Integer::valueOf).orElse(1_000), maxKeys ->
-                                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("prefix"), prefix -> {
+            Route listObjects = Directives.extract(ctx -> ctx.getRequest().getUri().query().get("continuation-token"), (Optional<String> continuationToken) ->
+                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("delimiter").orElse("/"), (String delimiter) ->
+                            Directives.extract(ctx -> ctx.getRequest().getUri().query().get("max-keys").map(Integer::valueOf).orElse(1_000), (Integer maxKeys) ->
+                                    Directives.extract(ctx -> ctx.getRequest().getUri().query().get("prefix"), (Optional<String> prefix) -> {
                                         var pathPrefix = prefix.map(p -> resourceId + p);
                                         LOGGER.info("ListBucketV2 for continuationToken={} maxKeys={}, pathPrefix={}", continuationToken, maxKeys, pathPrefix);
 
@@ -178,7 +205,11 @@ public class DynamicBucketApi implements RouteSupplier {
         }
     }
 
+    /**
+     * Implementation of the S3 'GetObject' request.
+     */
     public class GetObject implements RouteSupplier {
+        @Override
         public Route route() {
             Function<String, Route> getObject = key ->
                     Directives.withRangeSupport(() -> {
@@ -189,9 +220,9 @@ public class DynamicBucketApi implements RouteSupplier {
 
                         // If there was an object (leafResource) for this request, construct a response
                         CompletionStage<Optional<HttpResponse>> responseStream = resourceStream
-                                .mapAsync(PARALLELISM, leafResource -> {
-                                    var data = client.readSource(token.join(), leafResource).buffer(65536, OverflowStrategy.backpressure());
-                                    return upsertAndGetContentLength(leafResource)
+                                .mapAsync(PARALLELISM, (LeafResource leafResource) -> {
+                                    var data = client.readSource(token.join(), leafResource);
+                                    return insertAndGetContentLength(leafResource)
                                             .thenApply(contentLength -> HttpResponse.create()
                                                     .addHeaders(getDefaultHeadersForFoundResource(leafResource))
                                                     .addHeaders(extractUserMetadataHeaders(leafResource))
@@ -215,7 +246,11 @@ public class DynamicBucketApi implements RouteSupplier {
         }
     }
 
+    /**
+     * Implementation of the S3 'HeadBucket' request.
+     */
     public class HeadBucket implements RouteSupplier {
+        @Override
         public Route route() {
             Supplier<Route> headBucket = () -> {
                 if (LOGGER.isInfoEnabled()) {
@@ -234,7 +269,11 @@ public class DynamicBucketApi implements RouteSupplier {
         }
     }
 
+    /**
+     * Implementation of the S3 'HeadObject' request.
+     */
     public class HeadObject implements RouteSupplier {
+        @Override
         public Route route() {
             Function<String, Route> headObject = key ->
                     Directives.withRangeSupport(() -> {
@@ -245,9 +284,9 @@ public class DynamicBucketApi implements RouteSupplier {
 
                         // If there was an object (leafResource) for this request, construct a response
                         Source<HttpResponse, NotUsed> responseStream = resourceStream
-                                .mapAsync(PARALLELISM, leafResource -> {
+                                .mapAsync(PARALLELISM, (LeafResource leafResource) -> {
                                     LOGGER.info("Found resource {}", leafResource);
-                                    return upsertAndGetContentLength(leafResource)
+                                    return insertAndGetContentLength(leafResource)
                                             .thenApply(contentLength -> HttpResponse.create()
                                                     .addHeaders(getDefaultHeadersForFoundResource(leafResource))
                                                     .addHeaders(extractUserMetadataHeaders(leafResource))
@@ -275,10 +314,16 @@ public class DynamicBucketApi implements RouteSupplier {
         }
     }
 
-    private CompletableFuture<Long> upsertAndGetContentLength(final LeafResource leafResource) {
+    /**
+     * Try to get the content-length from persistence, otherwise calculate it and store it.
+     *
+     * @param leafResource the resource to get the length of
+     * @return the content-length of the resource when requested from the data-service
+     */
+    private CompletableFuture<Long> insertAndGetContentLength(final LeafResource leafResource) {
         return persistenceLayer.getContentLength(leafResource)
                 .thenCompose(maybeLength -> maybeLength
-                        .map(length -> {
+                        .map((Long length) -> {
                             LOGGER.info("Got content-length {} for resource {}", length, leafResource);
                             return CompletableFuture.completedFuture(length);
                         })
@@ -298,7 +343,7 @@ public class DynamicBucketApi implements RouteSupplier {
     }
 
     protected CompletableFuture<ListEntry> getListEntryForResource(final LeafResource resource) {
-        return upsertAndGetContentLength(resource).thenApply(contentLength -> {
+        return insertAndGetContentLength(resource).thenApply((Long contentLength) -> {
             var entry = new ListEntry();
 
             // Set the key to the resourceId
@@ -310,7 +355,7 @@ public class DynamicBucketApi implements RouteSupplier {
             entry.setSize(contentLength);
             // We don't have a concept of storageClasses
             entry.setStorageClass(StorageClass.UNKNOWN);
-            entry.seteTag(resource.getId());
+            entry.setETag(resource.getId());
             // Set the owner to the user who registered the request
             CanonicalUser owner = new CanonicalUser();
             owner.setId(userId);
@@ -326,11 +371,12 @@ public class DynamicBucketApi implements RouteSupplier {
         try {
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
 
-            sha.update(token.join().getBytes());
-            sha.update(bucketCreationTime.toString().getBytes());
-            sha.update(leafResource.getId().getBytes());
+            sha.update(token.join().getBytes(Charset.defaultCharset()));
+            sha.update(bucketCreationTime.toString().getBytes(Charset.defaultCharset()));
+            sha.update(leafResource.getId().getBytes(Charset.defaultCharset()));
             eTag = new String(Base64.getEncoder().encode(sha.digest()), Charset.defaultCharset());
         } catch (NoSuchAlgorithmException e) {
+            LOGGER.warn("Could not find SHA-256 digest instance", e);
             eTag = token.join() + bucketCreationTime.toString() + leafResource.getId();
         }
 
@@ -339,11 +385,12 @@ public class DynamicBucketApi implements RouteSupplier {
         try {
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
 
-            sha.update(token.join().getBytes());
-            sha.update(bucketCreationTime.toString().getBytes());
-            sha.update(headerTime.toString().getBytes());
+            sha.update(token.join().getBytes(Charset.defaultCharset()));
+            sha.update(bucketCreationTime.toString().getBytes(Charset.defaultCharset()));
+            sha.update(headerTime.toString().getBytes(Charset.defaultCharset()));
             id2 = new String(Base64.getEncoder().encode(sha.digest()), Charset.defaultCharset());
         } catch (NoSuchAlgorithmException e) {
+            LOGGER.warn("Could not find SHA-256 digest instance", e);
             id2 = token.join() + bucketCreationTime.toString() + headerTime.toString();
         }
 
@@ -357,7 +404,6 @@ public class DynamicBucketApi implements RouteSupplier {
 
     private List<HttpHeader> getDefaultHeadersForMissingResource() {
         return List.of(
-                // AccessControlAllowMethods.create(HttpMethods.HEAD, HttpMethods.GET),
                 LastModified.create(DateTime.create(bucketCreationTime.toInstant().toEpochMilli()))
         );
     }
@@ -374,7 +420,7 @@ public class DynamicBucketApi implements RouteSupplier {
 
     private static Route restOfPath0(final Function<String, Route> inner, final LinkedList<String> segments) {
         return Directives.concat(Directives.pathEnd(() -> inner.apply(String.join("/", segments))),
-                Directives.pathPrefix(match -> {
+                Directives.pathPrefix((String match) -> {
                     segments.addLast(match);
                     return restOfPath0(inner, segments);
                 }));

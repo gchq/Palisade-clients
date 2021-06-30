@@ -57,6 +57,10 @@ import java.util.concurrent.Flow.Publisher;
 public class AkkaClient implements Client {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    /**
+     * Specify URL schemes based on whether SSL/TLS encryption should be used over-the-wire.
+     * Ingress to the cluster may use TLS, while cluster-internal comms may use plaintext.
+     */
     public enum SSLMode {
         NONE("http", "ws"),
         SSL_TLS("https", "wss");

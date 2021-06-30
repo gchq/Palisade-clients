@@ -22,6 +22,9 @@ import uk.gov.gchq.palisade.Generated;
 
 import java.util.StringJoiner;
 
+/**
+ * S3 model for the 'PrefixEntry' XML schema.
+ */
 public class PrefixEntry {
 
     @JsonProperty(value = "Prefix", required = true)

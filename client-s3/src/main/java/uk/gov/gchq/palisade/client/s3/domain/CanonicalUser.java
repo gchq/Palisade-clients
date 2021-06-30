@@ -24,6 +24,9 @@ import uk.gov.gchq.palisade.Generated;
 import java.util.StringJoiner;
 
 
+/**
+ * S3 model for the 'CanonicalUser' XML schema.
+ */
 public class CanonicalUser {
 
     @JsonProperty(value = "ID", required = true)

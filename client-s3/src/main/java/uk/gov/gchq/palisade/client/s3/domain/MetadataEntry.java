@@ -23,6 +23,9 @@ import uk.gov.gchq.palisade.Generated;
 import java.util.StringJoiner;
 
 
+/**
+ * S3 model for the 'MetadataEntry' XML schema.
+ */
 public class MetadataEntry {
 
     @JsonProperty(value = "Name", required = true)

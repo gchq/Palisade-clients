@@ -27,22 +27,25 @@ import org.springframework.context.annotation.Configuration;
 import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.client.akka.AkkaClient;
 import uk.gov.gchq.palisade.client.akka.AkkaClient.SSLMode;
-import uk.gov.gchq.palisade.client.s3.config.EndpointConfiguration.ClientMap;
+import uk.gov.gchq.palisade.client.s3.config.ApplicationConfiguration.ClientMap;
 import uk.gov.gchq.palisade.client.s3.repository.ContentLengthRepository;
 import uk.gov.gchq.palisade.client.s3.repository.PersistenceLayer;
 import uk.gov.gchq.palisade.client.s3.repository.ResourceRepository;
 import uk.gov.gchq.palisade.client.s3.web.AkkaHttpServer;
 import uk.gov.gchq.palisade.client.s3.web.RouteSupplier;
-import uk.gov.gchq.palisade.client.s3.web.S3ServerApi;
+import uk.gov.gchq.palisade.client.s3.web.DynamicS3ServerApi;
 
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Spring bean dependency injection graph
+ */
 @Configuration
 @EnableConfigurationProperties(ClientMap.class)
-public class EndpointConfiguration {
+public class ApplicationConfiguration {
 
     @ConfigurationProperties(prefix = "web")
     static class ClientMap {
@@ -53,6 +56,12 @@ public class EndpointConfiguration {
             return client;
         }
 
+        /**
+         * Get a single url for a service name.
+         *
+         * @param key the name of a service
+         * @return the URL for that service
+         */
         @Generated
         public String getClient(final String key) {
             return client.get(key);
@@ -94,7 +103,7 @@ public class EndpointConfiguration {
 
     @Bean
     RouteSupplier s3ServerApi(final AkkaClient akkaClient, final Materializer materializer, final PersistenceLayer persistenceLayer) {
-        return new S3ServerApi(akkaClient, materializer, persistenceLayer);
+        return new DynamicS3ServerApi(akkaClient, materializer, persistenceLayer);
     }
 
     @Bean
