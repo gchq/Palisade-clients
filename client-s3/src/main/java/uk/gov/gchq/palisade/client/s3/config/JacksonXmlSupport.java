@@ -60,6 +60,7 @@ public class JacksonXmlSupport {
     /**
      * Create a Jackson {@link Unmarshaller} for deserialising from the XML media-type.
      *
+     * @param expectedType the expected type to deserialise the XML into
      * @param <T> the domain type for the unmarshaller
      * @return a new unmarshaller for converting XML to objects
      */

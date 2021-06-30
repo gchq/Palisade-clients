@@ -38,6 +38,7 @@ public enum StorageClass {
     /**
      * Convert from String to Enum.
      *
+     * @param v the string to convert to a storageClass enum
      * @return a {@link StorageClass}
      */
     public static StorageClass fromValue(final String v) {

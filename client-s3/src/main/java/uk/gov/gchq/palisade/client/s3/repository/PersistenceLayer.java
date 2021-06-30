@@ -48,8 +48,8 @@ public class PersistenceLayer {
      * Get whether a resource exists for the given id.
      *
      * @param resourceId the resourceId to search for
-     * @return true if it exists, false otherwise
-     * @apiNote this may on future calls return true if/when the resource is returned by the Filtered-Resource Service
+     * @return true if it exists, false otherwise.
+     * This may on future calls return true if/when the resource is returned by the Filtered-Resource Service
      */
     public CompletableFuture<Boolean> existsById(final String resourceId) {
         return resourceRepository.futureExistsById(resourceId);
@@ -121,7 +121,7 @@ public class PersistenceLayer {
     /**
      * Set the content-length for a resource.
      *
-     * @param leafResource the resource to set the length for
+     * @param leafResource  the resource to set the length for
      * @param contentLength the length of the resource
      * @return the stored length, once it has been saved successfully
      */
