@@ -199,7 +199,7 @@ public class S3BucketApi implements RouteSupplier {
                                         result.setKeyCount(result.getContents().size());
 
                                         LOGGER.info("Returning result {}", result);
-                                        return Directives.<ListBucketResult>complete(StatusCodes.OK, result, JacksonXmlSupport.<ListBucketResult>marshaller());
+                                        return Directives.complete(StatusCodes.OK, result, JacksonXmlSupport.marshaller());
                                     }))));
             return Directives.get(() -> Directives.pathEndOrSingleSlash(() -> listObjects));
         }
@@ -298,7 +298,7 @@ public class S3BucketApi implements RouteSupplier {
                                 })
 
                                 // Concat a default, which after taking the head, will be used if there was no object (leafResource) found for the request
-                                .<NotUsed>concat((Graph<SourceShape<HttpResponse>, NotUsed>) Source.lazySingle(() -> {
+                                .concat(Source.lazySingle(() -> {
                                     LOGGER.info("Did not find resource");
                                     return HttpResponse.create()
                                             .addHeaders(getDefaultHeadersForMissingResource())
