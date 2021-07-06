@@ -85,6 +85,8 @@ class FullTest {
 
     }
 
+    // RxJava .subscribe(..) returns an unused disposable
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testWithDownloadInsideStream() throws Exception {
 
@@ -99,10 +101,7 @@ class FullTest {
             .filter(m -> m.getType().equals(ItemType.RESOURCE))
             .map(session::fetch)
             .timeout(10, TimeUnit.SECONDS)
-            .subscribe(new FlowableSubscriber<>() {
-
-                @Override
-                public void onNext(final Download t) {
+            .subscribe((final Download t) -> {
                     LOGGER.debug("## Got message: {}", t);
                     try (var is = t.getInputStream()) {
                         LOGGER.debug("## reading bytes");
@@ -113,25 +112,6 @@ class FullTest {
                         LOGGER.error("Got error reading input stream into byte array", e);
                         throw new IllegalStateException("Got error reading input stream into byte array", e);
                     }
-                }
-
-                @Override
-                public void onError(final Throwable t) {
-                    LOGGER.error("## Error: {}", t.getMessage());
-                    Assertions.fail("Failed due to:" + t.getMessage());
-                }
-
-                @Override
-                public void onComplete() {
-                    LOGGER.debug("## complete");
-
-                }
-
-                @Override
-                public void onSubscribe(final org.reactivestreams.@NonNull Subscription s) {
-                    s.request(Long.MAX_VALUE);
-                    LOGGER.debug("## Subscribed");
-                }
-            });
+                });
     }
 }
