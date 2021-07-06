@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.contract.java;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.rxjava3.core.Flowable;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
@@ -82,8 +83,7 @@ class FullTest {
 
     }
 
-    // RxJava .subscribe(..) returns an unused disposable
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Disabled
     @Test
     void testWithDownloadInsideStream() throws Exception {
 
@@ -94,7 +94,7 @@ class FullTest {
             .thenApply(QueryResponse::stream)
             .get();
 
-        Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
+        var disposable = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
             .filter(m -> m.getType().equals(ItemType.RESOURCE))
             .map(session::fetch)
             .timeout(10, TimeUnit.SECONDS)
@@ -110,5 +110,7 @@ class FullTest {
                         throw new IllegalStateException("Got error reading input stream into byte array", e);
                     }
                 });
+
+        disposable.dispose();
     }
 }
