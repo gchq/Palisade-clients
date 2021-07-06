@@ -30,7 +30,6 @@ import uk.gov.gchq.palisade.resource.Resource;
 import uk.gov.gchq.palisade.resource.impl.SimpleConnectionDetail;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow.Publisher;

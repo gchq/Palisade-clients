@@ -88,7 +88,7 @@ public class ResourceTree implements Collection<Resource> {
      * Format a String-based path into a list of path components.
      * These are used to select children by name while traversing the tree.
      *
-     * @param path a path for a tree node, using forward-slash path separators
+     * @param uri a URI with a scheme-specific-part to be used as a path for a tree node, using forward-slash path separators
      * @return a list of names to select for (grand-)children to reach the node
      * in the tree
      */

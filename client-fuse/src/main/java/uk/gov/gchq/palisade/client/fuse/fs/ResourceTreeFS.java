@@ -72,6 +72,7 @@ public class ResourceTreeFS extends FuseStubFS {
      * @param resourceTree a tree collection that will be used for directory listings
      * @param reader       a function for acquiring an {@link InputStream} from a tree node,
      *                     used for reading files
+     * @param uriScheme    the scheme used by the root resource, which will prepended to fs requests
      */
     // We actively want the resourceTree collection to be mutable
     // The structure should allow for creation of resources asynchronously to the fs mount
@@ -172,8 +173,8 @@ public class ResourceTreeFS extends FuseStubFS {
     @Override
     public int getattr(final String path, final FileStat stat) {
         return this.getNode(path)
-            .map(node -> getattr(node, this.getContext(), stat))
-            .orElse(-ErrorCodes.ENOENT());
+                .map(node -> getattr(node, this.getContext(), stat))
+                .orElse(-ErrorCodes.ENOENT());
     }
 
     /**
