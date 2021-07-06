@@ -181,8 +181,8 @@ public class WebSocketListener implements Listener {
     @SuppressWarnings("java:S4276")
     private void send(final WebSocket ws, final WebSocketMessage.Builder.IHeaders messageBuilder) {
         var message = messageBuilder
-            .withHeader(Token.HEADER, token).noHeaders()
-            .noBody();
+                .withHeader(Token.HEADER, token).noHeaders()
+                .noBody();
         try {
             var text = objectMapper.writeValueAsString(message);
             ws.sendText(text, true);

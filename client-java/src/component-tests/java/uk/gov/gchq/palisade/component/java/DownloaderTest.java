@@ -62,17 +62,17 @@ class DownloaderTest {
     void setup() {
         this.uri = URI.create(String.format(BASE_URL, embeddedServer.getPort()));
         this.downloader = Downloader.createDownloader(b -> b
-            .httpClient(HttpClient.newHttpClient())
-            .objectMapper(objectMapper)
-            .path(ENDPOINT)
-            .putServiceNameMap("data-service", uri));
+                .httpClient(HttpClient.newHttpClient())
+                .objectMapper(objectMapper)
+                .path(ENDPOINT)
+                .putServiceNameMap("data-service", uri));
     }
 
     @Test
     void testSuccessfulDownload() throws Exception {
         var resource = new FileResource()
-            .id(FILE_NAME_0.asString())
-            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
+                .id(FILE_NAME_0.asString())
+                .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
 
         var download = downloader.fetch(TOKEN, resource);
 
@@ -80,11 +80,11 @@ class DownloaderTest {
         // the one in /tmp. Both these files are compared byte by byte for equality.
 
         try (var actual = download.getInputStream();
-             var expected = FILE_NAME_0.createStream();
+             var expected = FILE_NAME_0.createStream()
         ) {
             assertThat(actual)
-                .as("check downloaded input stream")
-                .hasSameContentAs(expected);
+                    .as("check downloaded input stream")
+                    .hasSameContentAs(expected);
         }
     }
 
@@ -93,17 +93,17 @@ class DownloaderTest {
         var filename = "doesnotexist";
 
         var resource = new FileResource()
-            .id(filename)
-            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
+                .id(filename)
+                .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
 
         var expectedClass = DownloaderException.class;
         var expectedStatus = 500;
 
         assertThatExceptionOfType(expectedClass)
-            .as("check correct exception when resource is not found")
-            .isThrownBy(() -> downloader.fetch(TOKEN, resource))
-            .withMessage("[" + expectedStatus + "] Request to DataService '" + uri + ENDPOINT + "' failed")
-            .matches(ex -> ex.getStatusCode() == expectedStatus, "statuscode " + expectedStatus);
+                .as("check correct exception when resource is not found")
+                .isThrownBy(() -> downloader.fetch(TOKEN, resource))
+                .withMessage("[" + expectedStatus + "] Request to DataService '" + uri + ENDPOINT + "' failed")
+                .matches(ex -> ex.getStatusCode() == expectedStatus, "statuscode " + expectedStatus);
     }
 
 }

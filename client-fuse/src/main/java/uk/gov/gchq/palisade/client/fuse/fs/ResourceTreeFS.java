@@ -38,6 +38,8 @@ import uk.gov.gchq.palisade.resource.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,6 +63,7 @@ public class ResourceTreeFS extends FuseStubFS {
 
     private ResourceTree resourceTree;
     private Function<LeafResourceNode, InputStream> reader;
+    private String uriScheme;
 
     /**
      * Construct an instance of the FuseFS implementation, given a mutable tree which will be
@@ -73,9 +76,10 @@ public class ResourceTreeFS extends FuseStubFS {
     // We actively want the resourceTree collection to be mutable
     // The structure should allow for creation of resources asynchronously to the fs mount
     @SuppressWarnings("java:S2384")
-    public ResourceTreeFS(final ResourceTree resourceTree, final Function<LeafResourceNode, InputStream> reader) {
+    public ResourceTreeFS(final ResourceTree resourceTree, final Function<LeafResourceNode, InputStream> reader, final String uriScheme) {
         this.resourceTree = resourceTree;
         this.reader = reader;
+        this.uriScheme = uriScheme;
     }
 
     private static int getattr(final TreeNode<Resource> node, final FuseContext ctx, final FileStat stat) {
@@ -140,7 +144,7 @@ public class ResourceTreeFS extends FuseStubFS {
     }
 
     private static int readdir(final ParentNode<Resource> node, final Pointer buf, final FuseFillDir filler, final long offset) {
-        Stream<String> nodeNames = Stream.concat(Stream.of(".", ".."), node.getChildren().stream().map(TreeNode::getId));
+        Stream<String> nodeNames = Stream.concat(Stream.of(".", ".."), node.getChildren().stream().map(child -> URI.create(child.getId()).getSchemeSpecificPart()));
         // Fill buffer with child resource id's using filter function
         for (String childName : nodeNames.skip(offset).collect(Collectors.toList())) {
             // Put the childName into the buffer, returns 1 if the buffer is full
@@ -150,6 +154,11 @@ public class ResourceTreeFS extends FuseStubFS {
             }
         }
         return 0;
+    }
+
+    private Optional<TreeNode<Resource>> getNode(final String path) {
+        var node = resourceTree.getNode(uriScheme + ":" + path);
+        return node;
     }
 
     /**
@@ -162,7 +171,7 @@ public class ResourceTreeFS extends FuseStubFS {
      */
     @Override
     public int getattr(final String path, final FileStat stat) {
-        return resourceTree.getNode(path)
+        return this.getNode(path)
             .map(node -> getattr(node, this.getContext(), stat))
             .orElse(-ErrorCodes.ENOENT());
     }
@@ -179,7 +188,7 @@ public class ResourceTreeFS extends FuseStubFS {
      */
     @Override
     public int read(final String path, final Pointer buf, @size_t final long size, @off_t final long offset, final FuseFileInfo fi) {
-        TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
+        TreeNode<Resource> node = this.getNode(path).orElse(null);
         if (node == null) {
             // No entity (tree node) exists for the given path
             return -ErrorCodes.EBADF();
@@ -203,7 +212,7 @@ public class ResourceTreeFS extends FuseStubFS {
      */
     @Override
     public int readdir(final String path, final Pointer buf, final FuseFillDir filter, @off_t final long offset, final FuseFileInfo fi) {
-        TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
+        TreeNode<Resource> node = this.getNode(path).orElse(null);
         if (node == null) {
             // No entity (tree node) exists for the given path
             return -ErrorCodes.EBADF();
@@ -244,7 +253,7 @@ public class ResourceTreeFS extends FuseStubFS {
      */
     @Override
     public int getxattr(final String path, final String name, final Pointer value, final long size) {
-        TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
+        TreeNode<Resource> node = this.getNode(path).orElse(null);
         if (node == null) {
             // No entity (tree node) exists for the given path
             return -ErrorCodes.ENOENT();
@@ -270,7 +279,7 @@ public class ResourceTreeFS extends FuseStubFS {
      */
     @Override
     public int listxattr(final String path, final Pointer list, final long size) {
-        TreeNode<Resource> node = resourceTree.getNode(path).orElse(null);
+        TreeNode<Resource> node = this.getNode(path).orElse(null);
         if (node == null) {
             // No entity (tree node) exists for the given path
             return -ErrorCodes.ENOENT();

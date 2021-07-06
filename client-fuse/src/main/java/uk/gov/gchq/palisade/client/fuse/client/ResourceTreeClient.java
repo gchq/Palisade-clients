@@ -25,7 +25,6 @@ import uk.gov.gchq.palisade.client.java.QueryItem;
 import uk.gov.gchq.palisade.client.java.internal.dft.DefaultQueryResponse;
 import uk.gov.gchq.palisade.client.java.internal.dft.DefaultSession;
 import uk.gov.gchq.palisade.client.java.internal.model.PalisadeResponse;
-import uk.gov.gchq.palisade.resource.ChildResource;
 import uk.gov.gchq.palisade.resource.LeafResource;
 import uk.gov.gchq.palisade.resource.Resource;
 import uk.gov.gchq.palisade.resource.impl.SimpleConnectionDetail;
@@ -82,38 +81,6 @@ public class ResourceTreeClient {
     }
 
     /**
-     * Strip the scheme from a URI.
-     *
-     * @param uri the uri to remove the scheme from
-     * @return a scheme-less URI
-     */
-    protected static URI stripScheme(final URI uri) {
-        return URI.create(uri.getSchemeSpecificPart());
-    }
-
-    protected static String stripScheme(final String uri) {
-        return stripScheme(URI.create(uri)).toString();
-    }
-
-    protected Resource stripScheme(final Resource resource) {
-        return resource.id(stripScheme(resource.getId()));
-    }
-
-    /**
-     * Re-apply a 'file:' scheme to a URI.
-     *
-     * @param path the URI-compliant string to add/change the scheme for
-     * @return a URI-compliant string with a 'file:' scheme
-     */
-    protected static String reapplyScheme(final String path) {
-        return "file:" + URI.create(path).getSchemeSpecificPart();
-    }
-
-    protected Resource reapplyScheme(final Resource resource) {
-        return resource.id(reapplyScheme(resource.getId()));
-    }
-
-    /**
      * Substitute a Data Service address using a env map of connection-detail
      * service names to their substitutions.
      * If a serviceName is not found in the map, it is unchanged.
@@ -133,25 +100,10 @@ public class ResourceTreeClient {
         return (Resource resource) -> {
             if (resource instanceof LeafResource) {
                 ((LeafResource) resource).connectionDetail(new SimpleConnectionDetail()
-                    .serviceName(substDataServiceAddress(env, ((LeafResource) resource).getConnectionDetail().createConnection())));
+                        .serviceName(substDataServiceAddress(env, ((LeafResource) resource).getConnectionDetail().createConnection())));
             }
             return resource;
         };
-    }
-
-    /**
-     * Apply a formatting function (unary operator) to a resource and each of its parents recursively.
-     *
-     * @param resource  the resource to apply the formatter function to (it will also apply to all parents)
-     * @param formatter some function that will edit each of the resources, eg. adding a prefix to the id
-     * @param <T> the type of the resource
-     * @return the resource after applying the formatting function to it and its parents
-     */
-    protected <T extends Resource> T formatResource(final T resource, final UnaryOperator<Resource> formatter) {
-        if (resource instanceof ChildResource) {
-            ((ChildResource) resource).parent(formatResource(((ChildResource) resource).getParent(), formatter));
-        }
-        return (T) formatter.apply(resource);
     }
 
     /**
@@ -168,34 +120,32 @@ public class ResourceTreeClient {
 
         // Execute the request to Palisade and receive a response
         CompletableFuture<DefaultQueryResponse> response = session
-            .createQuery(resourceId, context)
-            .execute()
-            .thenApply(DefaultQueryResponse.class::cast);
+                .createQuery(resourceId, context)
+                .execute()
+                .thenApply(DefaultQueryResponse.class::cast);
 
         // Create a resource tree for the returned resources
         CompletableFuture<ResourceTreeWithContext> resourceTree = response
-            .thenApply(DefaultQueryResponse::getPalisadeResponse)
-            .thenApply((PalisadeResponse palisadeResponse) -> {
-                LOGGER.debug("Registered request and received token {}", palisadeResponse.getToken());
-                return palisadeResponse.getToken();
-            })
-            .thenApply(ResourceTreeWithContext::new);
+                .thenApply(DefaultQueryResponse::getPalisadeResponse)
+                .thenApply((PalisadeResponse palisadeResponse) -> {
+                    LOGGER.debug("Registered request and received token {}", palisadeResponse.getToken());
+                    return palisadeResponse.getToken();
+                })
+                .thenApply(ResourceTreeWithContext::new);
 
         // Get the returned (stream of) resources and add them to the tree
         CompletableFuture<ResourceTreeWithContext> populator = response
-            .thenApply(DefaultQueryResponse::stream)
-            .thenCombine(resourceTree,
-                (Publisher<QueryItem> stream, ResourceTreeWithContext tree) -> {
-                    stream.subscribe((OnNextStubSubscriber<QueryItem>) (QueryItem queryItem) -> {
-                        UnaryOperator<Resource> formatter = this::stripScheme;
-                        LeafResource leaf = queryItem.asResource();
-                        LOGGER.debug("Adding resource {} to tree", leaf.getId());
-                        // Strip the URI scheme from the resource
-                        formatResource(leaf, formatter);
-                        tree.add(leaf);
-                    });
-                    return tree;
-                });
+                .thenApply(DefaultQueryResponse::stream)
+                .thenCombine(resourceTree,
+                        (Publisher<QueryItem> stream, ResourceTreeWithContext tree) -> {
+                            stream.subscribe(OnNextStubSubscriber.fromOnNextMethod((QueryItem queryItem) -> {
+                                LeafResource leaf = queryItem.asResource();
+                                LOGGER.debug("Adding resource {} to tree", leaf.getId());
+                                // Strip the URI scheme from the resource
+                                tree.add(leaf);
+                            }));
+                            return tree;
+                        });
 
         // Join on the stream completion (closed websocket)
         return populator.join();
@@ -210,11 +160,10 @@ public class ResourceTreeClient {
      * @return the {@link InputStream} to read this resource.
      */
     public InputStream read(final String token, final LeafResourceNode node) {
-        UnaryOperator<Resource> formatter = this::reapplyScheme;
-        QueryItem queryItem = new LeafResourceQueryItem(formatResource(node.get(), formatter), token);
+        QueryItem queryItem = new LeafResourceQueryItem(node.get(), token);
         LOGGER.debug("Downloading resource {}", queryItem.asResource().getId());
         return session
-            .fetch(queryItem)
-            .getInputStream();
+                .fetch(queryItem)
+                .getInputStream();
     }
 }

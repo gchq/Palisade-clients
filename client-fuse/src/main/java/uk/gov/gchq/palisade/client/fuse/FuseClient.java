@@ -26,11 +26,13 @@ import uk.gov.gchq.palisade.client.fuse.tree.impl.LeafResourceNode;
 import uk.gov.gchq.palisade.client.java.internal.dft.DefaultClient;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -70,6 +72,12 @@ public class FuseClient {
      */
     public static void main(final String... args) {
         String jarName = args[0];
+
+        try {
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException e) {
+        }
+
         if (args.length >= MIN_ARGS_LEN) {
             // Parse command-line args
             Map<String, String> context = new HashMap<>();
@@ -108,7 +116,7 @@ public class FuseClient {
 
         ResourceTreeWithContext tree = client.register(resourceId, context);
         Function<LeafResourceNode, InputStream> reader = node -> client.read(tree.getToken(), node);
-        ResourceTreeFS fuseFs = new ResourceTreeFS(tree, reader);
+        ResourceTreeFS fuseFs = new ResourceTreeFS(tree, reader, URI.create(resourceId).getScheme());
 
         try {
             LOGGER.info("Mounted at {}, press <Ctrl-C> to unmount and exit", mountPath);

@@ -32,8 +32,8 @@ class ClientManagerTest {
     @Test
     void testGetClient() {
         assertThat(getClient("pal://alice@localhost:1234/cluster"))
-            .as("Client is of correct type")
-            .isInstanceOf(DefaultClient.class);
+                .as("Client is of correct type")
+                .isInstanceOf(DefaultClient.class);
     }
 
     @Test
@@ -43,11 +43,11 @@ class ClientManagerTest {
         var configuration = dftSession.getConfiguration();
 
         assertThat(configuration.<URI>get(Configuration.PALISADE_URI))
-            .as("check generated Palisade URI")
-            .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
+                .as("check generated Palisade URI")
+                .isEqualTo(URI.create("http://localhost:1234/cluster/palisade/api/registerDataRequest"));
         assertThat(configuration.<URI>get(Configuration.FILTERED_RESOURCE_URI))
-            .as("check generated FilteredResource URI")
-            .isEqualTo(URI.create("ws://localhost:1234/cluster/filteredResource/resource/%25t"));
+                .as("check generated FilteredResource URI")
+                .isEqualTo(URI.create("ws://localhost:1234/cluster/filteredResource/resource/%25t"));
 
     }
 
@@ -59,11 +59,11 @@ class ClientManagerTest {
         var configuration = dftSession.getConfiguration();
 
         assertThat(configuration.<URI>get(Configuration.PALISADE_URI))
-            .as("Generated Palisade URI")
-            .isEqualTo(URI.create("http://localhost/cluster/palisade/api/registerDataRequest"));
+                .as("Generated Palisade URI")
+                .isEqualTo(URI.create("http://localhost/cluster/palisade/api/registerDataRequest"));
         assertThat(configuration.<URI>get(Configuration.FILTERED_RESOURCE_URI))
-            .as("Generated FilteredResource URI")
-            .isEqualTo(URI.create("ws://localhost/cluster/filteredResource/resource/%25t"));
+                .as("Generated FilteredResource URI")
+                .isEqualTo(URI.create("ws://localhost/cluster/filteredResource/resource/%25t"));
 
     }
 }

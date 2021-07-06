@@ -52,8 +52,8 @@ public class PalisadeHttpEndpoint {
             var palisadeResponse = new PalisadeResponse(ClientTestData.TOKEN);
             LOG.debug("RETN: {}", request);
             return HttpResponse
-                .ok(palisadeResponse)
-                .contentType(MediaType.APPLICATION_JSON_TYPE);
+                    .ok(palisadeResponse)
+                    .contentType(MediaType.APPLICATION_JSON_TYPE);
         } finally {
             MDC.remove("server");
         }
