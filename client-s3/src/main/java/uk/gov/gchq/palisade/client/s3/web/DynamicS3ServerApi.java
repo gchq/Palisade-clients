@@ -51,6 +51,7 @@ public class DynamicS3ServerApi implements RouteSupplier {
      * {@link AwaitingStatus#RESOURCES} if waiting for more resources from the Filtered-Resource Service
      * {@link AwaitingStatus#PERSISTENCE} if waiting for the stream of returned resources to be saved to persistence
      * {@link AwaitingStatus#DONE} once everything is done
+     * {@link AwaitingStatus#UNKNOWN} otherwise (the status could not be deduced, likely because there was an error in processing)
      */
     public enum AwaitingStatus {
         UNKNOWN,

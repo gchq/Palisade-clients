@@ -16,6 +16,10 @@
  */
 -->
 
+# <img src="../logos/logo.svg" width="180">
+
+## A Tool for Complex and Scalable Data Access Policy Enforcement
+
 > :information_source: ***Work In Progress***
 > There are some issues between what Spark expects and what the server returns for a `GetObject`.
 > The server returns a valid AVRO object (which can be successfully read if written to a file).

@@ -68,7 +68,7 @@ public interface ContentLengthRepository extends ReactiveCrudRepository<ContentL
     /**
      * Set a Content-Length for a given resourceId.
      *
-     * @param entity a {@link ContentLengthEntity} that will be stored, keyed by its id
+     * @param entity a {@link ContentLengthEntity} that will be stored, indexed by its id
      * @return the saved {@link ContentLengthEntity}, once it has been saved
      */
     default CompletableFuture<ContentLengthEntity> futureSave(ContentLengthEntity entity) {
