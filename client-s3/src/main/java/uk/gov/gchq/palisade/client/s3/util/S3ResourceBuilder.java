@@ -21,7 +21,7 @@ import uk.gov.gchq.palisade.resource.Resource;
 import uk.gov.gchq.palisade.resource.impl.DirectoryResource;
 import uk.gov.gchq.palisade.resource.impl.FileResource;
 import uk.gov.gchq.palisade.resource.impl.SystemResource;
-import uk.gov.gchq.palisade.util.ResourceBuilder;
+import uk.gov.gchq.palisade.util.AbstractResourceBuilder;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ import java.util.LinkedList;
  * parent class's {@code ResourceBuilder.create()} static method with a String or URI for a valid S3 Resource. This will then
  * prompt the {@code S3ResourceBuilder} to return an instance of {@code S3Resource} for the specified Resource.
  */
-public class S3ResourceBuilder extends ResourceBuilder {
+public class S3ResourceBuilder extends AbstractResourceBuilder {
     private static final String S3_PATH_SEP = "/";
     private static final String S3_PREFIX = "s3";
     private static final int NO_COMPONENTS = 0;
