@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * A {@link RouteSupplier} for the server which dynamically creates  a single S3-compliant bucket endpoint.
+ * A {@link RouteSupplier} for the server which dynamically creates a single S3-compliant bucket endpoint.
  * These are created fom a userId, resourceId and context, which will be used later by the class
  * for registering a request with Palisade.
  */
