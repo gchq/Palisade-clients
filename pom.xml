@@ -86,6 +86,7 @@
         <module>client-java</module>
         <module>client-fuse</module>
         <module>client-shell</module>
+        <module>client-s3</module>
     </modules>
 
     <profiles>
