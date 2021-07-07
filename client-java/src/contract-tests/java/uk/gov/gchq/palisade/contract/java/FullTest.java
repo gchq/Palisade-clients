@@ -27,17 +27,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.java.ClientManager;
-import uk.gov.gchq.palisade.client.java.Download;
 import uk.gov.gchq.palisade.client.java.QueryItem.ItemType;
 import uk.gov.gchq.palisade.client.java.QueryResponse;
 
 import javax.inject.Inject;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.gchq.palisade.client.java.testing.ClientTestData.FILE_NAME_0;
+import static uk.gov.gchq.palisade.client.java.testing.ClientTestData.FILE_NAME_1;
 
 /**
  * @since 0.5.0
@@ -75,18 +76,24 @@ class FullTest {
 
         assertThat(resources).as("check resource count").hasSizeGreaterThan(0);
 
-        var resource = resources.get(0);
-        assertThat(resource.asResource().getId())
-                .as("check leaf resource id")
-                .isEqualTo(FILE_NAME_0.asString());
+        var expectedCollection = Map.of(
+                FILE_NAME_0.asString(), FILE_NAME_0.createStream(),
+                FILE_NAME_1.asString(), FILE_NAME_1.createStream()
+        );
 
-        var download = session.fetch(resource);
-        assertThat(download).as("check download exists").isNotNull();
+        for (var resource : resources) {
+            assertThat(resource.asResource().getId())
+                    .as("check leaf resource id")
+                    .isIn(expectedCollection.keySet());
 
-        try (var actual = download.getInputStream();
-             var expected = FILE_NAME_0.createStream();
-        ) {
-            assertThat(actual).as("check stream download").hasSameContentAs(expected);
+            var download = session.fetch(resource);
+            assertThat(download).as("check download exists").isNotNull();
+
+            try (var actual = download.getInputStream();
+                 var expected = expectedCollection.get(resource.asResource().getId());
+            ) {
+                assertThat(actual).as("check stream download").hasSameContentAs(expected);
+            }
         }
 
     }
@@ -110,21 +117,27 @@ class FullTest {
                 .thenApply(QueryResponse::stream)
                 .get();
 
+        var expectedCollection = Map.of(
+                FILE_NAME_0.asString(), FILE_NAME_0.createStream(),
+                FILE_NAME_1.asString(), FILE_NAME_1.createStream()
+        );
+
         var disposable = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
                 .filter(m -> m.getType().equals(ItemType.RESOURCE))
-                .map(session::fetch)
                 .timeout(10, TimeUnit.SECONDS)
                 .subscribeOn(new IoScheduler())
-                .subscribe((final Download t) -> {
-                    LOGGER.debug("## Got message: {}", t);
-                    try (var is = t.getInputStream()) {
-                        LOGGER.debug("## reading bytes");
-                        var ba = is.readAllBytes();
-                        LOGGER.debug("## read {} bytes", ba.length);
-                        LOGGER.debug(new String(ba));
-                    } catch (Throwable e) {
-                        LOGGER.error("Got error reading input stream into byte array", e);
-                        throw new IllegalStateException("Got error reading input stream into byte array", e);
+                .subscribe((var resource) -> {
+                    assertThat(resource.asResource().getId())
+                            .as("check leaf resource id")
+                            .isIn(expectedCollection.keySet());
+
+                    var download = session.fetch(resource);
+                    assertThat(download).as("check download exists").isNotNull();
+
+                    try (var actual = download.getInputStream();
+                         var expected = expectedCollection.get(resource.asResource().getId());
+                    ) {
+                        assertThat(actual).as("check stream download").hasSameContentAs(expected);
                     }
                 });
 
