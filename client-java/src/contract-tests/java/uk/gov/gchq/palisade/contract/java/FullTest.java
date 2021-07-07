@@ -19,10 +19,8 @@ import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.internal.schedulers.IoScheduler;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
-import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,9 +99,6 @@ class FullTest {
     /**
      * Register a request with the Palisade Service, fetch resources from the Filtered-Resource Service, and download from the Data Service.
      * This test runs in a nested, streaming, async manner, where the download is performed asynchronously on some reactor thread.
-     * <p>
-     * <b>There appears to be some bug between Java's Http client and RxJava's {@link Subscriber#onComplete()} where the test blocks forever</b>.
-     * Until this can be resolved, the test is marked as {@link Disabled}
      *
      * @throws Exception if no resources are returned, or the download fails
      */
