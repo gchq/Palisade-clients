@@ -18,7 +18,6 @@ package uk.gov.gchq.palisade.contract.java;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.internal.schedulers.IoScheduler;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
