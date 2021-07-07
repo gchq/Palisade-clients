@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * A {@link RouteSupplier} for the server which dynamically creates  a single S3-compliant bucket endpoint.
+ * A {@link RouteSupplier} for the server which dynamically creates a single S3-compliant bucket endpoint.
  * These are created fom a userId, resourceId and context, which will be used later by the class
  * for registering a request with Palisade.
  */
@@ -150,10 +150,17 @@ public class S3BucketApi implements RouteSupplier {
     public class ListObjectsV2 implements RouteSupplier {
         @Override
         public Route route() {
+            // Extract some headers
+            // continuation-token: continue a large multi-page response
             Route listObjects = Directives.extract(ctx -> ctx.getRequest().getUri().query().get("continuation-token"), (Optional<String> continuationToken) ->
+                    // delimiter: character used do delimit "directores"
                     Directives.extract(ctx -> ctx.getRequest().getUri().query().get("delimiter").orElse("/"), (String delimiter) ->
+                            // max-keys: maximum number of object keys to return in a single request
                             Directives.extract(ctx -> ctx.getRequest().getUri().query().get("max-keys").map(Integer::valueOf).orElse(1_000), (Integer maxKeys) ->
+                                    // prefix: object key prefix to filter returned results with (object keys must start with the given prefix
                                     Directives.extract(ctx -> ctx.getRequest().getUri().query().get("prefix"), (Optional<String> prefix) -> {
+                                        // Convert the URI path for this bucket into a resourceId based off the root resourceId used when the request was registered
+                                        // i.e. register a request for the resource 'file:/data/' and get the top-level S3 object 's3://file.txt' is equivalent to the resource URI 'file:/data/file.txt'
                                         var pathPrefix = prefix.map(p -> resourceId + p);
                                         LOGGER.info("ListBucketV2 for continuationToken={} maxKeys={}, pathPrefix={}", continuationToken, maxKeys, pathPrefix);
 

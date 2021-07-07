@@ -17,27 +17,26 @@ package uk.gov.gchq.palisade.contract.java;
 
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.FlowableSubscriber;
-import org.assertj.core.api.Assertions;
+import io.reactivex.rxjava3.internal.schedulers.IoScheduler;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.gchq.palisade.client.java.ClientManager;
-import uk.gov.gchq.palisade.client.java.Download;
 import uk.gov.gchq.palisade.client.java.QueryItem.ItemType;
 import uk.gov.gchq.palisade.client.java.QueryResponse;
 
 import javax.inject.Inject;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.gchq.palisade.client.java.testing.ClientTestData.FILE_NAME_0;
+import static uk.gov.gchq.palisade.client.java.testing.ClientTestData.FILE_NAME_1;
 
 /**
  * @since 0.5.0
@@ -49,6 +48,12 @@ class FullTest {
     @Inject
     EmbeddedServer embeddedServer;
 
+    /**
+     * Register a request with the Palisade Service, fetch resources from the Filtered-Resource Service, and download from the Data Service.
+     * This test runs in a flatter, non-streaming, non-async manner, where the download is performed on the main thread.
+     *
+     * @throws Exception if no resources are returned, or the download fails
+     */
     @Test
     void testWithDownloadOutsideStream() throws Exception {
 
@@ -69,22 +74,34 @@ class FullTest {
 
         assertThat(resources).as("check resource count").hasSizeGreaterThan(0);
 
-        var resource = resources.get(0);
-        assertThat(resource.asResource().getId())
-                .as("check leaf resource id")
-                .isEqualTo(FILE_NAME_0.asString());
+        var expectedCollection = Map.of(
+                FILE_NAME_0.asString(), FILE_NAME_0.createStream(),
+                FILE_NAME_1.asString(), FILE_NAME_1.createStream()
+        );
 
-        var download = session.fetch(resource);
-        assertThat(download).as("check download exists").isNotNull();
+        for (var resource : resources) {
+            assertThat(resource.asResource().getId())
+                    .as("check leaf resource id")
+                    .isIn(expectedCollection.keySet());
 
-        try (var actual = download.getInputStream();
-             var expected = FILE_NAME_0.createStream()
-        ) {
-            assertThat(actual).as("check stream download").hasSameContentAs(expected);
+            var download = session.fetch(resource);
+            assertThat(download).as("check download exists").isNotNull();
+
+            try (var actual = download.getInputStream();
+                 var expected = expectedCollection.get(resource.asResource().getId());
+            ) {
+                assertThat(actual).as("check stream download").hasSameContentAs(expected);
+            }
         }
 
     }
 
+    /**
+     * Register a request with the Palisade Service, fetch resources from the Filtered-Resource Service, and download from the Data Service.
+     * This test runs in a nested, streaming, async manner, where the download is performed asynchronously on some reactor thread.
+     *
+     * @throws Exception if no resources are returned, or the download fails
+     */
     @Test
     void testWithDownloadInsideStream() throws Exception {
 
@@ -95,43 +112,30 @@ class FullTest {
                 .thenApply(QueryResponse::stream)
                 .get();
 
-        Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
+        var expectedCollection = Map.of(
+                FILE_NAME_0.asString(), FILE_NAME_0.createStream(),
+                FILE_NAME_1.asString(), FILE_NAME_1.createStream()
+        );
+
+        var disposable = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
                 .filter(m -> m.getType().equals(ItemType.RESOURCE))
-                .map(session::fetch)
                 .timeout(10, TimeUnit.SECONDS)
-                .subscribe(new FlowableSubscriber<>() {
+                .subscribeOn(new IoScheduler())
+                .subscribe((var resource) -> {
+                    assertThat(resource.asResource().getId())
+                            .as("check leaf resource id")
+                            .isIn(expectedCollection.keySet());
 
-                    @Override
-                    public void onNext(final Download t) {
-                        LOGGER.debug("## Got message: {}", t);
-                        try (var is = t.getInputStream()) {
-                            LOGGER.debug("## reading bytes");
-                            var ba = is.readAllBytes();
-                            LOGGER.debug("## read {} bytes", ba.length);
-                            LOGGER.debug(new String(ba));
-                        } catch (Throwable e) {
-                            LOGGER.error("Got error reading input stream into byte array", e);
-                            throw new IllegalStateException("Got error reading input stream into byte array", e);
-                        }
-                    }
+                    var download = session.fetch(resource);
+                    assertThat(download).as("check download exists").isNotNull();
 
-                    @Override
-                    public void onError(final Throwable t) {
-                        LOGGER.error("## Error: {}", t.getMessage());
-                        Assertions.fail("Failed due to:" + t.getMessage());
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        LOGGER.debug("## complete");
-
-                    }
-
-                    @Override
-                    public void onSubscribe(final org.reactivestreams.@NonNull Subscription s) {
-                        s.request(Long.MAX_VALUE);
-                        LOGGER.debug("## Subscribed");
+                    try (var actual = download.getInputStream();
+                         var expected = expectedCollection.get(resource.asResource().getId());
+                    ) {
+                        assertThat(actual).as("check stream download").hasSameContentAs(expected);
                     }
                 });
+
+        disposable.dispose();
     }
 }
