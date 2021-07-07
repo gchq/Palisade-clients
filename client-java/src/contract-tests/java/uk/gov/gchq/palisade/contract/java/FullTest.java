@@ -18,9 +18,12 @@ package uk.gov.gchq.palisade.contract.java;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.internal.schedulers.IoScheduler;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
+import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +50,12 @@ class FullTest {
     @Inject
     EmbeddedServer embeddedServer;
 
+    /**
+     * Register a request with the Palisade Service, fetch resources from the Filtered-Resource Service, and download from the Data Service.
+     * This test runs in a flatter, non-streaming, non-async manner, where the download is performed on the main thread.
+     *
+     * @throws Exception if no resources are returned, or the download fails
+     */
     @Test
     void testWithDownloadOutsideStream() throws Exception {
 
@@ -55,22 +64,22 @@ class FullTest {
         var session = ClientManager.openSession(String.format("pal://localhost:%d/cluster?userid=alice", port));
         var query = session.createQuery("resource_id");
         var publisher = query
-            .execute()
-            .thenApply(QueryResponse::stream)
-            .get();
+                .execute()
+                .thenApply(QueryResponse::stream)
+                .get();
 
         var resources = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
-            .filter(m -> m.getType().equals(ItemType.RESOURCE))
-            .collect(Collectors.toList())
-            .timeout(10, TimeUnit.SECONDS)
-            .blockingGet();
+                .filter(m -> m.getType().equals(ItemType.RESOURCE))
+                .collect(Collectors.toList())
+                .timeout(10, TimeUnit.SECONDS)
+                .blockingGet();
 
         assertThat(resources).as("check resource count").hasSizeGreaterThan(0);
 
         var resource = resources.get(0);
         assertThat(resource.asResource().getId())
-            .as("check leaf resource id")
-            .isEqualTo(FILE_NAME_0.asString());
+                .as("check leaf resource id")
+                .isEqualTo(FILE_NAME_0.asString());
 
         var download = session.fetch(resource);
         assertThat(download).as("check download exists").isNotNull();
@@ -83,22 +92,31 @@ class FullTest {
 
     }
 
-    @Disabled
+    /**
+     * Register a request with the Palisade Service, fetch resources from the Filtered-Resource Service, and download from the Data Service.
+     * This test runs in a nested, streaming, async manner, where the download is performed asynchronously on some reactor thread.
+     * <p>
+     * <b>There appears to be some bug between Java's Http client and RxJava's {@link Subscriber#onComplete()} where the test blocks forever</b>.
+     * Until this can be resolved, the test is marked as {@link Disabled}
+     *
+     * @throws Exception if no resources are returned, or the download fails
+     */
     @Test
     void testWithDownloadInsideStream() throws Exception {
 
         var session = ClientManager.openSession(String.format("pal://localhost:%d/cluster?userid=alice", embeddedServer.getPort()));
         var query = session.createQuery("resource_id");
         var publisher = query
-            .execute()
-            .thenApply(QueryResponse::stream)
-            .get();
+                .execute()
+                .thenApply(QueryResponse::stream)
+                .get();
 
         var disposable = Flowable.fromPublisher(FlowAdapters.toPublisher(publisher))
-            .filter(m -> m.getType().equals(ItemType.RESOURCE))
-            .map(session::fetch)
-            .timeout(10, TimeUnit.SECONDS)
-            .subscribe((final Download t) -> {
+                .filter(m -> m.getType().equals(ItemType.RESOURCE))
+                .map(session::fetch)
+                .timeout(10, TimeUnit.SECONDS)
+                .subscribeOn(new IoScheduler())
+                .subscribe((final Download t) -> {
                     LOGGER.debug("## Got message: {}", t);
                     try (var is = t.getInputStream()) {
                         LOGGER.debug("## reading bytes");
