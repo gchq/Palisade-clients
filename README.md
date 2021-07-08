@@ -1,6 +1,6 @@
 <!--
 /*
- * Copyright 2019 Crown Copyright
+ * Copyright 2018-2021 Crown Copyright
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,21 @@
 
 # <img src="logos/logo.svg" width="180">
 
-### Scalable Data Access Policy Management and Enforcement
+## A Tool for Complex and Scalable Data Access Policy Enforcement
 
-## Status
-<span style="color:red">
-This is not the main Palisade Repository, this is the Repository for Palisade Common. For more information, please visit Palisade
-</span>
+# Palisade Clients
 
-## Documentation
+## Client Implementations
 
-The documentation for the latest release can be found [here](https://gchq.github.io/Palisade).
+The job of the client code is to send the request for data into Palisade and to interpret the result as required for the data processing technology it is written for.
+The responsibility for implementations of the client code is to provide users with a way to request data from Palisade in a way that the user has to make minimal changes to how they would normally use that processing technology.
+Implementations of this component will usually require deep understanding of the data processing technology in order to best hook into that technology, without needing to fork the code for that technology.
+
+To find out more information on our technology specific clients, please see the following modules:
+* [Akka Client](client-akka/README.md)
+* [Fuse Client](client-fuse/README.md)
+* [Java Client](client-java/README.md)
+* [Shell Client](client-shell/README.md)
 
 
 ### Prerequisites
@@ -43,100 +48,22 @@ We do not currently support Windows as a build environment, If you are running o
 
 ## Getting started
 
-To get started, clone the Palisade Common repo: 
+To get started, clone the Palisade Clients repository: 
 
 ```bash
 git clone https://github.com/gchq/Palisade-clients.git
 cd Palisade-clients
 ```
 
-<details><summary>You will need to configure your ~/.m2/settings.xml:</summary>
-<p>
-
+You should see the following modules:
 ```bash
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-                  http://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <!-- the path to the local repository - defaults to ~/.m2/repository
-  -->
-  <!-- <localRepository>/path/to/local/repo</localRepository>
-  -->
-    <mirrors>
-​
-    <mirror> <!--Send all requests to the public group -->
-      <id>nexus</id>
-      <url>*nexusurl*/maven-group/</url>
-      <mirrorOf>central</mirrorOf>
-    </mirror>
-​    </mirrors>
-  <activeProfiles>
-    <!--make the profile active all the time -->
-    <activeProfile>nexus</activeProfile>
-  </activeProfiles>
-  <profiles>
-    <profile> 
-      <id>default</id> 
-      <activation> 
-        <activeByDefault>true</activeByDefault> 
-      </activation> 
-      <properties> 
-        <release.url*nexusurl*/maven-releases/</release.url>
-        <snapshot.url>*nexusurl*/maven-snapshots/</snapshot.url> 
-      </properties> 
-    </profile> 
-    <profile>
-      <id>nexus</id>
-      <!--Override the repository (and pluginRepository) "central" from the Maven Super POM
-          to activate snapshots for both! -->
-      <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2/</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-​
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2/</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
-​
-  <pluginGroups>
-    <pluginGroup>org.sonatype.plugins</pluginGroup>
-  </pluginGroups>
-​
-  <servers>
-​
-    <server>
-      <id>nexus</id>
-      <username>*username*</username>
-      <password>*password*</password>
-    </server>
-  </servers>
-</settings>
+>> ls
+ drwxrwxrwx client-akka
+ drwxrwxrwx client-fuse
+ drwxrwxrwx client-java
+ drwxrwxrwx client-shell
 ```
-</p>
-</details>
-
-
-
-You are then ready to build with Maven:
+Now you can finally build the repository by running: 
 ```bash
 mvn install
 ```
@@ -146,23 +73,10 @@ mvn install
 
 Palisade-clients is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0) and is covered by [Crown Copyright](https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/copyright-and-re-use/crown-copyright/).
 
-
 ## Contributing
 We welcome contributions to the project. Detailed information on our ways of working can be found [here](https://gchq.github.io/Palisade/doc/other/ways_of_working.html).
 
-
 ## FAQ
 
-What versions of Java are supported? We are currently using Java 11.
-
-
-# Client Implementations
-
-The job of the client code is to send the request for data into Palisade and to interpret the result as required for the data processing technology it is written for.
-The responsibility for implementations of the client code is to provide users with a way to request data from Palisade in a way that the user has to make minimal changes to how they would normally use that processing technology.
-Implementations of this component will usually require deep understanding of the data processing technology in order to best hook into that technology, without needing to fork the code for that technology.
-
-
-This directory contains the various client implementations for Palisade that have currently been written. Some are intended to be used as standalone implementations such
-as the [cat client](cat-client/README.md), whilst others are the necessary client library implementations to allow Palisade to be
-used with other frameworks such as the [MapReduce client](mapreduce-client/README.md).
+Q: What versions of Java are supported?  
+A: We are currently using Java 11.

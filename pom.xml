@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2018 Crown Copyright
+  ~ Copyright 2018-2021 Crown Copyright
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,21 +14,20 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.0.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>2.3.1.RELEASE</version>
     </parent>
 
     <groupId>uk.gov.gchq.palisade</groupId>
     <artifactId>clients</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0-${revision}</version>
     <name>clients</name>
     <description>Client code for Spring boot</description>
     <url>https://github.com/gchq/Palisade-clients</url>
@@ -37,7 +36,8 @@
     <properties>
         <!-- Versions -->
         <java.version>11</java.version>
-        <revision>RELEASE</revision>
+        <revision>SNAPSHOT</revision>
+        <common.revision>SNAPSHOT</common.revision>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <encoding>UTF-8</encoding>
@@ -46,14 +46,24 @@
 
         <!-- Plugins -->
         <compiler.plugin.version>3.8.0</compiler.plugin.version>
-        <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
         <javadoc.plugin.version>3.2.0</javadoc.plugin.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
-        <depends.maven.version>3.1.1</depends.maven.version>
-
-        <!-- Testing properties -->
+        <depends.plugin.version>3.1.2</depends.plugin.version>
+        <javax-annotation.plugin.version>1.3.2</javax-annotation.plugin.version>
         <surefire.plugin.version>2.22.1</surefire.plugin.version>
         <failsafe.version>2.22.1</failsafe.version>
+
+        <!-- Release plugin versions -->
+        <gpg.plugin.version>1.5</gpg.plugin.version>
+        <nexus.plugin.version>1.6.8</nexus.plugin.version>
+        <release.plugin.version>2.5.3</release.plugin.version>
+        <scm.plugin.version>1.1</scm.plugin.version>
+        <source.plugin.version>3.2.1</source.plugin.version>
+
+        <!-- Testing properties -->
+        <unit-test.skip>false</unit-test.skip>
+        <component-test.skip>false</component-test.skip>
+        <contract-test.skip>false</contract-test.skip>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.25</slf4j.api.version>
@@ -64,27 +74,21 @@
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.jacoco.xmlReportPaths>${project.basedir}/../target/site/jacoco/jacoco.xml</sonar.jacoco.xmlReportPaths>
         <sonar.language>java</sonar.language>
+
+        <!-- SCM properties for Release plugin -->
+        <scm.url>https://github.com/gchq/Palisade-clients</scm.url>
+        <scm.connection>scm:git:https://github.com/gchq/Palisade-clients.git</scm.connection>
+        <scm.developer.connection>scm:git:https://github.com/gchq/Palisade-clients.git</scm.developer.connection>
     </properties>
 
-
     <modules>
-        <module>clients-simple</module>
-        <module>clients-mapreduce</module>
-        <module>clients-cat</module>
-        <module>clients-common</module>
+        <module>client-akka</module>
+        <module>client-java</module>
+        <module>client-fuse</module>
+        <module>client-shell</module>
+        <module>client-s3</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Hoxton.RELEASE</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <profiles>
         <profile>
             <id>quick</id>
@@ -97,21 +101,98 @@
                 <license.skipAggregateDownloadLicenses>true</license.skipAggregateDownloadLicenses>
             </properties>
         </profile>
+        <profile>
+            <id>release</id>
+            <properties>
+                <!-- Release configuration -->
+                <releases.repository.id>ossrh</releases.repository.id>
+                <releases.repository.name>Sonatype Nexus release repository</releases.repository.name>
+                <releases.repository.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</releases.repository.url>
+                <snapshots.repository.id>ossrh</snapshots.repository.id>
+                <snapshots.repository.name>Sonatype Nexus snapshot repository</snapshots.repository.name>
+                <snapshots.repository.url>https://oss.sonatype.org/content/repositories/snapshots</snapshots.repository.url>
+                <!-- Build configuration for release -->
+                <revision>RELEASE</revision>
+                <common.revision>RELEASE</common.revision>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${nexus.plugin.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>${releases.repository.id}</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <keepStagingRepositoryOnCloseRuleFailure>true
+                            </keepStagingRepositoryOnCloseRuleFailure>
+                            <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${source.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${javadoc.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${gpg.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <distributionManagement>
         <!-- in order to use this, one must have nexus up and running on a given url -->
         <repository>
             <!-- Snapshot repositories can be build on each commit to develop branch -->
-            <id>nexus</id>
-            <name>releases</name>
-            <url>${release.url}</url>
+            <id>${releases.repository.id}</id>
+            <name>${releases.repository.name}</name>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>${releases.repository.url}</url>
         </repository>
         <snapshotRepository>
             <!-- Snapshot repositories can be build on each commit to develop branch -->
-            <id>nexus</id>
-            <name>snapshots</name>
-            <url>${snapshot.url}</url>
+            <id>${snapshots.repository.id}</id>
+            <uniqueVersion>false</uniqueVersion>
+            <name>${snapshots.repository.name}</name>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>${snapshots.repository.url}</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -150,25 +231,27 @@
                     <header>Palisade ${project.version}</header>
                     <footer>Palisade ${project.version}</footer>
                     <doctitle>Palisade ${project.version}</doctitle>
-                    <tags>
-                        <tag>
-                            <name>apiNote</name>
-                            <placement>a</placement>
-                            <head>API Note:</head>
-                        </tag>
-                        <tag>
-                            <name>implNote</name>
-                            <placement>a</placement>
-                            <head>Implementation note:</head>
-                        </tag>
-                    </tags>
                 </configuration>
                 <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>javadoc-compile</id>
                         <phase>compile</phase>
                         <configuration>
                             <show>public</show>
+                            <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/annotations</sourcepath>
+                            <additionalDependencies>
+                                <additionalDependency>
+                                    <groupId>javax.annotation</groupId>
+                                    <artifactId>javax.annotation-api</artifactId>
+                                    <version>${javax-annotation.plugin.version}</version>
+                                </additionalDependency>
+                            </additionalDependencies>
                         </configuration>
                         <goals>
                             <goal>javadoc-no-fork</goal>
@@ -189,13 +272,8 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>${depends.maven.version}</version>
+                <version>${depends.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>dependencies</id>
@@ -235,8 +313,9 @@
                      Format is "<preferred license name> :: <file name>|<license name>|<license name>|..."
                     -->
                     <licenseMerges>
-                        <licenseMerge>Apache Software License 2.0 :: apache_software_license_2.0.txt|Apache Software License, Version 2.0|The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache License 2.0|Apache 2|Apache 2.0</licenseMerge>
-                        <licenseMerge>MIT License :: mit_license.txt|MIT License|The MIT License|MIT X11 License</licenseMerge>
+                        <licenseMerge>Apache Software License 2.0 :: apache_software_license_2.0.txt|Apache Software License, Version 2.0|The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache License 2.0|Apache 2|Apache 2.0|Apache License, Version 2.0 \| Open Source Initiative|Apache-2.0</licenseMerge>
+                        <licenseMerge>MIT License :: mit_license.txt|MIT License|The MIT License|MIT X11 License|The MIT License (MIT)</licenseMerge>
+                        <licenseMerge>Eclipse Public License 2.0 :: eclipse_public_license_2.0.html|Eclipse Public License v2.0</licenseMerge>
                         <licenseMerge>Eclipse Public License 1.0 :: eclipse_public_license_1.0.html|Eclipse Public License 1.0|The Eclipse Public License 1.0|Eclipse Public License - v 1.0|Eclipse Distribution License - v 1.0</licenseMerge>
                         <licenseMerge>BSD License 3 :: bsd_license_3.html|BSD Licence 3</licenseMerge>
                         <licenseMerge>GNU Lesser General Public License 2.1 :: gnu_lgpl_2.1.html|GNU Lesser General Public License</licenseMerge>
@@ -252,6 +331,10 @@
                     -->
                     <licenseUrlFileNameSanitizers>
                         <licenseUrlFileNameSanitizer>
+                            <regexp>.*apache-2.0.*</regexp>
+                            <replacement>apache_software_license_2.0</replacement>
+                        </licenseUrlFileNameSanitizer>
+                        <licenseUrlFileNameSanitizer>
                             <regexp>.*apache.*license.*2.*</regexp>
                             <replacement>apache_software_license_2.0</replacement>
                         </licenseUrlFileNameSanitizer>
@@ -262,6 +345,10 @@
                         <licenseUrlFileNameSanitizer>
                             <regexp>.*eclipse.*license.*1.0.*</regexp>
                             <replacement>eclipse_public_license_1.0</replacement>
+                        </licenseUrlFileNameSanitizer>
+                        <licenseUrlFileNameSanitizer>
+                            <regexp>.*eclipse.*license.*2.0.*</regexp>
+                            <replacement>eclipse_public_license_2.0</replacement>
                         </licenseUrlFileNameSanitizer>
                         <licenseUrlFileNameSanitizer>
                             <regexp>.*bsd.*licence.*3.*</regexp>
@@ -291,26 +378,60 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.plugin.version}</version>
+                <configuration>
+                    <skipTests>${unit-test.skip}</skipTests>
+                    <includes>
+                        <include>uk/gov/gchq/palisade/client/**</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe.version}</version>
+                <executions>
+                    <execution>
+                        <id>component-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${component-test.skip}</skipITs>
+                            <includes>
+                                <include>uk/gov/gchq/palisade/component/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>contract-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${contract-test.skip}</skipITs>
+                            <includes>
+                                <include>uk/gov/gchq/palisade/contract/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.5</version>
-                <configuration>
-                    <destFile>${sonar.jacoco.reportPath}</destFile>
-                    <append>true</append>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
                             <goal>report</goal>
-                            <goal>report-aggregate</goal>
+                            <goal>prepare-agent-integration</goal>
+                            <goal>report-integration</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -325,8 +446,7 @@
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
-                    <headerLocation>code-style/licenseHeader.txt
-                    </headerLocation>
+                    <headerLocation>code-style/licenseHeader.txt</headerLocation>
                     <suppressionsLocation>code-style/checkstyle-suppressions.xml</suppressionsLocation>
                     <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                 </configuration>
@@ -341,9 +461,29 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe.version}</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>ossrh</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

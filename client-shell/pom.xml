@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2018-2021 Crown Copyright
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>uk.gov.gchq.palisade</groupId>
+        <artifactId>clients</artifactId>
+        <version>0.5.0-${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <developers>
+        <developer>
+            <name>PalisadeDevelopers</name>
+            <organization>GCHQ</organization>
+            <organizationUrl>https://github.com/gchq</organizationUrl>
+        </developer>
+    </developers>
+
+    <!--  *********** Artifact ID ***********    -->
+    <artifactId>client-shell</artifactId>
+    <url>https://github.com/gchq/Palisade-clients/tree/develop/client-shell</url>
+    <name>GCHQ Palisade - Spring Shell Client</name>
+    <description>
+        The Palisade Shell provides a interactive CLI REPL for access to a cluster and its resources.
+    </description>
+    <!--  *********** Artifact ID ***********    -->
+
+    <scm>
+        <url>${scm.url}</url>
+        <connection>${scm.connection}</connection>
+        <developerConnection>${scm.developer.connection}</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <!-- Dependency versions -->
+        <spring.shell.version>2.0.0.RELEASE</spring.shell.version>
+    </properties>
+
+    <dependencies>
+        <!-- Dependencies -->
+        <dependency>
+            <!-- Java Client for connecting to Palisade -->
+            <groupId>uk.gov.gchq.palisade</groupId>
+            <artifactId>client-java</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Spring Shell for interactive shell CLI interface -->
+            <groupId>org.springframework.shell</groupId>
+            <artifactId>spring-shell-starter</artifactId>
+            <version>${spring.shell.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Aspects to override spring-shell result-handlers -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/unit-tests/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/component-tests/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/contract-tests/resources</directory>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <layout>ZIP</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${basedir}/src/unit-tests/java</source>
+                                <source>${basedir}/src/component-tests/java</source>
+                                <source>${basedir}/src/contract-tests/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-test-resources</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <filtering>true</filtering>
+                                    <directory>${basedir}/src/unit-tests/resources</directory>
+                                    <directory>${basedir}/src/component-tests/resources</directory>
+                                    <directory>${basedir}/src/contract-tests/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
