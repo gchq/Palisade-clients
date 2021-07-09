@@ -137,7 +137,7 @@ public class ResourceTreeClient {
                 .thenApply(DefaultQueryResponse::stream)
                 .thenCombine(resourceTree,
                         (Publisher<QueryItem> stream, ResourceTreeWithContext tree) -> {
-                            stream.subscribe(OnNextStubSubscriber.fromOnNextMethod((QueryItem queryItem) -> {
+                            stream.subscribe(AbstractOnNextStubSubscriber.fromOnNextMethod((QueryItem queryItem) -> {
                                 LeafResource leaf = queryItem.asResource();
                                 LOGGER.debug("Adding resource {} to tree", leaf.getId());
                                 // Strip the URI scheme from the resource

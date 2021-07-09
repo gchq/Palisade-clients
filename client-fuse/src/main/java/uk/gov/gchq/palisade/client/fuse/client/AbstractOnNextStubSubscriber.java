@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  *
  * @param <T> type of elements emitted by the subscriber
  */
-public abstract class OnNextStubSubscriber<T> implements Subscriber<T> {
+public abstract class AbstractOnNextStubSubscriber<T> implements Subscriber<T> {
     Subscription subscription;
 
     @Override
@@ -48,8 +48,8 @@ public abstract class OnNextStubSubscriber<T> implements Subscriber<T> {
     public void onComplete() {
     }
 
-    static <T> OnNextStubSubscriber<T> fromOnNextMethod(final Consumer<T> onNext) {
-        return new OnNextStubSubscriber<T>() {
+    static <T> AbstractOnNextStubSubscriber<T> fromOnNextMethod(final Consumer<T> onNext) {
+        return new AbstractOnNextStubSubscriber<T>() {
             @Override
             public void onNext(final T t) {
                 onNext.accept(t);
