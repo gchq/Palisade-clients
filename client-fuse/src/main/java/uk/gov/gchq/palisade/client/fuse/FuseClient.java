@@ -73,11 +73,6 @@ public class FuseClient {
     public static void main(final String... args) {
         String jarName = args[0];
 
-        try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-        }
-
         if (args.length >= MIN_ARGS_LEN) {
             // Parse command-line args
             Map<String, String> context = new HashMap<>();
