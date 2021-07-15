@@ -144,9 +144,9 @@ public final class Downloader {
 
         try {
             var requestBody = getObjectMapper()
-                .writeValueAsString(DataRequest.Builder.create()
-                    .withToken(token)
-                    .withLeafResourceId(resource.getId()));
+                    .writeValueAsString(DataRequest.Builder.create()
+                            .withToken(token)
+                            .withLeafResourceId(resource.getId()));
 
             HttpResponse<InputStream> httpResponse;
             httpResponse = sendRequest(requestBody, uri);
@@ -181,10 +181,10 @@ public final class Downloader {
         LOGGER.debug("Preparing to send request to {}", uri);
 
         var httpRequest = HttpRequest.newBuilder(uri)
-            .setHeader("User-Agent", "Palisade Java Client")
-            .header("Content-Type", "application/json")
-            .POST(BodyPublishers.ofString(requestBody))
-            .build();
+                .setHeader("User-Agent", "Palisade Java Client")
+                .header("Content-Type", "application/json")
+                .POST(BodyPublishers.ofString(requestBody))
+                .build();
 
         try {
             LOGGER.debug("Sending...");
