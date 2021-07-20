@@ -16,6 +16,7 @@
 
 package uk.gov.gchq.palisade.client.fuse.tree;
 
+import uk.gov.gchq.palisade.Generated;
 import uk.gov.gchq.palisade.client.fuse.tree.impl.BranchResourceNode;
 import uk.gov.gchq.palisade.client.fuse.tree.impl.LeafResourceNode;
 import uk.gov.gchq.palisade.client.fuse.tree.impl.RootResourceNode;
@@ -24,10 +25,12 @@ import uk.gov.gchq.palisade.resource.LeafResource;
 import uk.gov.gchq.palisade.resource.ParentResource;
 import uk.gov.gchq.palisade.resource.Resource;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -85,11 +88,12 @@ public class ResourceTree implements Collection<Resource> {
      * Format a String-based path into a list of path components.
      * These are used to select children by name while traversing the tree.
      *
-     * @param path a path for a tree node, using forward-slash path separators
+     * @param uri a URI with a scheme-specific-part to be used as a path for a tree node, using forward-slash path separators
      * @return a list of names to select for (grand-)children to reach the node
      * in the tree
      */
-    private static List<String> getPath(final String path) {
+    private static List<String> getPath(final String uri) {
+        String path = URI.create(uri).getSchemeSpecificPart();
         String noDoubleSep = DOUBLE_SEP_PATTERN.matcher(path).replaceAll("");
         String strippedPath = TRAILING_SEP_PATTERN.matcher(noDoubleSep).replaceAll("");
         if (strippedPath.isEmpty()) {
@@ -257,5 +261,13 @@ public class ResourceTree implements Collection<Resource> {
     @Override
     public void clear() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Generated
+    public String toString() {
+        return new StringJoiner(", ", ResourceTree.class.getSimpleName() + "[", "]")
+                .add("root=" + root)
+                .toString();
     }
 }

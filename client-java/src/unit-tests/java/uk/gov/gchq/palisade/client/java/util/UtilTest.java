@@ -25,40 +25,40 @@ class UtilTest {
     void testCreateUriFromBasePathAndEndpoint() {
 
         assertThat(Util.createUri("http://me", "endpoint").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint");
 
         assertThat(Util.createUri("http://me/", "endpoint").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint");
 
         assertThat(Util.createUri("http://me", "endpoint/").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint");
 
         assertThat(Util.createUri("http://me", "/endpoint/").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint");
     }
 
     @Test
     void testCreateUriFromBasePathAndEndpoints() {
 
         assertThat(Util.createUri("http://me", "endpoint1", "endpoint2").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint1/endpoint2");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint1/endpoint2");
 
         assertThat(Util.createUri("http://me/", "endpoint1", "/endpoint2").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint1/endpoint2");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint1/endpoint2");
 
         assertThat(Util.createUri("http://me", "endpoint1/", "endpoint2/").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint1/endpoint2");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint1/endpoint2");
 
         assertThat(Util.createUri("http://me", "/endpoint1/", "/endpoint2/").toString())
-            .as("check URI created successfully")
-            .isEqualTo("http://me/endpoint1/endpoint2");
+                .as("check URI created successfully")
+                .isEqualTo("http://me/endpoint1/endpoint2");
 
     }
 

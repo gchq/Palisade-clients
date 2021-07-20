@@ -28,6 +28,8 @@ uk.gov.gchq.palisade:client-fuse:jar:0.5.1-SNAPSHOT
 |  \- io.reactivex.rxjava3:rxjava:jar:3.0.8:compile
 |     \- org.reactivestreams:reactive-streams:jar:1.0.3:compile
 +- org.slf4j:slf4j-api:jar:1.7.26:compile
++- ch.qos.logback:logback-classic:jar:1.2.3:compile
+|  \- ch.qos.logback:logback-core:jar:1.2.3:compile
 +- org.junit.jupiter:junit-jupiter:jar:5.7.0:test
 |  +- org.junit.jupiter:junit-jupiter-api:jar:5.6.2:test
 |  |  +- org.apiguardian:apiguardian-api:jar:1.1.0:test

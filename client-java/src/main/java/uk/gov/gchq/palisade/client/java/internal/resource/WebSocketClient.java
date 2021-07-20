@@ -157,12 +157,12 @@ public class WebSocketClient {
         LOGGER.debug("Connecting to websocket at: {}", getUri());
 
         this.webSocket = getHttpClient()
-            .newWebSocketBuilder()
-            .buildAsync(replacedUri, createResourceClientListener(b -> b
-                .eventsHandler(this::put)
-                .objectMapper(getObjectMapper())
-                .token(getToken())))
-            .join();
+                .newWebSocketBuilder()
+                .buildAsync(replacedUri, createResourceClientListener(b -> b
+                        .eventsHandler(this::put)
+                        .objectMapper(getObjectMapper())
+                        .token(getToken())))
+                .join();
 
         LOGGER.debug("WebSocket created to handle token: {}", getToken());
 

@@ -18,6 +18,7 @@ package uk.gov.gchq.palisade.client.fuse.client;
 
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
+import java.util.function.Consumer;
 
 /**
  * Stub the Subscriber interface such that it only requires an {@link Subscriber#onNext(Object)}
@@ -25,13 +26,35 @@ import java.util.concurrent.Flow.Subscription;
  *
  * @param <T> type of elements emitted by the subscriber
  */
-public interface OnNextStubSubscriber<T> extends Subscriber<T> {
-    default void onSubscribe(final Subscription subscription) {
+public abstract class AbstractOnNextStubSubscriber<T> implements Subscriber<T> {
+    Subscription subscription;
+
+    @Override
+    public void onSubscribe(final Subscription subscription) {
+        this.subscription = subscription;
+        this.subscription.request(1);
     }
 
-    default void onError(final Throwable throwable) {
+    @Override
+    public void onNext(final T t) {
+        this.subscription.request(1);
     }
 
-    default void onComplete() {
+    @Override
+    public void onError(final Throwable throwable) {
+    }
+
+    @Override
+    public void onComplete() {
+    }
+
+    static <T> AbstractOnNextStubSubscriber<T> fromOnNextMethod(final Consumer<T> onNext) {
+        return new AbstractOnNextStubSubscriber<T>() {
+            @Override
+            public void onNext(final T t) {
+                onNext.accept(t);
+                super.onNext(t);
+            }
+        };
     }
 }
