@@ -1,4 +1,4 @@
-uk.gov.gchq.palisade:client-fuse:jar:0.5.0-RELEASE
+uk.gov.gchq.palisade:client-fuse:jar:0.5.1-SNAPSHOT
 +- com.github.serceman:jnr-fuse:jar:0.5.5:compile
 |  +- com.github.jnr:jnr-ffi:jar:2.1.12:compile
 |  |  +- com.github.jnr:jffi:jar:1.2.23:compile
@@ -12,8 +12,8 @@ uk.gov.gchq.palisade:client-fuse:jar:0.5.0-RELEASE
 |  |  \- com.github.jnr:jnr-x86asm:jar:1.0.2:compile
 |  +- com.github.jnr:jnr-posix:jar:3.0.54:compile
 |  \- com.github.jnr:jnr-constants:jar:0.9.15:compile
-+- uk.gov.gchq.palisade:client-java:jar:0.5.0-RELEASE:compile
-|  +- uk.gov.gchq.palisade:common:jar:0.5.0-RELEASE:compile
++- uk.gov.gchq.palisade:client-java:jar:0.5.1-SNAPSHOT:compile
+|  +- uk.gov.gchq.palisade:common:jar:0.5.1-SNAPSHOT:compile
 |  |  \- org.apache.avro:avro:jar:1.8.2:compile
 |  |     +- org.codehaus.jackson:jackson-core-asl:jar:1.9.13:compile
 |  |     +- org.codehaus.jackson:jackson-mapper-asl:jar:1.9.13:compile
