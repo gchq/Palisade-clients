@@ -21,6 +21,7 @@
 ## A Tool for Complex and Scalable Data Access Policy Enforcement
 Windows is not an explicitly supported environment, although where possible Palisade has been made compatible.  
 For Windows developer environments, we recommend setting up [WSL](https://docs.microsoft.com/en-us/windows/wsl/).
+
 # Palisade Clients
 
 ## Client Implementations
@@ -69,4 +70,3 @@ Palisade-clients is licensed under the [Apache 2.0 License](https://www.apache.o
 
 ## Contributing
 We welcome contributions to the project. Detailed information on our ways of working can be found [here](https://gchq.github.io/Palisade/doc/other/ways_of_working.html).
-
