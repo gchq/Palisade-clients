@@ -19,6 +19,8 @@
 # <img src="logos/logo.svg" width="180">
 
 ## A Tool for Complex and Scalable Data Access Policy Enforcement
+Windows is not an explicitly supported environment, although where possible Palisade has been made compatible.  
+For Windows developer environments, we recommend setting up [WSL](https://docs.microsoft.com/en-us/windows/wsl/).
 
 # Palisade Clients
 
@@ -38,12 +40,6 @@ To find out more information on our technology specific clients, please see the 
 ### Prerequisites
 1. [Git](https://git-scm.com/)
 2. [Maven](https://maven.apache.org/)
-
-The examples may have additional prerequisites
-
-<span style="color:red">
-We do not currently support Windows as a build environment, If you are running on Windows then you will need this: Microsoft Visual C++ 2010 SP1 Redistributable Package
-</span>
 
 
 ## Getting started
@@ -68,15 +64,9 @@ Now you can finally build the repository by running:
 mvn install
 ```
 
-
 ## License
 
 Palisade-clients is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0) and is covered by [Crown Copyright](https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/copyright-and-re-use/crown-copyright/).
 
 ## Contributing
 We welcome contributions to the project. Detailed information on our ways of working can be found [here](https://gchq.github.io/Palisade/doc/other/ways_of_working.html).
-
-## FAQ
-
-Q: What versions of Java are supported?  
-A: We are currently using Java 11.
