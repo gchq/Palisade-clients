@@ -22,15 +22,18 @@
 Windows is not an explicitly supported environment, although where possible Palisade has been made compatible.  
 For Windows developer environments, we recommend setting up [WSL](https://docs.microsoft.com/en-us/windows/wsl/).
 
+## Getting started
+For an overview of Palisade, start with root documentation [Palisade README](https://github.com/gchq/Palisade#readme).
+
 # Palisade Clients
 
 ## Client Implementations
+Implementation of a client will need to send requests into Palisade and process the response.  
+The workflow for this is expected to follow the pattern of first sending in a request for data.  
+This will return a response consisting of a token (a unique id) that can then be used a second request to retrieve the processed data.
+Client implementation will need to conform to this workflow, but the technology that is used and how the data is to be processed has by design meant to be left open for the implementations of the Palisade service.
 
-The job of the client code is to send the request for data into Palisade and to interpret the result as required for the data processing technology it is written for.
-The responsibility for implementations of the client code is to provide users with a way to request data from Palisade in a way that the user has to make minimal changes to how they would normally use that processing technology.
-Implementations of this component will usually require deep understanding of the data processing technology in order to best hook into that technology, without needing to fork the code for that technology.
-
-To find out more information on our technology specific clients, please see the following modules:
+The following examples demonstrate the use of different kinds of clients that can operate with the Palisade service:
 * [Akka Client](client-akka/README.md)
 * [Fuse Client](client-fuse/README.md)
 * [Java Client](client-java/README.md)
@@ -61,7 +64,7 @@ You should see the following modules:
 ```
 Now you can finally build the repository by running: 
 ```bash
-mvn install
+mvn clean install
 ```
 
 ## License
