@@ -39,11 +39,14 @@ The following examples demonstrate the use of different kinds of clients that ca
 * [Shell Client](client-shell/README.md)
   Command Line Interface(CLI) client which provides interactive operations.
 * [Fuse Client](client-fuse/README.md)
-  Filesystem in Userspace (FUSE) client which uses a CLI for interactive operations and stores the results in a FUSE filesystem.  
+  Filesystem in Userspace (FUSE) client which uses a CLI for interactive operations and stores the results in a FUSE filesystem.
+  Client is an extension of the Java Client.
 * [Akka Client](client-akka/README.md)
   Akka client which provides access an interface using both Java and Akka types.
+  Client is an extension of the Java Client.
 * [S3 Client](client-s3/README.md)
-  Akka client which provides access an interface using both Java and Akka types and data is prepared and then stored on an Amazon Web Service (AWS) Simple Cloud Storage (S3) bucket from where is it retrieved.
+  Akka Microservice which provides an endpoint for accessing resources stored in an Amazon Web Service (AWS) Simple Cloud Storage (S3) bucket.  
+  The example uses [Apache Spark](https://sparkjava.com/) for RESTful queries with the microservice. 
 
 ### Prerequisites
 1. [Git](https://git-scm.com/)
