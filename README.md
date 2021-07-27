@@ -23,22 +23,27 @@ Windows is not an explicitly supported environment, although where possible Pali
 For Windows developer environments, we recommend setting up [WSL](https://docs.microsoft.com/en-us/windows/wsl/).
 
 ## Getting started
-For an overview of Palisade, start with root documentation [Palisade README](https://github.com/gchq/Palisade#readme).
+For an overview of Palisade, start with the Palisade introduction and the accompanying guides: QuickStart Guide; and Developer Guide: [Palisade README](https://github.com/gchq/Palisade).
 
 # Palisade Clients
 
 ## Client Implementations
 Implementation of a client will need to send requests into Palisade and process the response.  
-The workflow for this is expected to follow the pattern of first sending in a request for data.  
+The workflow for this is expected to follow the pattern of first sending in a request to register access for data.  
 This will return a response consisting of a token (a unique id) that can then be used in a second request to retrieve the processed data.
-Client implementation will need to conform to this workflow, but the technology that is used and how the data is to be processed has by design meant to be left open for the implementations of the Palisade service.
+An implementation of a Client will need to conform to this workflow, but the technology that is used can be left to best suit the intended use of the application.
 
 The following examples demonstrate the use of different kinds of clients that can operate with the Palisade service:
-* [Akka Client](client-akka/README.md)
-* [Fuse Client](client-fuse/README.md)
 * [Java Client](client-java/README.md)
+  Java based RESTFul client using an API similar to the JDBC  
 * [Shell Client](client-shell/README.md)
-
+  Command Line Interface(CLI) client which provides interactive operations.
+* [Fuse Client](client-fuse/README.md)
+  Filesystem in Userspace (FUSE) client which uses a CLI for interactive operations and stores the results in a FUSE filesystem.  
+* [Akka Client](client-akka/README.md)
+  Akka client which provides access an interface using both Java and Akka types.
+* [S3 Client](client-s3/README.md)
+  Akka client which provides access an interface using both Java and Akka types and data is prepared and then stored on an Amazon Web Service (AWS) Simple Cloud Storage (S3) bucket from where is it retrieved.
 
 ### Prerequisites
 1. [Git](https://git-scm.com/)
