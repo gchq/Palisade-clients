@@ -30,7 +30,7 @@ For an overview of Palisade, start with root documentation [Palisade README](htt
 ## Client Implementations
 Implementation of a client will need to send requests into Palisade and process the response.  
 The workflow for this is expected to follow the pattern of first sending in a request for data.  
-This will return a response consisting of a token (a unique id) that can then be used a second request to retrieve the processed data.
+This will return a response consisting of a token (a unique id) that can then be used in a second request to retrieve the processed data.
 Client implementation will need to conform to this workflow, but the technology that is used and how the data is to be processed has by design meant to be left open for the implementations of the Palisade service.
 
 The following examples demonstrate the use of different kinds of clients that can operate with the Palisade service:
