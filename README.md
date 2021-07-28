@@ -43,7 +43,7 @@ The following examples demonstrate the use of different kinds of clients that ca
   This client is an extension of the Java Client.
 * [Akka Client](client-akka/README.md)
   Akka client which provides access to an interface using both Java and Akka types.
-  Client is an extension of the Java Client.
+  This client is an extension of the Java Client.
 * [S3 Client](client-s3/README.md)
   Akka Microservice which provides an endpoint for accessing resources stored in an Amazon Web Service (AWS) Simple Cloud Storage (S3) bucket.  
   The example uses [Apache Spark](https://sparkjava.com/) for RESTful queries with the microservice. 
