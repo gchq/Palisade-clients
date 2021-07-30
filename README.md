@@ -23,14 +23,15 @@ Windows is not an explicitly supported environment, although where possible Pali
 For Windows developer environments, we recommend setting up [WSL](https://docs.microsoft.com/en-us/windows/wsl/).
 
 ## Getting started
-For an overview of Palisade, start with the Palisade introduction and the accompanying guides: QuickStart Guide; and Developer Guide: [Palisade README](https://github.com/gchq/Palisade).
+For an overview of Palisade, start with the Palisade introduction and the accompanying guides: QuickStart Guide; and Developer Guide which are found in the [Palisade README](https://github.com/gchq/Palisade/README.md).
 
 # Palisade Clients
 
 ## Client Implementations
 The Client implementations will need to send requests into Palisade and process the response.  
 The workflow for this is expected to follow the pattern of first sending in a request to register access for data.  
-This will return a response consisting of a token (a unique id) that can then be used in a second request to retrieve the actual data.
+This will return a response consisting of a token (a unique id) that can then be used in a second request to gather the resources.
+With the resources gathered, the client is then in a position to read the data.
 An implementation of a Client will need to conform to this workflow, but the technology that is used will be best suited to the intended use of the application.
 
 The following examples demonstrate the use of different kinds of clients that can operate with the Palisade service:
@@ -46,7 +47,7 @@ The following examples demonstrate the use of different kinds of clients that ca
   This client is an extension of the Java Client.
 * [S3 Client](client-s3/README.md)
   Akka Microservice which provides an endpoint for accessing resources stored in an Amazon Web Service (AWS) Simple Cloud Storage (S3) bucket.  
-  The example uses [Apache Spark](https://sparkjava.com/) for RESTful queries with the microservice. 
+  The example uses [Apache Spark](https://spark.apache.org)for RESTful queries with the microservice.
 
 ### Prerequisites
 1. [Git](https://git-scm.com/)
