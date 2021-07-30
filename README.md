@@ -22,20 +22,32 @@
 Windows is not an explicitly supported environment, although where possible Palisade has been made compatible.  
 For Windows developer environments, we recommend setting up [WSL](https://docs.microsoft.com/en-us/windows/wsl/).
 
+## Getting started
+For an overview of Palisade, start with the Palisade introduction and the accompanying guides: QuickStart Guide; and Developer Guide which are found in the [Palisade README](https://github.com/gchq/Palisade/README.md).
+
 # Palisade Clients
 
 ## Client Implementations
+The Client implementations will need to send requests into Palisade and process the response.  
+The workflow for this is expected to follow the pattern of first sending in a request to register access for data.  
+This will return a response consisting of a token (a unique id) that can then be used in a second request to gather the resources.
+With the resources gathered, the client is then in a position to read the data.
+An implementation of a Client will need to conform to this workflow, but the technology that is used will be best suited to the intended use of the application.
 
-The job of the client code is to send the request for data into Palisade and to interpret the result as required for the data processing technology it is written for.
-The responsibility for implementations of the client code is to provide users with a way to request data from Palisade in a way that the user has to make minimal changes to how they would normally use that processing technology.
-Implementations of this component will usually require deep understanding of the data processing technology in order to best hook into that technology, without needing to fork the code for that technology.
-
-To find out more information on our technology specific clients, please see the following modules:
-* [Akka Client](client-akka/README.md)
-* [Fuse Client](client-fuse/README.md)
+The following examples demonstrate the use of different kinds of clients that can operate with the Palisade service:
 * [Java Client](client-java/README.md)
+  Java based RESTFul client using an API similar to the JDBC  
 * [Shell Client](client-shell/README.md)
-
+  Command Line Interface(CLI) client which provides interactive operations.
+* [Fuse Client](client-fuse/README.md)
+  Filesystem in Userspace (FUSE) client which uses a CLI for interactive operations and stores the results in a FUSE filesystem.
+  This client is an extension of the Java Client.
+* [Akka Client](client-akka/README.md)
+  Akka client which provides access to an interface using both Java and Akka types.
+  This client is an extension of the Java Client.
+* [S3 Client](client-s3/README.md)
+  Akka Microservice which provides an endpoint for accessing resources stored in an Amazon Web Service (AWS) Simple Cloud Storage (S3) bucket.  
+  The example uses [Apache Spark](https://spark.apache.org)for RESTful queries with the microservice.
 
 ### Prerequisites
 1. [Git](https://git-scm.com/)
@@ -61,7 +73,7 @@ You should see the following modules:
 ```
 Now you can finally build the repository by running: 
 ```bash
-mvn install
+mvn clean install
 ```
 
 ## License
