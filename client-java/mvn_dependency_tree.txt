@@ -1,5 +1,5 @@
-uk.gov.gchq.palisade:client-java:jar:0.5.1-RELEASE
-+- uk.gov.gchq.palisade:common:jar:0.5.1-RELEASE:compile
+uk.gov.gchq.palisade:client-java:jar:0.5.2-SNAPSHOT
++- uk.gov.gchq.palisade:common:jar:0.5.2-SNAPSHOT:compile
 +- org.slf4j:slf4j-api:jar:1.7.26:compile
 +- com.fasterxml.jackson.core:jackson-databind:jar:2.11.0:compile
 |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.11.0:compile
