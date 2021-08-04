@@ -27,7 +27,7 @@
 
     <groupId>uk.gov.gchq.palisade</groupId>
     <artifactId>clients</artifactId>
-    <version>0.5.1-${revision}</version>
+    <version>0.5.2-${revision}</version>
     <name>clients</name>
     <description>Client code for Spring boot</description>
     <url>https://github.com/gchq/Palisade-clients</url>
