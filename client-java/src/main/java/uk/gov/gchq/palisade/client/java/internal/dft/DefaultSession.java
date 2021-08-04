@@ -68,8 +68,8 @@ public class DefaultSession implements Session {
         this.httpClient = httpClientBuilder.build();
 
         this.objectMapper = new ObjectMapper()
-            .registerModule(new Jdk8Module())
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+                .registerModule(new Jdk8Module())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     @SuppressWarnings("java:S1774")
@@ -84,10 +84,10 @@ public class DefaultSession implements Session {
         var token = checkNotNull(queryItem.getToken(), "Missing token");
         var resource = checkNotNull(queryItem.asResource(), "Missing resource");
         var downloader = Downloader.createDownloader(b -> b
-            .httpClient(getHttpClient())
-            .objectMapper(getObjectMapper())
-            .path(configuration.get(Configuration.DATA_PATH))
-            .serviceNameMap(configuration.get(Configuration.DATA_SERVICE_MAP)));
+                .httpClient(getHttpClient())
+                .objectMapper(getObjectMapper())
+                .path(configuration.get(Configuration.DATA_PATH))
+                .serviceNameMap(configuration.get(Configuration.DATA_SERVICE_MAP)));
         return downloader.fetch(token, resource);
     }
 

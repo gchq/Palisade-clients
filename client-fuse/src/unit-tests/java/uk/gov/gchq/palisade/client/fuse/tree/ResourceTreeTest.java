@@ -37,22 +37,19 @@ class ResourceTreeTest {
         ResourceTree tree = new ResourceTree();
 
         ParentResource root = new SystemResource()
-            .id("/");
+            .id("file:/");
         ParentResource some = new DirectoryResource()
-            .id("/some")
-            .parent(root);
+            .id("file:/some/");
         LeafResource file1 = new FileResource()
-            .id("/some/file1")
+            .id("file:/some/file1")
             .type("type")
             .serialisedFormat("format")
-            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"))
-            .parent(some);
+            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
         LeafResource file2 = new FileResource()
-            .id("/some/file2")
+            .id("file:/some/file2")
             .type("type")
             .serialisedFormat("format")
-            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"))
-            .parent(some);
+            .connectionDetail(new SimpleConnectionDetail().serviceName("data-service"));
 
         tree.add(file1);
 
