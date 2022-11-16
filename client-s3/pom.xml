@@ -57,7 +57,7 @@
         <scala.version>2.13</scala.version>
         <akka.version>2.6.10</akka.version>
         <akka.http.version>10.2.1</akka.http.version>
-        <jackson.version>2.11.0</jackson.version>
+        <jackson.version>2.12.7.1</jackson.version>
     </properties>
 
     <dependencies>
